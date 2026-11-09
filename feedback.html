@@ -6,7 +6,7 @@
   <title>Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
   <meta name="description" content="Электронная приёмная и форма обратной связи Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» в соответствии с Федеральным законом № 152-ФЗ.">
 
-  <!-- Open Graph разметка для Telegram и ВКонтакте -->
+  <!-- Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
@@ -19,6 +19,21 @@
 <body>
 
   <a href="#feedback-main" class="skip-link">Перейти к форме обращения</a>
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ ЖИВОГО ВРЕМЕНИ И ДАТЫ -->
+  <div class="top-datetime-bar" role="region" aria-label="Текущая дата и время">
+    <div class="container datetime-inner">
+      <div class="datetime-left">
+        <span class="clock-icon" aria-hidden="true">🗓️</span>
+        <span id="live-date-display">Загрузка даты...</span>
+        <span class="datetime-sep" aria-hidden="true">•</span>
+        <span id="live-time-display" class="live-clock-digits">--:--:--</span>
+      </div>
+      <div class="datetime-right">
+        <span id="school-day-status" class="school-status-pill">Электронная приёмная 24/7</span>
+      </div>
+    </div>
+  </div>
 
   <!-- ШАПКА -->
   <header class="site-header">
@@ -77,22 +92,21 @@
           В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», нажимая кнопку ниже, я подтверждаю ознакомление с правилами приёма обращений и даю согласие Администрации школы на обработку моих персональных данных (ФИО, телефон или адрес электронной почты) для рассмотрения обращения и подготовки ответа. Согласие действует до момента его отзыва.
         </p>
         <div class="consent-actions">
-          <!-- Гендерно-нейтральная, официальная формулировка от первого лица -->
+          <!-- Гендерно-нейтральная официальная формулировка (подходит и мужчинам, и женщинам) -->
           <button type="button" id="accept-consent-btn" class="btn btn-primary btn-full">
             Подтверждаю ознакомление и даю согласие
           </button>
         </div>
       </section>
 
-      <!-- ЭТАП 2: СКРЫТЫЙ И ЗАБЛОКИРОВАННЫЙ БЛОК ФОРМЫ (Разблокируется только после согласия) -->
+      <!-- ЭТАП 2: СКРЫТЫЙ И ЗАБЛОКИРОВАННЫЙ БЛОК ФОРМЫ -->
       <section id="form-step" class="feedback-card surface-card hidden" aria-labelledby="form-title" aria-hidden="true" hidden>
         <h2 id="form-title" class="feedback-title">Анкета электронного обращения</h2>
         <p class="feedback-subtitle">
-          Заполните поля ниже. Ваше обращение поступит заведующему филиалом Попихиной Елене Александровне.
+          Заполните поля ниже. Ваше сообщение поступит заведующему филиалом Попихиной Елене Александровне.
         </p>
 
         <form id="feedback-form" novalidate autocomplete="on">
-          <!-- Fieldset физически заблокирован (disabled) до нажатия кнопки согласия на Этапе 1 -->
           <fieldset id="form-fieldset" class="form-fieldset" disabled>
             <div class="form-group">
               <label for="fio-input" class="form-label">ФИО заявителя <span class="req">*</span></label>
@@ -101,7 +115,7 @@
                 id="fio-input" 
                 name="fio" 
                 class="form-control" 
-                placeholder="Например: Попихина Елена Александровна" 
+                placeholder="Например: Иванова Мария Ивановна" 
                 maxlength="120"
                 autocomplete="name"
                 required
@@ -116,7 +130,7 @@
                 id="contact-input" 
                 name="contact" 
                 class="form-control" 
-                placeholder="+7 (900) 000-00-00 или example@mail.ru" 
+                placeholder="+7 (900) 000-00-00 или example@yandex.ru" 
                 maxlength="100"
                 required
               >
