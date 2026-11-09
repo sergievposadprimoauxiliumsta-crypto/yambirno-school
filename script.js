@@ -6,31 +6,90 @@
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v2";
 
 /**
- * Санитизация пользовательского ввода (Защита от XSS-инъекций и формульных инъекций в Google Таблицах)
+ * Санитизация пользовательского ввода (Защита от XSS и формульных инъекций в Google Таблицах)
  */
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
-    .replace(/<[^>]*>?/gm, "") // Вырезаем любые HTML-теги
-    .replace(/javascript:|data:|vbscript:/gi, "") // Блокируем опасные URI-схемы
-    .replace(/[<>"'`\\]/g, "") // Убираем спецсимволы
-    .replace(/^[=+\-@]+/, "") // Защита от CSV/Formula Injection в Google Sheets (если строка начинается с =, +, -, @)
+    .replace(/<[^>]*>?/gm, "")
+    .replace(/javascript:|data:|vbscript:/gi, "")
+    .replace(/[<>"'`\\]/g, "")
+    .replace(/^[=+\-@]+/, "")
     .trim()
     .slice(0, maxLength);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initLiveDateTimeClock();
   initAccessibilityMode();
   initScrollRevealAndCounters();
   initTeacherFilter();
-  initLiveSheetWidget();
+  initDigitalNavigatorTabs();
+  initLiveSheetWidgetAndMenu();
   initFeedbackForm();
+  registerOfflineServiceWorker();
 });
 
 /* ==========================================================================
-   1. ДОСТУПНОСТЬ (A11Y) И ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
+   1. ЖИВЫЕ ЧАСЫ, СЕГОДНЯШНЯЯ ДАТА И СТАТУС УЧЕБНОГО ДНЯ
+   ========================================================================== */
+function initLiveDateTimeClock() {
+  const dateEl = document.getElementById("live-date-display");
+  const timeEl = document.getElementById("live-time-display");
+  const statusEl = document.getElementById("school-day-status");
+  const widgetTodayPill = document.getElementById("widget-today-pill");
+
+  const updateClock = () => {
+    const now = new Date();
+
+    const dateFormatted = now.toLocaleDateString("ru-RU", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+    const capitalizedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+
+    const timeFormatted = now.toLocaleTimeString("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    if (dateEl) dateEl.textContent = capitalizedDate;
+    if (timeEl) timeEl.textContent = timeFormatted;
+
+    if (widgetTodayPill) {
+      const shortDate = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "long" });
+      widgetTodayPill.textContent = `📅 Сегодня, ${shortDate}`;
+    }
+
+    // Определяем статус школы по дню недели и времени (кроме страницы обратной связи)
+    if (statusEl && statusEl.textContent !== "Электронная приёмная 24/7") {
+      const day = now.getDay(); // 0 - Вс, 6 - Сб
+      const hour = now.getHours();
+
+      if (day === 0 || day === 6) {
+        statusEl.textContent = "🏡 Выходной день • Приём обращений онлайн";
+      } else if (hour >= 8 && hour < 14) {
+        statusEl.textContent = "🟢 Идут учебные занятия (08:00–14:00)";
+      } else if (hour >= 14 && hour < 17) {
+        statusEl.textContent = "🎨 Внеурочная деятельность и консультации (до 17:00)";
+      } else {
+        statusEl.textContent = "🌙 Учебный день завершён • Приём обращений 24/7";
+      }
+    }
+  };
+
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
+/* ==========================================================================
+   2. ДОСТУПНОСТЬ (A11Y) И ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
    ========================================================================== */
 function initAccessibilityMode() {
   const toggleBtn = document.getElementById("a11y-toggle");
@@ -50,9 +109,7 @@ function initAccessibilityMode() {
   let savedState = false;
   try {
     savedState = localStorage.getItem(A11Y_STORAGE_KEY) === "true";
-  } catch (_) {
-    savedState = false;
-  }
+  } catch (_) {}
 
   applyMode(savedState);
 
@@ -61,30 +118,29 @@ function initAccessibilityMode() {
     applyMode(nextState);
     try {
       localStorage.setItem(A11Y_STORAGE_KEY, String(nextState));
-    } catch (_) {
-      // Игнорируем ошибку, если localStorage недоступен
-    }
+    } catch (_) {}
   });
 }
 
 /* ==========================================================================
-   2. ИНТЕГРАЦИЯ С GOOGLE SHEETS (СТРОГО 2-Я СТРОКА ТАБЛИЦЫ!)
+   3. ИНТЕГРАЦИЯ С GOOGLE SHEETS:
+      - СТРОКА 2 (rows[1]) -> Виджет "Живая информация"
+      - СТРОКА 3 (rows[2]) -> Виджет "Меню школьной столовой"
+      - Офлайн-кэш в localStorage для сельской местности
    ========================================================================== */
-function initLiveSheetWidget() {
+function initLiveSheetWidgetAndMenu() {
   const newsEl = document.getElementById("col-news");
   const scheduleEl = document.getElementById("col-schedule");
   const importantEl = document.getElementById("col-important");
   const refreshBtn = document.getElementById("refresh-sheet-btn");
   const statusEl = document.getElementById("widget-status");
 
+  const menuBreakfastEl = document.getElementById("menu-breakfast");
+  const menuLunchEl = document.getElementById("menu-lunch");
+  const menuNoteEl = document.getElementById("menu-note");
+
   if (!newsEl || !scheduleEl || !importantEl) return;
 
-  /**
-   * Парсер CSV с сохранением точных индексов строк таблицы:
-   * rows[0] — Строка 1 (Заголовки: Новости дня | Расписание уроков | Важные новости)
-   * rows[1] — Строка 2 (Актуальные данные для сайта)
-   * Строки 3, 4, 5 и ниже (где живут данные обратной связи) полностью отсекаются!
-   */
   const parseCSVPreserveRowIndex = (csvText) => {
     const rows = [];
     let currentRow = [];
@@ -123,11 +179,35 @@ function initLiveSheetWidget() {
     return rows;
   };
 
+  const renderWidgetData = (dataObj, isFromCache = false) => {
+    [newsEl, scheduleEl, importantEl].forEach((el) => {
+      el.classList.remove("is-loading-shimmer", "flash-updated");
+      void el.offsetWidth; // Перезапуск CSS-анимации
+      el.classList.add("flash-updated");
+    });
+
+    newsEl.textContent = dataObj.col1News || "На сегодня новых объявлений нет";
+    scheduleEl.textContent = dataObj.col2Schedule || "Уроки проводятся по основному расписанию";
+    importantEl.textContent = dataObj.col3Important || "Желаем хорошего дня!";
+
+    // Если в 3-й строке таблицы заполнено меню столовой — выводим его
+    if (menuBreakfastEl && dataObj.menuBreakfast) menuBreakfastEl.textContent = dataObj.menuBreakfast;
+    if (menuLunchEl && dataObj.menuLunch) menuLunchEl.textContent = dataObj.menuLunch;
+    if (menuNoteEl && dataObj.menuNote) menuNoteEl.textContent = dataObj.menuNote;
+
+    if (statusEl) {
+      statusEl.textContent = isFromCache
+        ? `Офлайн-копия (${dataObj.timeLabel || "сохранено"})`
+        : `Обновлено в ${dataObj.timeLabel}`;
+    }
+  };
+
   const loadSheetData = async () => {
     if (refreshBtn) {
       refreshBtn.classList.add("loading");
       refreshBtn.disabled = true;
     }
+    [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.add("is-loading-shimmer"));
     if (statusEl) {
       statusEl.textContent = "Обновление данных...";
     }
@@ -143,28 +223,46 @@ function initLiveSheetWidget() {
       const csvText = await response.text();
       const rows = parseCSVPreserveRowIndex(csvText);
 
-      // Берем СТРОГО 2-ю строку таблицы (индекс 1 в массиве rows)
+      // СТРОКА 2 (индекс 1): Живая информация
       const secondRow = rows.length > 1 ? rows[1] : [];
+      // СТРОКА 3 (индекс 2): Меню школьной столовой
+      const thirdRow = rows.length > 2 ? rows[2] : [];
 
-      const col1News = sanitizeInput(secondRow[0] || "", 600);
-      const col2Schedule = sanitizeInput(secondRow[1] || "", 600);
-      const col3Important = sanitizeInput(secondRow[2] || "", 600);
+      const nowLabel = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 
-      newsEl.textContent = col1News !== "" ? col1News : "На сегодня новых объявлений нет";
-      scheduleEl.textContent = col2Schedule !== "" ? col2Schedule : "Уроки проводятся по основному расписанию";
-      // По ТЗ: если 3-я колонка во 2-й строке пустая — выводим "Желаем хорошего дня!"
-      importantEl.textContent = col3Important !== "" ? col3Important : "Желаем хорошего дня!";
+      const parsedData = {
+        col1News: sanitizeInput(secondRow[0] || "", 600),
+        col2Schedule: sanitizeInput(secondRow[1] || "", 600),
+        col3Important: sanitizeInput(secondRow[2] || "", 600),
+        menuBreakfast: sanitizeInput(thirdRow[0] || "", 300),
+        menuLunch: sanitizeInput(thirdRow[1] || "", 300),
+        menuNote: sanitizeInput(thirdRow[2] || "", 300),
+        timeLabel: nowLabel
+      };
 
-      if (statusEl) {
-        const now = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-        statusEl.textContent = `Актуально на ${now}`;
-      }
+      renderWidgetData(parsedData, false);
+
+      try {
+        localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify(parsedData));
+      } catch (_) {}
     } catch (_) {
-      newsEl.textContent = "Информация обновляется";
-      scheduleEl.textContent = "Информация обновляется";
-      importantEl.textContent = "Информация обновляется";
-      if (statusEl) {
-        statusEl.textContent = "Информация обновляется";
+      // При отсутствии интернета пробуем достать последнюю сохраненную копию из памяти
+      let cached = null;
+      try {
+        const rawCache = localStorage.getItem(SHEET_CACHE_KEY);
+        if (rawCache) cached = JSON.parse(rawCache);
+      } catch (_) {}
+
+      if (cached) {
+        renderWidgetData(cached, true);
+      } else {
+        newsEl.classList.remove("is-loading-shimmer");
+        scheduleEl.classList.remove("is-loading-shimmer");
+        importantEl.classList.remove("is-loading-shimmer");
+        newsEl.textContent = "Информация обновляется";
+        scheduleEl.textContent = "Информация обновляется";
+        importantEl.textContent = "Информация обновляется";
+        if (statusEl) statusEl.textContent = "Информация обновляется";
       }
     } finally {
       if (refreshBtn) {
@@ -182,7 +280,34 @@ function initLiveSheetWidget() {
 }
 
 /* ==========================================================================
-   3. ДВУХЭТАПНАЯ ФОРМА ОБРАТНОЙ СВЯЗИ (СОВМЕСТИМАЯ С e.parameter В КОД.GS)
+   4. ПЕРЕКЛЮЧАТЕЛЬ ВКЛАДОК ЦИФРОВОГО НАВИГАТОРА (ДНЕВНИК И УЧИ.РУ)
+   ========================================================================== */
+function initDigitalNavigatorTabs() {
+  const tabBtns = document.querySelectorAll(".digital-tab-btn");
+  const panels = document.querySelectorAll(".digital-panel");
+  if (tabBtns.length === 0 || panels.length === 0) return;
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-dtab");
+
+      tabBtns.forEach((b) => {
+        const isCurrent = b === btn;
+        b.classList.toggle("active", isCurrent);
+        b.setAttribute("aria-selected", String(isCurrent));
+      });
+
+      panels.forEach((panel) => {
+        const isMatch = panel.id === targetId;
+        panel.classList.toggle("hidden", !isMatch);
+        panel.classList.toggle("active", isMatch);
+      });
+    });
+  });
+}
+
+/* ==========================================================================
+   5. ДВУХЭТАПНАЯ ФОРМА ОБРАТНОЙ СВЯЗИ (ЗАПИСЬ ВСЕХ СТОЛБЦОВ В КОД.GS)
    ========================================================================== */
 function initFeedbackForm() {
   const consentStep = document.getElementById("consent-step");
@@ -208,12 +333,10 @@ function initFeedbackForm() {
   const submitLoader = document.getElementById("submit-loader");
   const formResponse = document.getElementById("form-response");
 
-  // Приватный флаг согласия 152-ФЗ (до клика форма заблокирована)
   let isConsentConfirmed = false;
   formFieldset.disabled = true;
   submitBtn.disabled = true;
 
-  // Переход с Этапа 1 на Этап 2 после подтверждения согласия
   acceptBtn.addEventListener("click", () => {
     isConsentConfirmed = true;
     formFieldset.disabled = false;
@@ -234,7 +357,6 @@ function initFeedbackForm() {
     fioInput.focus();
   });
 
-  // Валидация ФИО: только буквы и пробелы, минимум 2 слова
   const validateFio = () => {
     const cleanVal = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
     const onlyLettersAndSpaces = /^[А-Яа-яЁёA-Za-z\s]+$/.test(cleanVal);
@@ -257,11 +379,10 @@ function initFeedbackForm() {
     return isValid;
   };
 
-  // Валидация Контакта: телефон или Email
   const validateContact = () => {
     const cleanVal = sanitizeInput(contactInput.value, 100);
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-    const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+    const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[0-9]{3,5}\)?[\s\-]?[0-9]{1,3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
 
     const isEmail = emailRegex.test(cleanVal);
     const isPhone = phoneRegex.test(cleanVal);
@@ -286,7 +407,6 @@ function initFeedbackForm() {
     return isValid;
   };
 
-  // Валидация текста обращения
   const validateComment = () => {
     const cleanVal = sanitizeInput(commentInput.value, 2000);
     const isValid = cleanVal.length >= 5;
@@ -311,7 +431,6 @@ function initFeedbackForm() {
   contactInput.addEventListener("input", validateContact);
   commentInput.addEventListener("input", validateComment);
 
-  // Отправка формы в Google Apps Script
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -340,12 +459,6 @@ function initFeedbackForm() {
     submitBtnText.textContent = "Отправка обращения...";
     submitLoader.classList.remove("hidden");
 
-    /**
-     * КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ДЛЯ GOOGLE APPS SCRIPT (Код.gs):
-     * Передаем данные через URLSearchParams (application/x-www-form-urlencoded).
-     * Благодаря этому в Код.gs переменные e.parameter.fio, e.parameter.contact и e.parameter.comment
-     * получают значения напрямую и заполняют столбцы B, C и D!
-     */
     const formDataParams = new URLSearchParams();
     formDataParams.append("fio", sanitizedFio);
     formDataParams.append("contact", sanitizedContact);
@@ -361,7 +474,7 @@ function initFeedbackForm() {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      formResponse.textContent = "Спасибо! Ваше обращение успешно зарегистрировано в таблице администрации школы.";
+      formResponse.textContent = "Спасибо! Ваше обращение успешно записано в реестр школы и передано руководителю филиала.";
       formResponse.className = "form-response success";
       formResponse.classList.remove("hidden");
 
@@ -382,7 +495,7 @@ function initFeedbackForm() {
 }
 
 /* ==========================================================================
-   4. ПЛАВНОЕ ПОЯВЛЕНИЕ ЭЛЕМЕНТОВ, СЧЕТЧИКИ И ФИЛЬТР ПЕДАГОГОВ
+   6. ПЛАВНОЕ ПОЯВЛЕНИЕ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
    ========================================================================== */
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
@@ -465,4 +578,10 @@ function initTeacherFilter() {
       });
     });
   });
+}
+
+function registerOfflineServiceWorker() {
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
 }
