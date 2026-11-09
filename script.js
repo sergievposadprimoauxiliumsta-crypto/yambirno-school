@@ -8,15 +8,15 @@ const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 
 /**
- * Санитизация пользовательского ввода (Защита от XSS-инъекций и опасных URI)
- * Вырезает HTML-теги, опасные спецсимволы и нормализует пробелы.
+ * Санитизация пользовательского ввода (Защита от XSS-инъекций и формульных инъекций в Google Таблицах)
  */
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
-    .replace(/<[^>]*>?/gm, "") // Удаляем любые HTML-теги
-    .replace(/javascript:|data:|vbscript:/gi, "") // Блокируем выполнение URI-скриптов
-    .replace(/[<>"'`\\]/g, "") // Удаляем спецсимволы для предотвращения инъекций атрибутов
+    .replace(/<[^>]*>?/gm, "") // Вырезаем любые HTML-теги
+    .replace(/javascript:|data:|vbscript:/gi, "") // Блокируем опасные URI-схемы
+    .replace(/[<>"'`\\]/g, "") // Убираем спецсимволы
+    .replace(/^[=+\-@]+/, "") // Защита от CSV/Formula Injection в Google Sheets (если строка начинается с =, +, -, @)
     .trim()
     .slice(0, maxLength);
 }
@@ -39,7 +39,6 @@ function initAccessibilityMode() {
   const applyMode = (isEnabled) => {
     document.body.classList.toggle("visually-impaired", isEnabled);
     toggleBtn.setAttribute("aria-pressed", String(isEnabled));
-    // Атрибут aria-label всегда остается "Версия для слабовидящих" по стандарту A11y
     toggleBtn.setAttribute("aria-label", "Версия для слабовидящих");
 
     const textSpan = toggleBtn.querySelector(".a11y-btn-text");
@@ -63,13 +62,13 @@ function initAccessibilityMode() {
     try {
       localStorage.setItem(A11Y_STORAGE_KEY, String(nextState));
     } catch (_) {
-      // Игнорируем ошибку, если localStorage заблокирован политикой браузера
+      // Игнорируем ошибку, если localStorage недоступен
     }
   });
 }
 
 /* ==========================================================================
-   2. ИНТЕГРАЦИЯ С GOOGLE SHEETS (ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ")
+   2. ИНТЕГРАЦИЯ С GOOGLE SHEETS (СТРОГО 2-Я СТРОКА ТАБЛИЦЫ!)
    ========================================================================== */
 function initLiveSheetWidget() {
   const newsEl = document.getElementById("col-news");
@@ -80,7 +79,13 @@ function initLiveSheetWidget() {
 
   if (!newsEl || !scheduleEl || !importantEl) return;
 
-  const parseCSV = (csvText) => {
+  /**
+   * Парсер CSV с сохранением точных индексов строк таблицы:
+   * rows[0] — Строка 1 (Заголовки: Новости дня | Расписание уроков | Важные новости)
+   * rows[1] — Строка 2 (Актуальные данные для сайта)
+   * Строки 3, 4, 5 и ниже (где живут данные обратной связи) полностью отсекаются!
+   */
+  const parseCSVPreserveRowIndex = (csvText) => {
     const rows = [];
     let currentRow = [];
     let currentCell = "";
@@ -103,9 +108,7 @@ function initLiveSheetWidget() {
       } else if ((char === "\r" || char === "\n") && !inQuotes) {
         if (char === "\r" && nextChar === "\n") i++;
         currentRow.push(currentCell.trim());
-        if (currentRow.some((cell) => cell !== "")) {
-          rows.push(currentRow);
-        }
+        rows.push(currentRow);
         currentRow = [];
         currentCell = "";
       } else {
@@ -115,9 +118,7 @@ function initLiveSheetWidget() {
 
     if (currentCell.length > 0 || currentRow.length > 0) {
       currentRow.push(currentCell.trim());
-      if (currentRow.some((cell) => cell !== "")) {
-        rows.push(currentRow);
-      }
+      rows.push(currentRow);
     }
     return rows;
   };
@@ -140,29 +141,19 @@ function initLiveSheetWidget() {
       }
 
       const csvText = await response.text();
-      const rows = parseCSV(csvText);
+      const rows = parseCSVPreserveRowIndex(csvText);
 
-      if (!rows || rows.length === 0) {
-        throw new Error("Пустой ответ CSV");
-      }
+      // Берем СТРОГО 2-ю строку таблицы (индекс 1 в массиве rows)
+      const secondRow = rows.length > 1 ? rows[1] : [];
 
-      const firstRowJoined = rows[0].join(" ").toLowerCase();
-      const hasHeader =
-        rows.length > 1 &&
-        (firstRowJoined.includes("новост") ||
-          firstRowJoined.includes("расписан") ||
-          firstRowJoined.includes("важн"));
+      const col1News = sanitizeInput(secondRow[0] || "", 600);
+      const col2Schedule = sanitizeInput(secondRow[1] || "", 600);
+      const col3Important = sanitizeInput(secondRow[2] || "", 600);
 
-      const dataRows = hasHeader ? rows.slice(1) : rows;
-
-      const col1Values = dataRows.map((r) => sanitizeInput(r[0] || "", 500)).filter(Boolean);
-      const col2Values = dataRows.map((r) => sanitizeInput(r[1] || "", 500)).filter(Boolean);
-      const col3Values = dataRows.map((r) => sanitizeInput(r[2] || "", 500)).filter(Boolean);
-
-      // Использование textContent гарантирует защиту от XSS при выводе данных из таблицы
-      newsEl.textContent = col1Values.length > 0 ? col1Values.join("\n") : "Нет новых объявлений";
-      scheduleEl.textContent = col2Values.length > 0 ? col2Values.join("\n") : "Расписание по стандарту";
-      importantEl.textContent = col3Values.length > 0 ? col3Values.join("\n") : "Желаем хорошего дня!";
+      newsEl.textContent = col1News !== "" ? col1News : "На сегодня новых объявлений нет";
+      scheduleEl.textContent = col2Schedule !== "" ? col2Schedule : "Уроки проводятся по основному расписанию";
+      // По ТЗ: если 3-я колонка во 2-й строке пустая — выводим "Желаем хорошего дня!"
+      importantEl.textContent = col3Important !== "" ? col3Important : "Желаем хорошего дня!";
 
       if (statusEl) {
         const now = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
@@ -191,7 +182,7 @@ function initLiveSheetWidget() {
 }
 
 /* ==========================================================================
-   3. ДВУХЭТАПНАЯ ФОРМА ОБРАТНОЙ СВЯЗИ, ЗАЩИТА XSS И 152-ФЗ
+   3. ДВУХЭТАПНАЯ ФОРМА ОБРАТНОЙ СВЯЗИ (СОВМЕСТИМАЯ С e.parameter В КОД.GS)
    ========================================================================== */
 function initFeedbackForm() {
   const consentStep = document.getElementById("consent-step");
@@ -217,12 +208,12 @@ function initFeedbackForm() {
   const submitLoader = document.getElementById("submit-loader");
   const formResponse = document.getElementById("form-response");
 
-  // Приватный флаг согласия 152-ФЗ (до клика форма заблокирована физически и программно)
+  // Приватный флаг согласия 152-ФЗ (до клика форма заблокирована)
   let isConsentConfirmed = false;
   formFieldset.disabled = true;
   submitBtn.disabled = true;
 
-  // Переход с Этапа 1 на Этап 2 только после явного клика пользователя
+  // Переход с Этапа 1 на Этап 2 после подтверждения согласия
   acceptBtn.addEventListener("click", () => {
     isConsentConfirmed = true;
     formFieldset.disabled = false;
@@ -260,7 +251,7 @@ function initFeedbackForm() {
       fioHint.textContent = "✓ ФИО заполнено корректно";
       fioHint.className = "field-hint valid-text";
     } else {
-      fioHint.textContent = "Только буквы и пробелы, минимум 2 слова";
+      fioHint.textContent = "Только буквы и пробелы, минимум 2 слова (Фамилия и Имя)";
       fioHint.className = "field-hint";
     }
     return isValid;
@@ -320,11 +311,10 @@ function initFeedbackForm() {
   contactInput.addEventListener("input", validateContact);
   commentInput.addEventListener("input", validateComment);
 
-  // Отправка формы
+  // Отправка формы в Google Apps Script
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Жесткая блокировка отправки, если согласие 152-ФЗ не было подтверждено
     if (!isConsentConfirmed || formFieldset.disabled) {
       return;
     }
@@ -342,7 +332,6 @@ function initFeedbackForm() {
       return;
     }
 
-    // Санитизация всех значений перед формированием пакета для отправки
     const sanitizedFio = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
     const sanitizedContact = sanitizeInput(contactInput.value, 100);
     const sanitizedComment = sanitizeInput(commentInput.value, 2000);
@@ -351,28 +340,28 @@ function initFeedbackForm() {
     submitBtnText.textContent = "Отправка обращения...";
     submitLoader.classList.remove("hidden");
 
-    const payload = {
-      fio: sanitizedFio,
-      contact: sanitizedContact,
-      comment: sanitizedComment,
-      consent152FZ: true,
-      timestamp: new Date().toISOString()
-    };
+    /**
+     * КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ДЛЯ GOOGLE APPS SCRIPT (Код.gs):
+     * Передаем данные через URLSearchParams (application/x-www-form-urlencoded).
+     * Благодаря этому в Код.gs переменные e.parameter.fio, e.parameter.contact и e.parameter.comment
+     * получают значения напрямую и заполняют столбцы B, C и D!
+     */
+    const formDataParams = new URLSearchParams();
+    formDataParams.append("fio", sanitizedFio);
+    formDataParams.append("contact", sanitizedContact);
+    formDataParams.append("comment", sanitizedComment);
 
     try {
       const response = await fetch(FEEDBACK_POST_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
+        body: formDataParams
       });
 
       if (!response.ok && response.type !== "opaque") {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      formResponse.textContent = "Спасибо! Ваше обращение успешно отправлено в администрацию школы.";
+      formResponse.textContent = "Спасибо! Ваше обращение успешно зарегистрировано в таблице администрации школы.";
       formResponse.className = "form-response success";
       formResponse.classList.remove("hidden");
 
@@ -386,7 +375,7 @@ function initFeedbackForm() {
       formResponse.classList.remove("hidden");
     } finally {
       submitBtn.disabled = false;
-      submitBtnText.textContent = "Отправить";
+      submitBtnText.textContent = "Отправить обращение";
       submitLoader.classList.add("hidden");
     }
   });
