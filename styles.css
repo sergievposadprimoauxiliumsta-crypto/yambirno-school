@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. ПЕРЕМЕННЫЕ И БАЗОВЫЙ СБРОС (ОПТИМИЗИРОВАНО ДЛЯ СЛАБЫХ ПК)
+   1. ПЕРЕМЕННЫЕ И БАЗОВЫЙ СБРОС (ЗАЩИТА ОТ ГОРИЗОНТАЛЬНОГО СКРОЛЛА НА 320PX)
    ========================================================================== */
 :root {
   --bg-main: #f8fafc;
@@ -29,6 +29,13 @@
   padding: 0;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 html {
   scroll-behavior: smooth;
   font-size: 16px;
@@ -42,6 +49,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 a {
@@ -67,19 +76,28 @@ img {
   display: none !important;
 }
 
+/* Единый базовый класс карточек (устранено дублирование) */
+.surface-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
 .skip-link {
   position: absolute;
   top: -100px;
-  left: 16px;
+  left: 12px;
   background: var(--primary);
-  color: #fff;
+  color: #ffffff;
   padding: 10px 16px;
   border-radius: 8px;
   z-index: 1000;
 }
 
 .skip-link:focus {
-  top: 16px;
+  top: 12px;
 }
 
 /* ==========================================================================
@@ -98,17 +116,19 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding-top: 14px;
-  padding-bottom: 14px;
+  gap: 14px;
+  padding-top: 12px;
+  padding-bottom: 12px;
   flex-wrap: wrap;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   color: var(--text-main);
+  min-width: 0;
+  flex: 1 1 240px;
 }
 
 .logo-img {
@@ -120,24 +140,25 @@ img {
 .brand-text {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .brand-title {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   line-height: 1.25;
   color: var(--text-main);
 }
 
 .brand-motto {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--text-muted);
 }
 
 .main-nav {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
@@ -145,7 +166,7 @@ img {
   color: var(--text-main);
   font-weight: 500;
   font-size: 0.95rem;
-  padding: 6px 4px;
+  padding: 4px 2px;
   border-bottom: 2px solid transparent;
 }
 
@@ -158,14 +179,14 @@ img {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-/* Кнопка для слабовидящих */
 .btn-a11y {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: var(--bg-alt);
   color: var(--text-main);
@@ -173,8 +194,9 @@ img {
   padding: 8px 14px;
   border-radius: var(--radius-md);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   cursor: pointer;
+  max-width: 100%;
   transition: transform var(--transition), background-color var(--transition);
 }
 
@@ -191,7 +213,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 13px 24px;
+  padding: 13px 22px;
   border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 1rem;
@@ -199,15 +221,17 @@ img {
   border: 2px solid transparent;
   transition: transform var(--transition), box-shadow var(--transition), background-color var(--transition);
   text-align: center;
+  max-width: 100%;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.btn:active {
-  transform: translateY(0);
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-primary {
@@ -215,7 +239,7 @@ img {
   color: #ffffff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: var(--primary-hover);
   color: #ffffff;
 }
@@ -236,7 +260,7 @@ img {
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   color: var(--text-main);
-  background: #fff;
+  background: #ffffff;
 }
 
 .btn-full {
@@ -247,7 +271,7 @@ img {
    4. ГЛАВНЫЙ ЭКРАН (HERO) И ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ"
    ========================================================================== */
 .hero-section {
-  padding: 56px 0;
+  padding: 52px 0;
   background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #fef3c7 100%);
   border-bottom: 1px solid var(--border);
 }
@@ -255,8 +279,12 @@ img {
 .hero-grid {
   display: grid;
   grid-template-columns: 1.35fr 1fr;
-  gap: 36px;
+  gap: 32px;
   align-items: start;
+}
+
+.hero-content {
+  min-width: 0;
 }
 
 .badge {
@@ -264,38 +292,38 @@ img {
   background: #dbeafe;
   color: var(--primary);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   padding: 6px 14px;
   border-radius: 999px;
   margin-bottom: 16px;
 }
 
 .hero-title {
-  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
-  line-height: 1.2;
-  margin-bottom: 20px;
+  font-size: clamp(1.55rem, 3.2vw, 2.45rem);
+  line-height: 1.22;
+  margin-bottom: 18px;
   color: var(--text-main);
 }
 
 .hero-lead {
-  font-size: 1.12rem;
+  font-size: 1.08rem;
   color: var(--text-muted);
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 32px;
+  gap: 12px;
+  margin-bottom: 28px;
 }
 
 .director-note {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.85);
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.88);
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-md);
 }
@@ -305,7 +333,7 @@ img {
   height: 44px;
   border-radius: 50%;
   background: var(--primary);
-  color: #fff;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -313,22 +341,23 @@ img {
   flex-shrink: 0;
 }
 
+.director-note-text {
+  min-width: 0;
+}
+
 .director-note strong {
   display: block;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
 }
 
 .director-note span {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--text-muted);
 }
 
 /* Виджет "Живая информация" */
 .live-widget {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px;
   box-shadow: var(--shadow-md);
 }
 
@@ -336,10 +365,11 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 14px;
+  gap: 10px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 
 .widget-title-wrap {
@@ -349,7 +379,7 @@ img {
 }
 
 .widget-title-wrap h2 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
 }
 
 .live-dot {
@@ -358,6 +388,7 @@ img {
   background-color: #22c55e;
   border-radius: 50%;
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+  flex-shrink: 0;
 }
 
 .btn-refresh {
@@ -369,12 +400,12 @@ img {
   border: 1px solid var(--border);
   background: var(--bg-alt);
   color: var(--text-main);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
 }
 
-.btn-refresh:hover {
+.btn-refresh:hover:not(:disabled) {
   background: #e2e8f0;
 }
 
@@ -395,7 +426,7 @@ img {
 .widget-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .widget-block {
@@ -405,15 +436,16 @@ img {
 }
 
 .widget-block h3 {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .widget-value {
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   font-weight: 500;
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .widget-block-highlight {
@@ -422,10 +454,10 @@ img {
 }
 
 /* ==========================================================================
-   5. СЕКЦИИ, О ШКОЛЕ И КАРТОЧКИ ПЕДАГОГОВ
+   5. СЕКЦИИ, ФАКТЫ И КАРТОЧКИ ПЕДАГОГОВ
    ========================================================================== */
 .section {
-  padding: 64px 0;
+  padding: 60px 0;
 }
 
 .section-alt {
@@ -435,37 +467,35 @@ img {
 .section-header {
   text-align: center;
   max-width: 720px;
-  margin: 0 auto 40px;
+  margin: 0 auto 36px;
 }
 
 .section-title {
-  font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+  font-size: clamp(1.45rem, 2.5vw, 2.05rem);
   margin-bottom: 10px;
 }
 
 .section-subtitle {
   color: var(--text-muted);
-  font-size: 1.05rem;
+  font-size: 1.02rem;
 }
 
-/* Факты о школе */
-.facts-grid {
+.facts-grid,
+.teachers-grid,
+.success-grid,
+.contacts-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
 .fact-card {
-  background: var(--bg-card);
-  padding: 28px 24px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  padding: 26px 20px;
   text-align: center;
 }
 
 .fact-number {
-  font-size: 3rem;
+  font-size: 2.8rem;
   font-weight: 800;
   color: var(--primary);
   line-height: 1.1;
@@ -473,19 +503,19 @@ img {
 }
 
 .fact-icon {
-  font-size: 2.6rem;
+  font-size: 2.5rem;
   line-height: 1.1;
   margin-bottom: 12px;
 }
 
 .fact-title {
-  font-size: 1.15rem;
-  margin-bottom: 10px;
+  font-size: 1.12rem;
+  margin-bottom: 8px;
 }
 
 .fact-text {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 0.94rem;
 }
 
 /* Фильтр учителей */
@@ -498,13 +528,13 @@ img {
 }
 
 .filter-btn {
-  padding: 8px 18px;
+  padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-main);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   cursor: pointer;
   transition: background-color var(--transition), color var(--transition);
 }
@@ -516,20 +546,9 @@ img {
   border-color: var(--primary);
 }
 
-/* Сетка карточек учителей: 3 колонки ПК, 2 планшет, 1 телефон */
-.teachers-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
 .teacher-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px 20px;
+  padding: 24px 18px;
   text-align: center;
-  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -559,7 +578,7 @@ img {
 
 .teacher-badge {
   display: inline-block;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
@@ -579,14 +598,14 @@ img {
 }
 
 .teacher-name {
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   margin-bottom: 4px;
 }
 
 .teacher-role {
   font-weight: 600;
   color: var(--primary);
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   margin-bottom: 8px;
 }
 
@@ -596,7 +615,7 @@ img {
 }
 
 /* ==========================================================================
-   6. ДОСТИЖЕНИЯ И УСПЕХИ УЧЕНИКОВ
+   6. ДОСТИЖЕНИЯ, ШКОЛЬНАЯ ЖИЗНЬ И КОНТАКТЫ
    ========================================================================== */
 .stats-banner {
   display: grid;
@@ -604,49 +623,40 @@ img {
   gap: 20px;
   background: var(--primary);
   color: #ffffff;
-  padding: 32px 24px;
+  padding: 30px 20px;
   border-radius: var(--radius-lg);
-  margin-bottom: 40px;
+  margin-bottom: 38px;
   text-align: center;
 }
 
 .stat-val {
   display: block;
-  font-size: 2.4rem;
+  font-size: 2.3rem;
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 6px;
 }
 
 .stat-label {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   opacity: 0.92;
 }
 
 .subsection-title {
   text-align: center;
-  font-size: 1.4rem;
-  margin-bottom: 24px;
-}
-
-.success-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  font-size: 1.35rem;
+  margin-bottom: 22px;
 }
 
 .success-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
   border-top: 4px solid var(--primary);
   border-radius: var(--radius-md);
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
+  padding: 22px;
 }
 
 .success-tag {
   display: inline-block;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--accent);
   text-transform: uppercase;
@@ -655,42 +665,36 @@ img {
 }
 
 .success-card h4 {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
+  font-size: 1.18rem;
+  margin-bottom: 8px;
 }
 
 .success-card p {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 0.94rem;
 }
 
-/* ==========================================================================
-   7. ПИТАНИЕ, БЕЗОПАСНОСТЬ, ШКОЛЬНАЯ ЖИЗНЬ И КОНТАКТЫ
-   ========================================================================== */
 .info-blocks-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
-  margin-bottom: 56px;
+  margin-bottom: 52px;
 }
 
 .info-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px;
-  box-shadow: var(--shadow-sm);
+  padding: 26px 22px;
 }
 
 .info-box-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .info-icon {
-  font-size: 1.8rem;
+  font-size: 1.7rem;
+  flex-shrink: 0;
 }
 
 .info-box p {
@@ -704,11 +708,8 @@ img {
 }
 
 .gallery-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
 }
 
 .gallery-img {
@@ -718,77 +719,67 @@ img {
 }
 
 .gallery-item figcaption {
-  padding: 12px 14px;
-  font-size: 0.9rem;
+  padding: 12px;
+  font-size: 0.88rem;
   font-weight: 600;
   text-align: center;
 }
 
-/* Контакты */
-.contacts-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
 .contact-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 24px;
+  padding: 22px 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: var(--shadow-sm);
 }
 
 .contact-label {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: var(--text-muted);
 }
 
 .contact-value {
-  font-size: 1.1rem;
+  font-size: 1.04rem;
   font-weight: 700;
   color: var(--text-main);
+  overflow-wrap: anywhere;
 }
 
 .contact-note {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--text-muted);
 }
 
-/* Призыв к действию (CTA) */
 .cta-section {
-  padding: 20px 0 72px;
+  padding: 16px 0 64px;
 }
 
 .cta-card {
   background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
   color: #ffffff;
   border-radius: var(--radius-lg);
-  padding: 48px 32px;
+  padding: 44px 24px;
   text-align: center;
   box-shadow: var(--shadow-md);
 }
 
 .cta-title {
-  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  font-size: clamp(1.4rem, 2.6vw, 2.05rem);
   margin-bottom: 12px;
 }
 
 .cta-text {
   max-width: 640px;
-  margin: 0 auto 28px;
+  margin: 0 auto 24px;
   opacity: 0.92;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
 }
 
 .btn-cta {
   background: #fbbf24;
   color: #0f172a;
-  font-size: 1.1rem;
-  padding: 16px 36px;
+  font-size: 1.05rem;
+  padding: 15px 32px;
   font-weight: 700;
 }
 
@@ -797,13 +788,12 @@ img {
   color: #0f172a;
 }
 
-/* Подвал */
 .site-footer {
   margin-top: auto;
   background: #0f172a;
   color: #cbd5e1;
-  padding: 28px 0;
-  font-size: 0.92rem;
+  padding: 26px 0;
+  font-size: 0.9rem;
 }
 
 .footer-inner {
@@ -819,10 +809,10 @@ img {
 }
 
 /* ==========================================================================
-   8. СТРАНИЦА ОБРАТНОЙ СВЯЗИ (FEEDBACK.HTML)
+   7. СТРАНИЦА ОБРАТНОЙ СВЯЗИ (FEEDBACK.HTML)
    ========================================================================== */
 .feedback-main {
-  padding: 48px 0;
+  padding: 40px 0 56px;
   flex: 1;
 }
 
@@ -830,11 +820,17 @@ img {
   max-width: 680px;
 }
 
+.page-main-title {
+  text-align: center;
+  font-size: clamp(1.45rem, 2.8vw, 2rem);
+  margin-bottom: 20px;
+}
+
 .steps-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
@@ -844,7 +840,7 @@ img {
   border-radius: 999px;
   background: var(--bg-alt);
   color: var(--text-muted);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
@@ -854,11 +850,15 @@ img {
 }
 
 .feedback-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 36px 32px;
+  padding: 32px 28px;
   box-shadow: var(--shadow-md);
+}
+
+.form-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
 }
 
 .law-badge {
@@ -866,33 +866,33 @@ img {
   background: #dbeafe;
   color: var(--primary);
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   padding: 4px 12px;
   border-radius: 999px;
   margin-bottom: 12px;
 }
 
 .feedback-title {
-  font-size: 1.55rem;
-  margin-bottom: 14px;
+  font-size: 1.4rem;
+  margin-bottom: 12px;
 }
 
 .feedback-subtitle {
   color: var(--text-muted);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .consent-text {
   background: var(--bg-alt);
   border-left: 4px solid var(--primary);
-  padding: 18px;
+  padding: 16px;
   border-radius: var(--radius-md);
-  margin-bottom: 24px;
-  font-size: 1rem;
+  margin-bottom: 22px;
+  font-size: 0.98rem;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .form-label {
@@ -907,12 +907,13 @@ img {
 
 .form-control {
   width: 100%;
+  max-width: 100%;
   padding: 12px 14px;
   font-size: 1rem;
   font-family: inherit;
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
-  background: #ffffff;
+  background-color: #ffffff;
   color: var(--text-main);
   transition: border-color var(--transition);
 }
@@ -932,7 +933,7 @@ img {
 
 .field-hint {
   display: block;
-  font-size: 0.84rem;
+  font-size: 0.83rem;
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -982,12 +983,12 @@ img {
 }
 
 /* ==========================================================================
-   9. АНИМАЦИЯ ПОЯВЛЕНИЯ ПРИ СКРОЛЛЕ (INTERSECTION OBSERVER)
+   8. АНИМАЦИЯ ПОЯВЛЕНИЯ ПРИ СКРОЛЛЕ (INTERSECTION OBSERVER)
    ========================================================================== */
 .reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(18px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
 .reveal.visible {
@@ -996,24 +997,51 @@ img {
 }
 
 /* ==========================================================================
-   10. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ (КЛАСС .visually-impaired НА BODY)
+   9. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ (.visually-impaired) — ЧЕРНЫЙ ФОН И ЖЕЛТЫЙ ТЕКСТ
    ========================================================================== */
 body.visually-impaired {
   background-color: #000000 !important;
   color: #ffff00 !important;
-  font-size: 1.25rem !important;
-  line-height: 1.75 !important;
-  letter-spacing: 0.03em;
+  font-size: 1.2rem !important;
+  line-height: 1.7 !important;
+  letter-spacing: 0.02em;
 }
 
 body.visually-impaired *,
 body.visually-impaired *::before,
 body.visually-impaired *::after {
   background-color: #000000 !important;
+  background-image: none !important;
   color: #ffff00 !important;
   border-color: #ffff00 !important;
   box-shadow: none !important;
   text-shadow: none !important;
+}
+
+/* Гарантированная стилизация полей ввода (input, textarea) и автозаполнения */
+body.visually-impaired input,
+body.visually-impaired textarea,
+body.visually-impaired select,
+body.visually-impaired .form-control {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  -webkit-text-fill-color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+  caret-color: #ffff00 !important;
+  font-size: 1.15rem !important;
+}
+
+body.visually-impaired input::placeholder,
+body.visually-impaired textarea::placeholder {
+  color: #cccc00 !important;
+  -webkit-text-fill-color: #cccc00 !important;
+  opacity: 1 !important;
+}
+
+body.visually-impaired input:-webkit-autofill,
+body.visually-impaired textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #000000 inset !important;
+  -webkit-text-fill-color: #ffff00 !important;
 }
 
 /* Скрытие всех img, кроме логотипа (.logo-img) */
@@ -1030,7 +1058,7 @@ body.visually-impaired .btn-a11y,
 body.visually-impaired .btn-refresh,
 body.visually-impaired .filter-btn {
   border: 2px solid #ffff00 !important;
-  font-size: 1.15rem !important;
+  font-size: 1.08rem !important;
 }
 
 body.visually-impaired .filter-btn.active {
@@ -1045,36 +1073,27 @@ body.visually-impaired .reveal {
 }
 
 /* ==========================================================================
-   11. АДАПТИВНОСТЬ (ПЛАНШЕТЫ И МОБИЛЬНЫЕ УСТРОЙСТВА)
+   10. АДАПТИВНОСТЬ (ПЛАНШЕТЫ, МОБИЛЬНЫЕ И IPHONE SE 320PX)
    ========================================================================== */
 @media (max-width: 992px) {
-  .hero-grid {
+  .hero-grid,
+  .info-blocks-grid {
     grid-template-columns: 1fr;
   }
 
-  /* Планшет: 2 колонки для учителей */
-  .teachers-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+  /* Планшет: 2 колонки для карточек */
+  .teachers-grid,
   .facts-grid,
   .success-grid,
-  .contacts-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+  .contacts-grid,
   .stats-banner,
   .gallery-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .info-blocks-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
-@media (max-width: 600px) {
-  /* Телефон: 1 колонка для учителей и остальных сеток */
+@media (max-width: 640px) {
+  /* Мобильные устройства: строго 1 колонка для всех карточек и сеток */
   .teachers-grid,
   .facts-grid,
   .success-grid,
@@ -1089,19 +1108,75 @@ body.visually-impaired .reveal {
     align-items: stretch;
   }
 
-  .main-nav {
-    justify-content: center;
+  .brand {
+    flex: 1 1 auto;
   }
 
-  .btn-a11y {
+  .main-nav {
     justify-content: center;
+    gap: 12px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-a11y,
+  .btn-outline-sm {
+    width: 100%;
+    text-align: center;
   }
 
   .hero-actions {
     flex-direction: column;
   }
 
+  .hero-actions .btn {
+    width: 100%;
+  }
+
   .feedback-card {
-    padding: 24px 18px;
+    padding: 22px 16px;
+  }
+}
+
+/* Специальная адаптация под экраны шириной 320px (iPhone SE) */
+@media (max-width: 360px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  .brand-title {
+    font-size: 0.92rem;
+  }
+
+  .hero-section,
+  .section {
+    padding: 36px 0;
+  }
+
+  .hero-title {
+    font-size: 1.38rem;
+  }
+
+  .live-widget,
+  .fact-card,
+  .teacher-card,
+  .success-card,
+  .info-box,
+  .contact-card,
+  .feedback-card {
+    padding: 16px 12px;
+  }
+
+  .btn,
+  .btn-a11y {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  body.visually-impaired {
+    font-size: 1.08rem !important;
   }
 }
