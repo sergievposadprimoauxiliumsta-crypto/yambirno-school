@@ -3,26 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ». Небольшая школа — большие возможности: обучение, воспитание и единство.">
-  <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
+  <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Официальный сайт</title>
+  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, с. Ямбирно). Небольшая школа — большие возможности: обучение, воспитание и единство.">
+
+  <!-- Open Graph разметка для Telegram и ВКонтакте -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
+  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Узнайте о наших педагогах, расписании и достижениях учеников.">
+  <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Ямбирнский+филиал+МОУ+Лесно-Конобеевская+СШ">
+
   <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
 
-  <!-- Пропуск навигации для доступности с клавиатуры -->
+  <!-- Быстрый переход к контенту с клавиатуры -->
   <a href="#main-content" class="skip-link">Перейти к основному содержанию</a>
 
   <!-- 1. ШАПКА (HEADER) -->
   <header class="site-header" id="top">
     <div class="container header-inner">
-      <a href="index.html" class="brand" aria-label="На главную страницу">
-        <!-- Логотип-заглушка ("Герб") — не скрывается в режиме для слабовидящих благодаря классу .logo-img -->
+      <a href="index.html" class="brand" aria-label="Ямбирнский филиал МОУ Лесно-Конобеевская СШ — на главную">
+        <!-- Логотип-заглушка ("Герб") — сохраняется в режиме для слабовидящих благодаря классу .logo-img -->
         <img 
           src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cpath d='M40 4 L72 16 V40 C72 58 40 74 40 74 C40 74 8 58 8 40 V16 Z' fill='%231e40af' stroke='%23fbbf24' stroke-width='4'/%3E%3Cpath d='M24 34 L40 26 L56 34 L40 42 Z' fill='%23fbbf24'/%3E%3Cpath d='M28 40 V50 C28 54 52 54 52 50 V40' fill='none' stroke='%23ffffff' stroke-width='3'/%3E%3Ctext x='40' y='65' font-family='sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EГЕРБ%3C/text%3E%3C/svg%3E" 
-          alt="Герб школы" 
+          alt="Герб Ямбирнского филиала МОУ Лесно-Конобеевская СШ" 
           class="logo-img" 
-          width="56" 
-          height="56"
+          width="52" 
+          height="52"
         >
         <div class="brand-text">
           <span class="brand-title">Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</span>
@@ -30,7 +39,7 @@
         </div>
       </a>
 
-      <nav class="main-nav" aria-label="Основная навигация">
+      <nav class="main-nav" aria-label="Основная навигация по сайту">
         <a href="#about" class="nav-link">О школе</a>
         <a href="#teachers" class="nav-link">Педагоги</a>
         <a href="#achievements" class="nav-link">Достижения</a>
@@ -39,12 +48,18 @@
       </nav>
 
       <!-- Кнопка "Версия для слабовидящих" -->
-      <button type="button" id="a11y-toggle" class="btn-a11y" aria-pressed="false" title="Переключить версию для слабовидящих">
+      <button 
+        type="button" 
+        id="a11y-toggle" 
+        class="btn-a11y" 
+        aria-label="Версия для слабовидящих" 
+        aria-pressed="false"
+      >
         <svg class="icon-eye" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
           <circle cx="12" cy="12" r="3"></circle>
         </svg>
-        <span>Версия для слабовидящих</span>
+        <span class="a11y-btn-text">Версия для слабовидящих</span>
       </button>
     </div>
   </header>
@@ -54,7 +69,7 @@
     <section class="hero-section">
       <div class="container hero-grid">
         
-        <!-- Левая колонка: Приветствие -->
+        <!-- Левая колонка: Приветствие (Единственный H1 на странице) -->
         <div class="hero-content reveal">
           <span class="badge">Рязанская область • с. Ямбирно</span>
           <h1 class="hero-title">Небольшая школа — большие возможности: обучение, воспитание и единство</h1>
@@ -67,21 +82,21 @@
           </div>
           <div class="director-note">
             <div class="director-avatar-badge" aria-hidden="true">ЕА</div>
-            <div>
+            <div class="director-note-text">
               <strong>Попихина Елена Александровна</strong>
               <span>Заведующий филиалом (Директор школы)</span>
             </div>
           </div>
         </div>
 
-        <!-- Правая колонка: Виджет "Живая информация" (Интеграция с Google Sheets) -->
-        <aside class="live-widget reveal" aria-labelledby="live-widget-title">
+        <!-- Правая колонка: Виджет "Живая информация" (Google Sheets CSV) -->
+        <aside class="live-widget surface-card reveal" aria-labelledby="live-widget-title">
           <div class="widget-header">
             <div class="widget-title-wrap">
               <span class="live-dot" aria-hidden="true"></span>
               <h2 id="live-widget-title">Живая информация</h2>
             </div>
-            <button type="button" id="refresh-sheet-btn" class="btn-refresh" title="Обновить данные из таблицы">
+            <button type="button" id="refresh-sheet-btn" class="btn-refresh" aria-label="Обновить данные расписания и новостей">
               <svg class="icon-refresh" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <polyline points="23 4 23 10 17 10"></polyline>
                 <polyline points="1 20 1 14 7 14"></polyline>
@@ -91,7 +106,7 @@
             </button>
           </div>
 
-          <div id="widget-status" class="widget-status" aria-live="polite"></div>
+          <div id="widget-status" class="widget-status" aria-live="polite">Подключение к таблице...</div>
 
           <div class="widget-body" id="widget-content">
             <div class="widget-block">
@@ -121,19 +136,19 @@
         </div>
 
         <div class="facts-grid">
-          <article class="fact-card reveal">
+          <article class="fact-card surface-card reveal">
             <div class="fact-number" data-target="36" data-suffix="">36</div>
             <h3 class="fact-title">Учеников в школе</h3>
             <p class="fact-text">Небольшой и дружный коллектив, в котором каждый ребёнок на виду, а педагоги вовремя замечают успехи и помогают преодолеть трудности.</p>
           </article>
 
-          <article class="fact-card reveal">
+          <article class="fact-card surface-card reveal">
             <div class="fact-number" data-target="50" data-suffix="%">50%</div>
             <h3 class="fact-title">Семей с разными культурными традициями</h3>
             <p class="fact-text">В семьях бережно сохраняются обычаи и уважение к старшим. Мы формируем культуру единства, уважения к истории своей семьи и традициям одноклассников.</p>
           </article>
 
-          <article class="fact-card reveal">
+          <article class="fact-card surface-card reveal">
             <div class="fact-icon" aria-hidden="true">🤝</div>
             <h3 class="fact-title">Учим дружить и помогать</h3>
             <p class="fact-text">Мы учим детей дружить и помогать друг другу. Через совместную учёбу, Совет школы, творчество и труд ребята учатся отвечать за общее дело.</p>
@@ -150,8 +165,8 @@
           <p class="section-subtitle">Главная опора школы: 9 основных педагогов и 3 учителя-совместителя (12 специалистов)</p>
         </div>
 
-        <!-- Инновация: Быстрый фильтр карточек -->
-        <div class="filter-tabs reveal" role="tablist" aria-label="Фильтр учителей">
+        <!-- Быстрый фильтр карточек -->
+        <div class="filter-tabs reveal" role="group" aria-label="Фильтр педагогического состава">
           <button type="button" class="filter-btn active" data-filter="all">Все педагоги (12)</button>
           <button type="button" class="filter-btn" data-filter="main">Основной состав (9)</button>
           <button type="button" class="filter-btn" data-filter="part-time">Совместители (3)</button>
@@ -159,27 +174,31 @@
 
         <div class="teachers-grid" id="teachers-grid">
           <!-- Карточка 1: Попихина Е.А. -->
-          <article class="teacher-card reveal" data-category="main">
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img 
                 src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%231e40af'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%231e40af'/%3E%3C/svg%3E" 
-                alt="Фото: Попихина Елена Александровна" 
+                alt="Портрет-заглушка: Попихина Елена Александровна, заведующий филиалом" 
                 class="teacher-photo"
+                width="96"
+                height="96"
               >
             </div>
             <span class="teacher-badge">Руководитель</span>
             <h3 class="teacher-name">Попихина Е.А.</h3>
             <p class="teacher-role">Заведующий филиалом</p>
-            <p class="teacher-meta">Учитель химии и физической культуры. Активно внедряет современные цифровые и ИИ-инструменты при подготовке к ОГЭ.</p>
+            <p class="teacher-meta">Учитель химии и физической культуры. Внедряет современные цифровые и ИИ-инструменты при подготовке к ОГЭ.</p>
           </article>
 
           <!-- Карточка 2: Колупаева М.М. -->
-          <article class="teacher-card reveal" data-category="main">
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img 
                 src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fef3c7'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%23b45309'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%23b45309'/%3E%3C/svg%3E" 
-                alt="Фото: Колупаева Мария Михайловна" 
+                alt="Портрет-заглушка: Колупаева Мария Михайловна, учитель начальных классов" 
                 class="teacher-photo"
+                width="96"
+                height="96"
               >
             </div>
             <span class="teacher-badge badge-gold">Отличник народного просвещения</span>
@@ -189,24 +208,26 @@
           </article>
 
           <!-- Карточка 3: Грошева Е.П. -->
-          <article class="teacher-card reveal" data-category="main">
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img 
                 src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dcfce7'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2315803d'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2315803d'/%3E%3C/svg%3E" 
-                alt="Фото: Грошева Елена Петровна" 
+                alt="Портрет-заглушка: Грошева Елена Петровна, учитель русского языка и литературы" 
                 class="teacher-photo"
+                width="96"
+                height="96"
               >
             </div>
             <span class="teacher-badge">Наставник победителей</span>
             <h3 class="teacher-name">Грошева Е.П.</h3>
             <p class="teacher-role">Учитель русского языка и литературы</p>
-            <p class="teacher-meta">Готовит победителей конкурсов («Живая классика», «Без срока давности»). Отмечена Благодарностью Минпросвещения РФ.</p>
+            <p class="teacher-meta">Готовит победителей конкурсов («Живая классика», «Без срока давности»). Награждена Благодарностью Минпросвещения РФ.</p>
           </article>
 
-          <!-- Карточка 4 (Основной состав. Из презентации школы: Матыкина Валентина Александровна — учитель английского языка) -->
-          <article class="teacher-card reveal" data-category="main">
+          <!-- Карточка 4 (Основной состав) -->
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Портрет-заглушка педагога основного состава №4" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -214,10 +235,10 @@
             <p class="teacher-meta">Стаж</p>
           </article>
 
-          <!-- Карточка 5 (Основной состав. Из презентации школы: Киселёв Николай Александрович — учитель географии) -->
-          <article class="teacher-card reveal" data-category="main">
+          <!-- Карточка 5 (Основной состав) -->
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Портрет-заглушка педагога основного состава №5" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -225,10 +246,10 @@
             <p class="teacher-meta">Стаж</p>
           </article>
 
-          <!-- Карточка 6 (Основной состав. Из презентации школы: Агафонова Людмила Николаевна — учитель истории и обществознания) -->
-          <article class="teacher-card reveal" data-category="main">
+          <!-- Карточка 6 (Основной состав) -->
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Портрет-заглушка педагога основного состава №6" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -236,10 +257,10 @@
             <p class="teacher-meta">Стаж</p>
           </article>
 
-          <!-- Карточка 7 (Основной состав. Из презентации школы: Корягина Нина Алексеевна — учитель математики) -->
-          <article class="teacher-card reveal" data-category="main">
+          <!-- Карточка 7 (Основной состав) -->
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Портрет-заглушка педагога основного состава №7" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -247,10 +268,10 @@
             <p class="teacher-meta">Стаж</p>
           </article>
 
-          <!-- Карточка 8 (Основной состав. Из презентации школы: Киселёва Светлана Николаевна — учитель биологии) -->
-          <article class="teacher-card reveal" data-category="main">
+          <!-- Карточка 8 (Основной состав) -->
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Портрет-заглушка педагога основного состава №8" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -258,10 +279,10 @@
             <p class="teacher-meta">Стаж</p>
           </article>
 
-          <!-- Карточка 9 (Основной состав. Из презентации школы: Пителина Анна Александровна — учитель физики и информатики) -->
-          <article class="teacher-card reveal" data-category="main">
+          <!-- Карточка 9 (Основной состав) -->
+          <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e2e8f0'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%2364748b'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%2364748b'/%3E%3C/svg%3E" alt="Портрет-заглушка педагога основного состава №9" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -269,10 +290,10 @@
             <p class="teacher-meta">Стаж</p>
           </article>
 
-          <!-- Карточка 10 (Совместитель 1. Из презентации школы: Оглу Лариса Юрьевна — учитель технологии) -->
-          <article class="teacher-card reveal" data-category="part-time">
+          <!-- Карточка 10 (Совместитель 1) -->
+          <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%23475569'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%23475569'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%23475569'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%23475569'/%3E%3C/svg%3E" alt="Портрет-заглушка учителя-совместителя №10" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -280,10 +301,10 @@
             <p class="teacher-meta">Стаж</p>
           </article>
 
-          <!-- Карточка 11 (Совместитель 2. Из презентации школы: Сидорова Татьяна Ласловна — учитель ИЗО) -->
-          <article class="teacher-card reveal" data-category="part-time">
+          <!-- Карточка 11 (Совместитель 2) -->
+          <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%23475569'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%23475569'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%23475569'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%23475569'/%3E%3C/svg%3E" alt="Портрет-заглушка учителя-совместителя №11" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -292,9 +313,9 @@
           </article>
 
           <!-- Карточка 12 (Совместитель 3) -->
-          <article class="teacher-card reveal" data-category="part-time">
+          <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%23475569'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%23475569'/%3E%3C/svg%3E" alt="Фото учителя" class="teacher-photo">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ccircle cx='60' cy='46' r='20' fill='%23475569'/%3E%3Cpath d='M24 106 C24 82 96 82 96 106' fill='%23475569'/%3E%3C/svg%3E" alt="Портрет-заглушка учителя-совместителя №12" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">ФИО учителя</h3>
@@ -313,7 +334,6 @@
           <p class="section-subtitle">За каждой цифрой — труд конкретного ребёнка, его семьи и учителей</p>
         </div>
 
-        <!-- Статистика достижений -->
         <div class="stats-banner reveal">
           <div class="stat-item">
             <span class="stat-val" data-target="72" data-suffix="%">72%</span>
@@ -333,22 +353,21 @@
           </div>
         </div>
 
-        <!-- Истории успеха учеников -->
         <h3 class="subsection-title reveal">Гордость нашей школы</h3>
         <div class="success-grid">
-          <article class="success-card reveal">
+          <article class="success-card surface-card reveal">
             <div class="success-tag">Литература и творчество</div>
             <h4>Угарова Валерия</h4>
             <p>Заняла <strong>1 место</strong> во Всероссийском конкурсе юных чтецов <strong>«Живая классика»</strong>, успешно сдала ОГЭ и поступила в Рязанский технологический колледж.</p>
           </article>
 
-          <article class="success-card reveal">
+          <article class="success-card surface-card reveal">
             <div class="success-tag">Спорт и учёба</div>
             <h4>Наврозов Азиз</h4>
             <p>Победитель соревнований по <strong>греко-римской борьбе</strong> (1 место в Первенстве). Успешно совмещает спорт с учёбой на «4» и «5».</p>
           </article>
 
-          <article class="success-card reveal">
+          <article class="success-card surface-card reveal">
             <div class="success-tag">Хореография</div>
             <h4>Григорян Айкануш</h4>
             <p>Призёр регионального конкурса вокального и хореографического искусства <strong>«Артверетено»</strong> (3 место в номинации «Танцы»).</p>
@@ -361,17 +380,17 @@
     <section id="school-life" class="section section-alt">
       <div class="container">
         <div class="info-blocks-grid">
-          <article class="info-box reveal">
+          <article class="info-box surface-card reveal">
             <div class="info-box-header">
               <span class="info-icon" aria-hidden="true">🍎</span>
               <h2>Организация питания</h2>
             </div>
             <p>
-              В Ямбирнском филиале организовано качественное сбалансированное горячее питание для обучающихся. Ежедневное меню составляется с учётом возрастных физиологических потребностей детей и строго контролируется бракеражной комиссией и родительским контролем. Ученики начальных классов обеспечены бесплатным горячим питанием.
+              В Ямбирнском филиале организовано качественное сбалансированное горячее питание для обучающихся. Ежедневное меню составляется с учётом возрастных физиологических потребностей детей и контролируется бракеражной комиссией и родительским контролем. Ученики начальных классов обеспечены бесплатным горячим питанием.
             </p>
           </article>
 
-          <article class="info-box reveal">
+          <article class="info-box surface-card reveal">
             <div class="info-box-header">
               <span class="info-icon" aria-hidden="true">🛡️</span>
               <h2>Безопасность</h2>
@@ -382,7 +401,7 @@
           </article>
         </div>
 
-        <!-- Галерея "Школьная жизнь" (4 картинки-заглушки) -->
+        <!-- Галерея "Школьная жизнь" (4 картинки-заглушки с информативными alt) -->
         <div class="gallery-wrapper">
           <div class="section-header reveal">
             <h2 class="section-title">Школьная жизнь</h2>
@@ -390,37 +409,37 @@
           </div>
 
           <div class="gallery-grid">
-            <figure class="gallery-item reveal">
+            <figure class="gallery-item surface-card reveal">
               <img 
                 src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dbeafe'/%3E%3Ccircle cx='300' cy='170' r='55' fill='%233b82f6' opacity='0.25'/%3E%3Ctext x='300' y='205' font-family='sans-serif' font-size='24' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EТоржественные линейки%3C/text%3E%3C/svg%3E" 
-                alt="Торжественная линейка и школьные праздники" 
+                alt="Иллюстрация-заглушка: Торжественная линейка и День знаний в школе" 
                 class="gallery-img"
               >
               <figcaption>Торжественные линейки и День знаний</figcaption>
             </figure>
 
-            <figure class="gallery-item reveal">
+            <figure class="gallery-item surface-card reveal">
               <img 
                 src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dcfce7'/%3E%3Ccircle cx='300' cy='170' r='55' fill='%2322c55e' opacity='0.25'/%3E%3Ctext x='300' y='205' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2314532d' text-anchor='middle'%3EОткрытые уроки%3C/text%3E%3C/svg%3E" 
-                alt="Открытые уроки и работа в классе" 
+                alt="Иллюстрация-заглушка: Открытые уроки и работа учеников в классе" 
                 class="gallery-img"
               >
               <figcaption>Учебные занятия и проектная работа</figcaption>
             </figure>
 
-            <figure class="gallery-item reveal">
+            <figure class="gallery-item surface-card reveal">
               <img 
                 src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23fef3c7'/%3E%3Ccircle cx='300' cy='170' r='55' fill='%23f59e0b' opacity='0.25'/%3E%3Ctext x='300' y='205' font-family='sans-serif' font-size='24' font-weight='bold' fill='%2378350f' text-anchor='middle'%3EФестивали и культура%3C/text%3E%3C/svg%3E" 
-                alt="Выставки творчества и единство культур" 
+                alt="Иллюстрация-заглушка: Выставки детского творчества и фестиваль культур" 
                 class="gallery-img"
               >
               <figcaption>Творчество и единство культурных традиций</figcaption>
             </figure>
 
-            <figure class="gallery-item reveal">
+            <figure class="gallery-item surface-card reveal">
               <img 
                 src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3e8ff'/%3E%3Ccircle cx='300' cy='170' r='55' fill='%23a855f7' opacity='0.25'/%3E%3Ctext x='300' y='205' font-family='sans-serif' font-size='24' font-weight='bold' fill='%23581c87' text-anchor='middle'%3EСпорт и волонтёрство%3C/text%3E%3C/svg%3E" 
-                alt="Спортивные эстафеты с родителями и волонтёрство" 
+                alt="Иллюстрация-заглушка: Школьные спортивные соревнования с родителями и волонтёрство" 
                 class="gallery-img"
               >
               <figcaption>Спортивные праздники с семьями и волонтёрство</figcaption>
@@ -439,19 +458,19 @@
         </div>
 
         <div class="contacts-grid reveal">
-          <div class="contact-card">
+          <div class="contact-card surface-card">
             <span class="contact-label">📍 Адрес школы</span>
             <strong class="contact-value">Рязанская область, с. Ямбирно</strong>
             <span class="contact-note">Шацкий муниципальный район</span>
           </div>
 
-          <div class="contact-card">
+          <div class="contact-card surface-card">
             <span class="contact-label">📞 Телефон</span>
             <a href="tel:+74914700000" class="contact-value">+7 (49147) 2-XX-XX</a>
             <span class="contact-note">Пн–Пт: с 08:00 до 17:00</span>
           </div>
 
-          <div class="contact-card">
+          <div class="contact-card surface-card">
             <span class="contact-label">✉️ Электронная почта</span>
             <a href="mailto:yambirno-school@ryazan.gov.ru" class="contact-value">yambirno-school@ryazan.gov.ru</a>
             <span class="contact-note">Официальные обращения и вопросы</span>
@@ -478,10 +497,9 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Все права защищены.</p>
-      <p>Заведующий филиалом: Попихина Елена Александровна</p>
+      <p>Директор школы: Попихина Елена Александровна</p>
     </div>
   </footer>
 
-  <script src="script.js"></script>
 </body>
 </html>
