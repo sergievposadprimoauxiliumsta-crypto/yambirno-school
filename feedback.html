@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
-  <meta name="description" content="Электронная приёмная и форма обратной связи Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» в соответствии с Федеральным законом № 152-ФЗ.">
+  <meta name="description" content="Электронная приёмная Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»: отправьте благодарность учителю, предложение или вопрос руководителю школы в соответствии с 152-ФЗ.">
 
   <!-- Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
-  <meta property="og:description" content="Задайте вопрос, оставьте предложение или отзыв администрации Ямбирнского филиала МОУ «Лесно-Конобеевская СШ».">
+  <meta property="og:description" content="Поблагодарите педагога, предложите идею или задайте вопрос администрации Ямбирнского филиала МОУ «Лесно-Конобеевская СШ».">
   <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Обратная+связь+•+Ямбирнский+филиал">
 
   <link rel="stylesheet" href="styles.css">
@@ -20,53 +20,54 @@
 
   <a href="#feedback-main" class="skip-link">Перейти к форме обращения</a>
 
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ ЖИВОГО ВРЕМЕНИ И ДАТЫ -->
-  <div class="top-datetime-bar" role="region" aria-label="Текущая дата и время">
-    <div class="container datetime-inner">
-      <div class="datetime-left">
-        <span class="clock-icon" aria-hidden="true">🗓️</span>
-        <span id="live-date-display">Загрузка даты...</span>
-        <span class="datetime-sep" aria-hidden="true">•</span>
-        <span id="live-time-display" class="live-clock-digits">--:--:--</span>
-      </div>
-      <div class="datetime-right">
-        <span id="school-day-status" class="school-status-pill">Электронная приёмная 24/7</span>
+  <!-- 1. ДВУХУРОВНЕВАЯ ШАПКА С ЗАКРЕПЛЕННОЙ КНОПКОЙ СЛАБОВИДЯЩИХ -->
+  <header class="site-header">
+    <div class="top-utility-bar" role="region" aria-label="Панель текущего времени и специальных возможностей">
+      <div class="container utility-inner">
+        <div class="utility-datetime">
+          <span class="utility-icon" aria-hidden="true">🗓️</span>
+          <span id="live-date-display" class="utility-date-text">Загрузка даты...</span>
+          <span class="utility-sep" aria-hidden="true">|</span>
+          <span id="live-time-display" class="live-clock-digits">--:--:--</span>
+          <span class="school-status-pill">Электронная приёмная 24/7</span>
+        </div>
+
+        <div class="utility-a11y-slot">
+          <button 
+            type="button" 
+            id="a11y-toggle" 
+            class="btn-a11y" 
+            aria-label="Версия для слабовидящих" 
+            aria-pressed="false"
+          >
+            <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span class="a11y-btn-text">Версия для слабовидящих</span>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ШАПКА -->
-  <header class="site-header">
-    <div class="container header-inner">
+    <div class="container header-main-inner">
       <a href="index.html" class="brand" aria-label="Вернуться на главную страницу школы">
         <img 
-          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cpath d='M40 4 L72 16 V40 C72 58 40 74 40 74 C40 74 8 58 8 40 V16 Z' fill='%231e40af' stroke='%23fbbf24' stroke-width='4'/%3E%3Cpath d='M24 34 L40 26 L56 34 L40 42 Z' fill='%23fbbf24'/%3E%3Cpath d='M28 40 V50 C28 54 52 54 52 50 V40' fill='none' stroke='%23ffffff' stroke-width='3'/%3E%3Ctext x='40' y='65' font-family='sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EГЕРБ%3C/text%3E%3C/svg%3E" 
-          alt="Герб Ямбирнского филиала МОУ Лесно-Конобеевская СШ" 
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" 
+          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ" 
           class="logo-img" 
-          width="52" 
-          height="52"
+          width="58" 
+          height="58"
         >
         <div class="brand-text">
+          <span class="brand-sub">Шацкий муниципальный район Рязанской области</span>
           <span class="brand-title">Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</span>
           <span class="brand-motto">Небольшая школа — большие возможности</span>
         </div>
       </a>
 
       <div class="header-actions">
-        <a href="index.html" class="btn btn-outline-sm">← На главную</a>
-        <button 
-          type="button" 
-          id="a11y-toggle" 
-          class="btn-a11y" 
-          aria-label="Версия для слабовидящих" 
-          aria-pressed="false"
-        >
-          <svg class="icon-eye" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <span class="a11y-btn-text">Версия для слабовидящих</span>
-        </button>
+        <a href="index.html" class="btn btn-secondary">← Вернуться на главную</a>
       </div>
     </div>
   </header>
@@ -75,13 +76,13 @@
     <div class="container feedback-container">
       
       <!-- Единственный заголовок H1 на странице -->
-      <h1 class="page-main-title">Обращение в администрацию школы</h1>
+      <h1 class="page-main-title">Электронное обращение в школу</h1>
 
       <!-- Индикатор шагов -->
       <div class="steps-indicator" aria-label="Этапы отправки обращения">
         <div class="step-pill active" id="step-indicator-1">Этап 1. Согласие 152-ФЗ</div>
         <div class="step-divider" aria-hidden="true">→</div>
-        <div class="step-pill" id="step-indicator-2">Этап 2. Заполнение анкеты</div>
+        <div class="step-pill" id="step-indicator-2">Этап 2. Ваше сообщение</div>
       </div>
 
       <!-- ЭТАП 1: СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ (152-ФЗ) -->
@@ -89,10 +90,9 @@
         <div class="law-badge">Федеральный закон № 152-ФЗ</div>
         <h2 id="consent-title" class="feedback-title">Согласие на обработку персональных данных</h2>
         <p class="consent-text">
-          В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», нажимая кнопку ниже, я подтверждаю ознакомление с правилами приёма обращений и даю согласие Администрации школы на обработку моих персональных данных (ФИО, телефон или адрес электронной почты) для рассмотрения обращения и подготовки ответа. Согласие действует до момента его отзыва.
+          В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», нажимая кнопку ниже, я подтверждаю ознакомление с правилами приёма обращений и даю согласие Администрации школы на обработку моих персональных данных (ФИО, телефон или адрес электронной почты) для рассмотрения обращения, предложения или отзыва. Согласие действует до момента его отзыва.
         </p>
         <div class="consent-actions">
-          <!-- Гендерно-нейтральная официальная формулировка (подходит и мужчинам, и женщинам) -->
           <button type="button" id="accept-consent-btn" class="btn btn-primary btn-full">
             Подтверждаю ознакомление и даю согласие
           </button>
@@ -101,15 +101,26 @@
 
       <!-- ЭТАП 2: СКРЫТЫЙ И ЗАБЛОКИРОВАННЫЙ БЛОК ФОРМЫ -->
       <section id="form-step" class="feedback-card surface-card hidden" aria-labelledby="form-title" aria-hidden="true" hidden>
-        <h2 id="form-title" class="feedback-title">Анкета электронного обращения</h2>
+        <h2 id="form-title" class="feedback-title">Напишите ваше обращение, идею или благодарность</h2>
         <p class="feedback-subtitle">
-          Заполните поля ниже. Ваше сообщение поступит заведующему филиалом Попихиной Елене Александровне.
+          Выберите тему и заполните поля ниже. Сообщение поступит заведующему филиалом Попихиной Елене Александровне.
         </p>
 
         <form id="feedback-form" novalidate autocomplete="on">
           <fieldset id="form-fieldset" class="form-fieldset" disabled>
+            
+            <!-- Быстрый выбор повода обращения (Благодарность / Идея / Вопрос) -->
             <div class="form-group">
-              <label for="fio-input" class="form-label">ФИО заявителя <span class="req">*</span></label>
+              <span class="form-label">Повод обращения:</span>
+              <div class="topic-selector" role="group" aria-label="Выберите повод обращения">
+                <button type="button" class="topic-chip active" data-topic-prefix="[Вопрос руководителю] ">❓ Вопрос</button>
+                <button type="button" class="topic-chip" data-topic-prefix="[Благодарность учителю] ">❤️ Благодарность</button>
+                <button type="button" class="topic-chip" data-topic-prefix="[Предложение / Идея] ">💡 Идея / Предложение</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="fio-input" class="form-label">Ваши Фамилия и Имя (Отчество — при наличии) <span class="req">*</span></label>
               <input 
                 type="text" 
                 id="fio-input" 
@@ -120,7 +131,7 @@
                 autocomplete="name"
                 required
               >
-              <span id="fio-hint" class="field-hint">Только буквы и пробелы, минимум 2 слова (Фамилия и Имя)</span>
+              <span id="fio-hint" class="field-hint">Только буквы и пробелы, минимум 2 слова</span>
             </div>
 
             <div class="form-group">
@@ -134,21 +145,21 @@
                 maxlength="100"
                 required
               >
-              <span id="contact-hint" class="field-hint">Укажите действующий номер телефона или адрес электронной почты</span>
+              <span id="contact-hint" class="field-hint">Укажите удобный номер телефона или адрес электронной почты</span>
             </div>
 
             <div class="form-group">
-              <label for="comment-input" class="form-label">Текст обращения / комментарий <span class="req">*</span></label>
+              <label for="comment-input" class="form-label">Текст сообщения <span class="req">*</span></label>
               <textarea 
                 id="comment-input" 
                 name="comment" 
                 rows="5" 
                 class="form-control" 
-                placeholder="Опишите ваш вопрос, предложение или отзыв..." 
+                placeholder="Напишите здесь ваш вопрос, слова благодарности педагогу или предложение..." 
                 maxlength="2000"
                 required
               ></textarea>
-              <span id="comment-hint" class="field-hint">Пожалуйста, изложите суть вашего вопроса (от 5 до 2000 символов)</span>
+              <span id="comment-hint" class="field-hint">Пожалуйста, напишите ваше сообщение (от 5 до 2000 символов)</span>
             </div>
 
             <div class="consent-confirmed-note">
@@ -156,7 +167,7 @@
             </div>
 
             <button type="submit" id="submit-btn" class="btn btn-primary btn-full" disabled>
-              <span id="submit-btn-text">Отправить обращение</span>
+              <span id="submit-btn-text">Отправить сообщение в школу</span>
               <span id="submit-loader" class="spinner hidden" aria-hidden="true"></span>
             </button>
           </fieldset>
