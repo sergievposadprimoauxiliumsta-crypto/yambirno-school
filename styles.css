@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. ПЕРЕМЕННЫЕ И БАЗОВЫЙ СБРОС (БЕЗ ГОРИЗОНТАЛЬНОГО СКРОЛЛА НА 320PX)
+   1. ПЕРЕМЕННЫЕ И БАЗОВЫЙ СБРОС (АДАПТАЦИЯ ОТ 320PX ДО ШИРОКИХ ЭКРАНОВ)
    ========================================================================== */
 :root {
   --bg-main: #f8fafc;
@@ -9,16 +9,19 @@
   --text-muted: #475569;
   --primary: #1e40af;
   --primary-hover: #1e3a8a;
+  --primary-soft: #eff6ff;
   --accent: #d97706;
   --accent-light: #fef3c7;
   --success: #15803d;
   --danger: #b91c1c;
   --border: #e2e8f0;
-  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 10px 28px rgba(15, 23, 42, 0.09);
+  --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.09);
+  --shadow-lg: 0 20px 44px rgba(30, 64, 175, 0.14);
   --radius-md: 12px;
   --radius-lg: 18px;
-  --transition: 0.25s ease;
+  --radius-xl: 24px;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 *,
@@ -45,7 +48,7 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: var(--bg-main);
   color: var(--text-main);
-  line-height: 1.6;
+  line-height: 1.65;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -67,7 +70,7 @@ img {
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1220px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -100,66 +103,114 @@ img {
 }
 
 /* ==========================================================================
-   2. ВЕРХНЯЯ ПАНЕЛЬ ЖИВОГО ВРЕМЕНИ И ДАТЫ + ШАПКА САЙТА
+   2. ИННОВАЦИОННАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА (HEADER)
    ========================================================================== */
-.top-datetime-bar {
-  background: #0f172a;
-  color: #f8fafc;
-  font-size: 0.85rem;
-  padding: 8px 0;
-  border-bottom: 1px solid #1e293b;
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
-.datetime-inner {
+/* Верхний смарт-контур (дата, время, статус и ЗАКРЕПЛЕННАЯ кнопка слабовидящих) */
+.top-utility-bar {
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+  color: #f8fafc;
+  font-size: 0.84rem;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.utility-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 14px;
+  flex-wrap: nowrap;
 }
 
-.datetime-left {
+.utility-datetime {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  min-width: 0;
+}
+
+.utility-date-text {
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.utility-sep {
+  opacity: 0.4;
 }
 
 .live-clock-digits {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: #fbbf24;
-  background: rgba(251, 191, 36, 0.14);
-  padding: 2px 8px;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  padding: 2px 9px;
   border-radius: 6px;
+  letter-spacing: 0.03em;
 }
 
 .school-status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 3px 10px;
+  padding: 3px 11px;
   border-radius: 999px;
   background: rgba(34, 197, 94, 0.18);
   color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.96);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+/* Фиксированный правый слот: кнопка НЕ прыгает на новую строку при смене шрифта */
+.utility-a11y-slot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
-.header-inner {
+.btn-a11y {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fbbf24;
+  color: #0f172a;
+  border: 2px solid #fbbf24;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--transition), background-color var(--transition), box-shadow var(--transition);
+}
+
+.btn-a11y:hover {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+
+/* Нижний навигационный контур шапки */
+.header-main-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 18px;
   padding-top: 12px;
   padding-bottom: 12px;
   flex-wrap: wrap;
@@ -168,16 +219,22 @@ img {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   color: var(--text-main);
   min-width: 0;
-  flex: 1 1 240px;
+  flex: 1 1 280px;
 }
 
 .logo-img {
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   flex-shrink: 0;
+  filter: drop-shadow(0 3px 6px rgba(30, 64, 175, 0.18));
+  transition: transform var(--transition);
+}
+
+.brand:hover .logo-img {
+  transform: scale(1.04);
 }
 
 .brand-text {
@@ -186,10 +243,19 @@ img {
   min-width: 0;
 }
 
-.brand-title {
+.brand-sub {
+  font-size: 0.74rem;
   font-weight: 700;
-  font-size: 1.02rem;
-  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.brand-title {
+  font-weight: 800;
+  font-size: 1.08rem;
+  line-height: 1.22;
   color: var(--text-main);
 }
 
@@ -207,10 +273,11 @@ img {
 
 .nav-link {
   color: var(--text-main);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.92rem;
-  padding: 4px 2px;
+  padding: 6px 4px;
   border-bottom: 2px solid transparent;
+  transition: color var(--transition), border-color var(--transition);
 }
 
 .nav-link:hover,
@@ -221,36 +288,36 @@ img {
 
 .nav-link-accent {
   color: var(--primary);
+  background: var(--primary-soft);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border-bottom: none;
+}
+
+.nav-link-accent:hover {
+  background: #dbeafe;
+}
+
+.nav-cta-btn {
+  background: var(--primary);
+  color: #ffffff;
   font-weight: 700;
+  font-size: 0.88rem;
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: background-color var(--transition), transform var(--transition);
+}
+
+.nav-cta-btn:hover {
+  background: var(--primary-hover);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn-a11y {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--bg-alt);
-  color: var(--text-main);
-  border: 2px solid var(--text-main);
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 0.88rem;
-  cursor: pointer;
-  max-width: 100%;
-  transition: transform var(--transition), background-color var(--transition);
-}
-
-.btn-a11y:hover {
-  background: var(--text-main);
-  color: #ffffff;
 }
 
 /* ==========================================================================
@@ -261,9 +328,9 @@ img {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 13px 22px;
+  padding: 13px 24px;
   border-radius: var(--radius-md);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.98rem;
   cursor: pointer;
   border: 2px solid transparent;
@@ -299,16 +366,7 @@ img {
 }
 
 .btn-secondary:hover {
-  background-color: #eff6ff;
-}
-
-.btn-outline-sm {
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 0.9rem;
-  color: var(--text-main);
-  background: #ffffff;
+  background-color: var(--primary-soft);
 }
 
 .btn-full {
@@ -316,18 +374,21 @@ img {
 }
 
 /* ==========================================================================
-   4. ГЛАВНЫЙ ЭКРАН (HERO) И ОБНОВЛЕННЫЙ ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ"
+   4. ГЛАВНЫЙ ЭКРАН (HERO) И ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ"
    ========================================================================== */
 .hero-section {
-  padding: 48px 0;
-  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #fef3c7 100%);
+  padding: 52px 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+    linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #fef3c7 100%);
   border-bottom: 1px solid var(--border);
 }
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 32px;
+  grid-template-columns: 1.28fr 1fr;
+  gap: 36px;
   align-items: start;
 }
 
@@ -347,45 +408,48 @@ img {
 }
 
 .hero-title {
-  font-size: clamp(1.55rem, 3.1vw, 2.4rem);
-  line-height: 1.22;
+  font-size: clamp(1.6rem, 3.1vw, 2.45rem);
+  line-height: 1.2;
   margin-bottom: 18px;
   color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 
 .hero-lead {
-  font-size: 1.06rem;
+  font-size: 1.08rem;
   color: var(--text-muted);
-  margin-bottom: 24px;
+  margin-bottom: 26px;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 26px;
+  margin-bottom: 28px;
 }
 
 .director-note {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.9);
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .director-avatar-badge {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: var(--primary);
+  background: linear-gradient(135deg, #1e40af, #2563eb);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 800;
   flex-shrink: 0;
 }
 
@@ -395,19 +459,19 @@ img {
 
 .director-note strong {
   display: block;
-  font-size: 0.96rem;
+  font-size: 0.98rem;
 }
 
 .director-note span {
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
-/* ОБНОВЛЕННЫЙ ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" С АНИМАЦИЕЙ И РАДАРНЫМ БЕЙДЖЕМ */
+/* ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" С АНИМАЦИЕЙ И РАДАРНЫМ БЕЙДЖЕМ */
 .live-widget {
-  padding: 22px;
-  box-shadow: var(--shadow-md);
-  border: 2px solid #dbeafe;
+  padding: 24px 22px;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid #bfdbfe;
   position: relative;
   overflow: hidden;
 }
@@ -418,8 +482,8 @@ img {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #1e40af, #22c55e, #fbbf24);
+  height: 5px;
+  background: linear-gradient(90deg, #1e40af, #16a34a, #f59e0b);
 }
 
 .widget-header {
@@ -433,13 +497,12 @@ img {
   flex-wrap: wrap;
 }
 
-/* Проработанный бейдж Живая информация */
 .live-badge-capsule {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #86efac;
   padding: 5px 12px;
   border-radius: 999px;
 }
@@ -478,24 +541,25 @@ img {
     opacity: 0.8;
   }
   75%, 100% {
-    transform: scale(2.4);
+    transform: scale(2.5);
     opacity: 0;
   }
 }
 
 .live-badge-tag {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: #ffffff;
   background: #16a34a;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
 }
 
 .live-badge-capsule h2 {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   color: #14532d;
+  font-weight: 800;
 }
 
 .widget-meta-bar {
@@ -504,14 +568,15 @@ img {
   justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .widget-today-pill {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--primary);
-  background: #eff6ff;
+  background: var(--primary-soft);
+  border: 1px solid #dbeafe;
   padding: 3px 10px;
   border-radius: 6px;
 }
@@ -519,6 +584,7 @@ img {
 .widget-status {
   font-size: 0.78rem;
   color: var(--text-muted);
+  font-weight: 500;
 }
 
 .btn-refresh {
@@ -531,7 +597,7 @@ img {
   background: var(--bg-alt);
   color: var(--text-main);
   font-size: 0.84rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color var(--transition), transform var(--transition);
 }
@@ -558,7 +624,7 @@ img {
   padding: 12px 14px;
   background: var(--bg-alt);
   border-radius: var(--radius-md);
-  border-left: 3px solid #cbd5e1;
+  border-left: 4px solid #94a3b8;
   transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
@@ -575,8 +641,10 @@ img {
 }
 
 .widget-block h3 {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .widget-value {
@@ -587,9 +655,8 @@ img {
   transition: opacity 0.25s ease;
 }
 
-/* Анимация обновления текста внутри виджета */
 .widget-value.is-loading-shimmer {
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .widget-value.flash-updated {
@@ -597,7 +664,7 @@ img {
 }
 
 @keyframes contentPop {
-  0% { opacity: 0.3; transform: translateY(4px); }
+  0% { opacity: 0.25; transform: translateY(4px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
@@ -607,26 +674,27 @@ img {
 }
 
 /* ==========================================================================
-   5. ЦИФРОВОЙ НАВИГАТОР («МОЯ ШКОЛА» / ДНЕВНИК И «УЧИ.РУ» / ЦДЗ / ОЛИМПИАДЫ)
+   5. ПОДРОБНЫЙ ЦИФРОВОЙ НАВИГАТОР (ГОСУСЛУГИ, ДНЕВНИК, УЧИ.РУ)
    ========================================================================== */
 .digital-tabs {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
-  flex-wrap: wrap;
   margin-bottom: 24px;
 }
 
 .digital-tab-btn {
-  padding: 12px 20px;
+  padding: 14px 16px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border);
   background: var(--bg-card);
   color: var(--text-main);
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  line-height: 1.35;
   cursor: pointer;
   transition: all var(--transition);
+  text-align: left;
 }
 
 .digital-tab-btn.active,
@@ -634,11 +702,13 @@ img {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .digital-panel {
-  padding: 28px 24px;
+  padding: 30px 26px;
+  border: 2px solid #dbeafe;
 }
 
 .digital-panel-header {
@@ -648,18 +718,19 @@ img {
   gap: 20px;
   flex-wrap: wrap;
   padding-bottom: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
   border-bottom: 1px solid var(--border);
 }
 
 .digital-panel-header h3 {
   font-size: 1.35rem;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  color: var(--text-main);
 }
 
 .digital-panel-header p {
   color: var(--text-muted);
-  max-width: 680px;
+  max-width: 700px;
 }
 
 .digital-quick-links {
@@ -668,17 +739,27 @@ img {
   flex-wrap: wrap;
 }
 
+.prep-notice {
+  background: #fef3c7;
+  border-left: 4px solid #d97706;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  margin-bottom: 22px;
+  font-size: 0.95rem;
+  color: #78350f;
+}
+
 .steps-guide-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
 }
 
 .guide-step-card {
   background: var(--bg-alt);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 18px 16px;
+  padding: 20px 18px;
 }
 
 .guide-step-num {
@@ -687,27 +768,45 @@ img {
   color: #ffffff;
   font-size: 0.76rem;
   font-weight: 800;
-  padding: 3px 10px;
+  padding: 4px 11px;
   border-radius: 999px;
   margin-bottom: 10px;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .guide-step-card h4 {
-  font-size: 1.02rem;
-  margin-bottom: 8px;
+  font-size: 1.08rem;
+  margin-bottom: 10px;
+  color: var(--text-main);
 }
 
-.guide-step-card p {
-  font-size: 0.9rem;
+.step-sublist {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.92rem;
   color: var(--text-muted);
+}
+
+.step-sublist li strong {
+  color: var(--text-main);
+}
+
+.step-sublist code {
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: var(--primary);
 }
 
 /* ==========================================================================
    6. СЕКЦИИ, ФАКТЫ, ПЕДАГОГИ, ДОСТИЖЕНИЯ И МЕНЮ СТОЛОВОЙ
    ========================================================================== */
 .section {
-  padding: 60px 0;
+  padding: 64px 0;
 }
 
 .section-alt {
@@ -717,17 +816,17 @@ img {
 .section-header {
   text-align: center;
   max-width: 760px;
-  margin: 0 auto 36px;
+  margin: 0 auto 38px;
 }
 
 .section-title {
-  font-size: clamp(1.45rem, 2.5vw, 2.05rem);
+  font-size: clamp(1.5rem, 2.5vw, 2.1rem);
   margin-bottom: 10px;
 }
 
 .section-subtitle {
   color: var(--text-muted);
-  font-size: 1.02rem;
+  font-size: 1.04rem;
 }
 
 .facts-grid,
@@ -740,12 +839,12 @@ img {
 }
 
 .fact-card {
-  padding: 26px 20px;
+  padding: 28px 22px;
   text-align: center;
 }
 
 .fact-number {
-  font-size: 2.8rem;
+  font-size: 2.9rem;
   font-weight: 800;
   color: var(--primary);
   line-height: 1.1;
@@ -759,7 +858,7 @@ img {
 }
 
 .fact-title {
-  font-size: 1.12rem;
+  font-size: 1.14rem;
   margin-bottom: 8px;
 }
 
@@ -777,22 +876,23 @@ img {
 
 .pillar-card {
   padding: 22px 18px;
-  border-top: 3px solid var(--primary);
+  border-top: 4px solid var(--primary);
 }
 
 .pillar-num {
   display: inline-block;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 800;
   color: var(--primary);
   background: #dbeafe;
-  padding: 2px 10px;
+  padding: 3px 10px;
   border-radius: 999px;
   margin-bottom: 10px;
+  text-transform: uppercase;
 }
 
 .pillar-card h3 {
-  font-size: 1.04rem;
+  font-size: 1.05rem;
   margin-bottom: 8px;
 }
 
@@ -810,14 +910,15 @@ img {
 }
 
 .filter-btn {
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-main);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.88rem;
   cursor: pointer;
+  transition: all var(--transition);
 }
 
 .filter-btn.active,
@@ -828,7 +929,7 @@ img {
 }
 
 .teacher-card {
-  padding: 24px 18px;
+  padding: 26px 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -899,25 +1000,27 @@ img {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  background: var(--primary);
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
   color: #ffffff;
-  padding: 30px 20px;
+  padding: 32px 22px;
   border-radius: var(--radius-lg);
   margin-bottom: 38px;
   text-align: center;
+  box-shadow: var(--shadow-md);
 }
 
 .stat-val {
   display: block;
-  font-size: 2.3rem;
+  font-size: 2.4rem;
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 6px;
+  color: #fbbf24;
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  opacity: 0.92;
+  font-size: 0.92rem;
+  opacity: 0.95;
 }
 
 .subsection-title {
@@ -929,7 +1032,7 @@ img {
 .success-card {
   border-top: 4px solid var(--primary);
   border-radius: var(--radius-md);
-  padding: 22px;
+  padding: 24px 22px;
 }
 
 .success-tag {
@@ -960,7 +1063,7 @@ img {
 }
 
 .info-box {
-  padding: 26px 24px;
+  padding: 28px 24px;
 }
 
 .info-box-header {
@@ -971,13 +1074,13 @@ img {
 }
 
 .info-icon {
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   flex-shrink: 0;
 }
 
 .info-box p {
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .info-list {
@@ -989,20 +1092,22 @@ img {
   gap: 8px;
 }
 
-/* Живое меню столовой из Строки 3 таблицы */
 .live-menu-box {
   background: var(--bg-alt);
   border: 1px solid var(--border);
+  border-left: 4px solid var(--success);
   border-radius: var(--radius-md);
-  padding: 14px;
-  margin-top: 12px;
+  padding: 16px;
+  margin-top: 14px;
 }
 
 .live-menu-title {
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 800;
+  font-size: 0.92rem;
   margin-bottom: 10px;
-  color: var(--primary);
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .live-menu-grid {
@@ -1017,6 +1122,7 @@ img {
 
 .menu-slot-label {
   font-weight: 700;
+  color: var(--text-main);
   margin-right: 6px;
 }
 
@@ -1033,6 +1139,11 @@ img {
 .gallery-item {
   border-radius: var(--radius-md);
   overflow: hidden;
+  transition: transform var(--transition);
+}
+
+.gallery-item:hover {
+  transform: translateY(-3px);
 }
 
 .gallery-img {
@@ -1050,7 +1161,7 @@ img {
 
 .contact-card {
   border-radius: var(--radius-md);
-  padding: 22px 18px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1059,11 +1170,12 @@ img {
 .contact-label {
   font-size: 0.86rem;
   color: var(--text-muted);
+  font-weight: 600;
 }
 
 .contact-value {
-  font-size: 1.02rem;
-  font-weight: 700;
+  font-size: 1.04rem;
+  font-weight: 800;
   color: var(--text-main);
   overflow-wrap: anywhere;
 }
@@ -1074,42 +1186,115 @@ img {
   overflow-wrap: anywhere;
 }
 
+/* ==========================================================================
+   7. НОВЫЙ ВДОХНОВЛЯЮЩИЙ БЛОК "ОТКРЫТЫЙ ДИАЛОГ СО ШКОЛОЙ" (CTA)
+   ========================================================================== */
 .cta-section {
-  padding: 44px 0 64px;
+  padding: 56px 0 72px;
 }
 
 .cta-card {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 55%, #1d4ed8 100%);
   color: #ffffff;
-  border-radius: var(--radius-lg);
-  padding: 44px 24px;
+  border-radius: var(--radius-xl);
+  padding: 48px 36px;
   text-align: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-eyebrow {
+  display: inline-block;
+  background: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: 14px;
 }
 
 .cta-title {
-  font-size: clamp(1.4rem, 2.6vw, 2.05rem);
+  font-size: clamp(1.55rem, 2.8vw, 2.2rem);
   margin-bottom: 12px;
 }
 
 .cta-text {
-  max-width: 640px;
-  margin: 0 auto 24px;
-  opacity: 0.92;
-  font-size: 1.02rem;
+  max-width: 700px;
+  margin: 0 auto 32px;
+  opacity: 0.94;
+  font-size: 1.05rem;
+}
+
+.cta-reasons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.cta-reason-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-md);
+  padding: 20px 18px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform var(--transition), background-color var(--transition), border-color var(--transition);
+}
+
+.cta-reason-card:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #fbbf24;
+  transform: translateY(-4px);
+  color: #ffffff;
+}
+
+.cta-reason-icon {
+  font-size: 1.75rem;
+  margin-bottom: 4px;
+}
+
+.cta-reason-card strong {
+  font-size: 1.05rem;
+  color: #fef08a;
+}
+
+.cta-reason-card span {
+  font-size: 0.88rem;
+  opacity: 0.9;
+  line-height: 1.45;
+}
+
+.cta-bottom-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .btn-cta {
   background: #fbbf24;
   color: #0f172a;
-  font-size: 1.05rem;
-  padding: 15px 32px;
-  font-weight: 700;
+  font-size: 1.08rem;
+  padding: 16px 36px;
+  font-weight: 800;
+  border-radius: 999px;
 }
 
 .btn-cta:hover {
   background: #f59e0b;
   color: #0f172a;
+}
+
+.cta-security-note {
+  font-size: 0.82rem;
+  opacity: 0.85;
 }
 
 .site-footer {
@@ -1133,7 +1318,7 @@ img {
 }
 
 /* ==========================================================================
-   7. СТРАНИЦА ОБРАТНОЙ СВЯЗИ (FEEDBACK.HTML)
+   8. СТРАНИЦА ОБРАТНОЙ СВЯЗИ (FEEDBACK.HTML) И ВЫБОР ТЕМЫ
    ========================================================================== */
 .feedback-main {
   padding: 40px 0 56px;
@@ -1141,7 +1326,7 @@ img {
 }
 
 .feedback-container {
-  max-width: 680px;
+  max-width: 700px;
 }
 
 .page-main-title {
@@ -1165,7 +1350,7 @@ img {
   background: var(--bg-alt);
   color: var(--text-muted);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .step-pill.active {
@@ -1215,13 +1400,40 @@ img {
   font-size: 0.98rem;
 }
 
+.topic-selector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.topic-chip {
+  flex: 1 1 160px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.topic-chip.active,
+.topic-chip:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .form-group {
   margin-bottom: 18px;
 }
 
 .form-label {
   display: block;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 6px;
 }
 
@@ -1274,7 +1486,7 @@ img {
 .consent-confirmed-note {
   font-size: 0.88rem;
   color: var(--success);
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 18px;
 }
 
@@ -1307,7 +1519,7 @@ img {
 }
 
 /* ==========================================================================
-   8. INTERSECTION OBSERVER И ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ (.visually-impaired)
+   9. INTERSECTION OBSERVER И РЕЖИМ ДЛЯ СЛАБОВИДЯЩИХ (.visually-impaired)
    ========================================================================== */
 .reveal {
   opacity: 0;
@@ -1337,6 +1549,18 @@ body.visually-impaired *::after {
   border-color: #ffff00 !important;
   box-shadow: none !important;
   text-shadow: none !important;
+}
+
+/* Верхняя панель и кнопка слабовидящих остаются строго на своих местах */
+body.visually-impaired .utility-inner {
+  flex-wrap: nowrap !important;
+}
+
+body.visually-impaired .btn-a11y {
+  font-size: 0.92rem !important;
+  padding: 7px 14px !important;
+  border: 2px solid #ffff00 !important;
+  outline: 2px solid #ffff00 !important;
 }
 
 body.visually-impaired input,
@@ -1374,16 +1598,17 @@ body.visually-impaired .radar-dot-wrap {
 }
 
 body.visually-impaired .btn,
-body.visually-impaired .btn-a11y,
 body.visually-impaired .btn-refresh,
 body.visually-impaired .filter-btn,
-body.visually-impaired .digital-tab-btn {
+body.visually-impaired .digital-tab-btn,
+body.visually-impaired .topic-chip {
   border: 2px solid #ffff00 !important;
-  font-size: 1.08rem !important;
+  font-size: 1.05rem !important;
 }
 
 body.visually-impaired .filter-btn.active,
-body.visually-impaired .digital-tab-btn.active {
+body.visually-impaired .digital-tab-btn.active,
+body.visually-impaired .topic-chip.active {
   outline: 3px solid #ffff00 !important;
   text-decoration: underline;
 }
@@ -1395,7 +1620,7 @@ body.visually-impaired .reveal {
 }
 
 /* ==========================================================================
-   9. АДАПТИВНОСТЬ (ПЛАНШЕТЫ, МОБИЛЬНЫЕ И IPHONE SE 320PX)
+   10. АДАПТИВНОСТЬ (ПЛАНШЕТЫ, МОБИЛЬНЫЕ И ЭКРАНЫ 320PX)
    ========================================================================== */
 @media (max-width: 992px) {
   .hero-grid,
@@ -1406,28 +1631,47 @@ body.visually-impaired .reveal {
   .teachers-grid,
   .facts-grid,
   .pillars-grid,
+  .digital-tabs,
   .steps-guide-grid,
   .success-grid,
   .contacts-grid,
   .stats-banner,
-  .gallery-grid {
+  .gallery-grid,
+  .cta-reasons-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 680px) {
+  .utility-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .utility-datetime {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .utility-a11y-slot .btn-a11y {
+    width: 100%;
+  }
+
   .teachers-grid,
   .facts-grid,
   .pillars-grid,
+  .digital-tabs,
   .steps-guide-grid,
   .success-grid,
   .contacts-grid,
   .stats-banner,
-  .gallery-grid {
+  .gallery-grid,
+  .cta-reasons-grid {
     grid-template-columns: 1fr;
   }
 
-  .header-inner {
+  .header-main-inner {
     flex-direction: column;
     align-items: stretch;
   }
@@ -1449,8 +1693,6 @@ body.visually-impaired .reveal {
     width: 100%;
   }
 
-  .btn-a11y,
-  .btn-outline-sm,
   .hero-actions .btn,
   .digital-tab-btn,
   .digital-quick-links .btn {
@@ -1459,8 +1701,9 @@ body.visually-impaired .reveal {
   }
 
   .feedback-card,
-  .digital-panel {
-    padding: 20px 16px;
+  .digital-panel,
+  .cta-card {
+    padding: 24px 16px;
   }
 }
 
@@ -1470,7 +1713,7 @@ body.visually-impaired .reveal {
   }
 
   .brand-title {
-    font-size: 0.92rem;
+    font-size: 0.94rem;
   }
 
   .hero-section,
@@ -1496,8 +1739,8 @@ body.visually-impaired .reveal {
 
   .btn,
   .btn-a11y {
-    padding: 10px 12px;
-    font-size: 0.9rem;
+    padding: 9px 12px;
+    font-size: 0.88rem;
   }
 
   body.visually-impaired {
