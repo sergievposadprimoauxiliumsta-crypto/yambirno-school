@@ -1,12 +1,25 @@
 /**
  * Основной скрипт сайта Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»
- * Чистый Vanilla JS (ES6+), без внешних библиотек.
+ * Чистый Vanilla JS (ES6+), без внешних библиотек. Подключается с атрибутом defer.
  */
 
-// 1. КОНСТАНТЫ ИНТЕГРАЦИЙ
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
+
+/**
+ * Санитизация пользовательского ввода (Защита от XSS-инъекций и опасных URI)
+ * Вырезает HTML-теги, опасные спецсимволы и нормализует пробелы.
+ */
+function sanitizeInput(rawString, maxLength = 1000) {
+  if (typeof rawString !== "string") return "";
+  return rawString
+    .replace(/<[^>]*>?/gm, "") // Удаляем любые HTML-теги
+    .replace(/javascript:|data:|vbscript:/gi, "") // Блокируем выполнение URI-скриптов
+    .replace(/[<>"'`\\]/g, "") // Удаляем спецсимволы для предотвращения инъекций атрибутов
+    .trim()
+    .slice(0, maxLength);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   initAccessibilityMode();
@@ -17,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ==========================================================================
-   ЧАСТЬ 4: ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ (С СОХРАНЕНИЕМ СОСТОЯНИЯ)
+   1. ДОСТУПНОСТЬ (A11Y) И ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
    ========================================================================== */
 function initAccessibilityMode() {
   const toggleBtn = document.getElementById("a11y-toggle");
@@ -26,25 +39,37 @@ function initAccessibilityMode() {
   const applyMode = (isEnabled) => {
     document.body.classList.toggle("visually-impaired", isEnabled);
     toggleBtn.setAttribute("aria-pressed", String(isEnabled));
-    const span = toggleBtn.querySelector("span");
-    if (span) {
-      span.textContent = isEnabled ? "Обычная версия сайта" : "Версия для слабовидящих";
+    // Атрибут aria-label всегда остается "Версия для слабовидящих" по стандарту A11y
+    toggleBtn.setAttribute("aria-label", "Версия для слабовидящих");
+
+    const textSpan = toggleBtn.querySelector(".a11y-btn-text");
+    if (textSpan) {
+      textSpan.textContent = isEnabled ? "Обычная версия сайта" : "Версия для слабовидящих";
     }
   };
 
-  // Восстанавливаем выбор пользователя при переходе между страницами
-  const savedState = localStorage.getItem(A11Y_STORAGE_KEY) === "true";
+  let savedState = false;
+  try {
+    savedState = localStorage.getItem(A11Y_STORAGE_KEY) === "true";
+  } catch (_) {
+    savedState = false;
+  }
+
   applyMode(savedState);
 
   toggleBtn.addEventListener("click", () => {
     const nextState = !document.body.classList.contains("visually-impaired");
     applyMode(nextState);
-    localStorage.setItem(A11Y_STORAGE_KEY, String(nextState));
+    try {
+      localStorage.setItem(A11Y_STORAGE_KEY, String(nextState));
+    } catch (_) {
+      // Игнорируем ошибку, если localStorage заблокирован политикой браузера
+    }
   });
 }
 
 /* ==========================================================================
-   ЧАСТЬ 2: ИНТЕГРАЦИЯ С GOOGLE SHEETS (ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ")
+   2. ИНТЕГРАЦИЯ С GOOGLE SHEETS (ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ")
    ========================================================================== */
 function initLiveSheetWidget() {
   const newsEl = document.getElementById("col-news");
@@ -53,12 +78,8 @@ function initLiveSheetWidget() {
   const refreshBtn = document.getElementById("refresh-sheet-btn");
   const statusEl = document.getElementById("widget-status");
 
-  // Если мы на странице feedback.html, виджета нет — выходим
   if (!newsEl || !scheduleEl || !importantEl) return;
 
-  /**
-   * Надежный парсер CSV (корректно обрабатывает запятые и переносы строк внутри кавычек)
-   */
   const parseCSV = (csvText) => {
     const rows = [];
     let currentRow = [];
@@ -111,7 +132,6 @@ function initLiveSheetWidget() {
     }
 
     try {
-      // Добавляем анти-кэш параметр при ручном обновлении
       const urlWithNoCache = `${SHEET_CSV_URL}&_t=${Date.now()}`;
       const response = await fetch(urlWithNoCache, { cache: "no-store" });
 
@@ -126,7 +146,6 @@ function initLiveSheetWidget() {
         throw new Error("Пустой ответ CSV");
       }
 
-      // Проверяем, является ли 1-я строка шапкой таблицы
       const firstRowJoined = rows[0].join(" ").toLowerCase();
       const hasHeader =
         rows.length > 1 &&
@@ -136,23 +155,20 @@ function initLiveSheetWidget() {
 
       const dataRows = hasHeader ? rows.slice(1) : rows;
 
-      // Собираем значения по 3 колонкам
-      const col1Values = dataRows.map((r) => r[0] || "").filter(Boolean);
-      const col2Values = dataRows.map((r) => r[1] || "").filter(Boolean);
-      const col3Values = dataRows.map((r) => r[2] || "").filter(Boolean);
+      const col1Values = dataRows.map((r) => sanitizeInput(r[0] || "", 500)).filter(Boolean);
+      const col2Values = dataRows.map((r) => sanitizeInput(r[1] || "", 500)).filter(Boolean);
+      const col3Values = dataRows.map((r) => sanitizeInput(r[2] || "", 500)).filter(Boolean);
 
+      // Использование textContent гарантирует защиту от XSS при выводе данных из таблицы
       newsEl.textContent = col1Values.length > 0 ? col1Values.join("\n") : "Нет новых объявлений";
       scheduleEl.textContent = col2Values.length > 0 ? col2Values.join("\n") : "Расписание по стандарту";
-      
-      // По ТЗ: Если 3-я колонка пустая — вывести "Желаем хорошего дня!"
       importantEl.textContent = col3Values.length > 0 ? col3Values.join("\n") : "Желаем хорошего дня!";
 
       if (statusEl) {
         const now = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
         statusEl.textContent = `Актуально на ${now}`;
       }
-    } catch (error) {
-      // По ТЗ: Обработка ошибок (если нет интернета — вывести "Информация обновляется")
+    } catch (_) {
       newsEl.textContent = "Информация обновляется";
       scheduleEl.textContent = "Информация обновляется";
       importantEl.textContent = "Информация обновляется";
@@ -175,7 +191,7 @@ function initLiveSheetWidget() {
 }
 
 /* ==========================================================================
-   ЧАСТЬ 3: ДВУХЭТАПНАЯ ФОРМА ОБРАТНОЙ СВЯЗИ И 152-ФЗ (FEEDBACK.HTML)
+   3. ДВУХЭТАПНАЯ ФОРМА ОБРАТНОЙ СВЯЗИ, ЗАЩИТА XSS И 152-ФЗ
    ========================================================================== */
 function initFeedbackForm() {
   const consentStep = document.getElementById("consent-step");
@@ -185,7 +201,8 @@ function initFeedbackForm() {
   const stepInd2 = document.getElementById("step-indicator-2");
 
   const form = document.getElementById("feedback-form");
-  if (!consentStep || !formStep || !acceptBtn || !form) return;
+  const formFieldset = document.getElementById("form-fieldset");
+  if (!consentStep || !formStep || !acceptBtn || !form || !formFieldset) return;
 
   const fioInput = document.getElementById("fio-input");
   const contactInput = document.getElementById("contact-input");
@@ -200,10 +217,22 @@ function initFeedbackForm() {
   const submitLoader = document.getElementById("submit-loader");
   const formResponse = document.getElementById("form-response");
 
-  // Переход от Этапа 1 (Согласие 152-ФЗ) к Этапу 2 (Форма)
+  // Приватный флаг согласия 152-ФЗ (до клика форма заблокирована физически и программно)
+  let isConsentConfirmed = false;
+  formFieldset.disabled = true;
+  submitBtn.disabled = true;
+
+  // Переход с Этапа 1 на Этап 2 только после явного клика пользователя
   acceptBtn.addEventListener("click", () => {
+    isConsentConfirmed = true;
+    formFieldset.disabled = false;
+    submitBtn.disabled = false;
+
     consentStep.classList.add("hidden");
+    consentStep.setAttribute("hidden", "");
+
     formStep.classList.remove("hidden");
+    formStep.removeAttribute("hidden");
     formStep.setAttribute("aria-hidden", "false");
 
     if (stepInd1 && stepInd2) {
@@ -214,17 +243,17 @@ function initFeedbackForm() {
     fioInput.focus();
   });
 
-  // Валидация ФИО: только буквы (рус/лат) и пробелы, минимум 2 слова
+  // Валидация ФИО: только буквы и пробелы, минимум 2 слова
   const validateFio = () => {
-    const raw = fioInput.value.trim().replace(/\s+/g, " ");
-    const onlyLettersAndSpaces = /^[А-Яа-яЁёA-Za-z\s]+$/.test(raw);
-    const words = raw.split(" ").filter((w) => w.length >= 2);
+    const cleanVal = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
+    const onlyLettersAndSpaces = /^[А-Яа-яЁёA-Za-z\s]+$/.test(cleanVal);
+    const words = cleanVal.split(" ").filter((w) => w.length >= 2);
     const isValid = onlyLettersAndSpaces && words.length >= 2;
 
     fioInput.classList.toggle("is-valid", isValid);
-    fioInput.classList.toggle("is-invalid", !isValid && raw.length > 0);
+    fioInput.classList.toggle("is-invalid", !isValid && cleanVal.length > 0);
 
-    if (!isValid && raw.length > 0) {
+    if (!isValid && cleanVal.length > 0) {
       fioHint.textContent = "Введите минимум 2 слова (только буквы и пробелы, без цифр и символов)";
       fioHint.className = "field-hint error-text";
     } else if (isValid) {
@@ -237,18 +266,18 @@ function initFeedbackForm() {
     return isValid;
   };
 
-  // Валидация Контакта: принимает либо телефон, либо Email
+  // Валидация Контакта: телефон или Email
   const validateContact = () => {
-    const val = contactInput.value.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const cleanVal = sanitizeInput(contactInput.value, 100);
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[0-9]{3}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
 
-    const isEmail = emailRegex.test(val);
-    const isPhone = phoneRegex.test(val);
+    const isEmail = emailRegex.test(cleanVal);
+    const isPhone = phoneRegex.test(cleanVal);
     const isValid = isEmail || isPhone;
 
     contactInput.classList.toggle("is-valid", isValid);
-    contactInput.classList.toggle("is-invalid", !isValid && val.length > 0);
+    contactInput.classList.toggle("is-invalid", !isValid && cleanVal.length > 0);
 
     if (isEmail) {
       contactHint.textContent = "✓ Распознан адрес электронной почты (Email)";
@@ -256,8 +285,8 @@ function initFeedbackForm() {
     } else if (isPhone) {
       contactHint.textContent = "✓ Распознан контактный номер телефона";
       contactHint.className = "field-hint valid-text";
-    } else if (val.length > 0) {
-      contactHint.textContent = "Введите корректный телефон (например, +7 900 123-45-67) или Email";
+    } else if (cleanVal.length > 0) {
+      contactHint.textContent = "Введите корректный телефон (+7 900 123-45-67) или Email";
       contactHint.className = "field-hint error-text";
     } else {
       contactHint.textContent = "Укажите действующий номер телефона или адрес электронной почты";
@@ -266,22 +295,22 @@ function initFeedbackForm() {
     return isValid;
   };
 
-  // Валидация Комментария
+  // Валидация текста обращения
   const validateComment = () => {
-    const val = commentInput.value.trim();
-    const isValid = val.length >= 5;
+    const cleanVal = sanitizeInput(commentInput.value, 2000);
+    const isValid = cleanVal.length >= 5;
 
     commentInput.classList.toggle("is-valid", isValid);
-    commentInput.classList.toggle("is-invalid", !isValid && val.length > 0);
+    commentInput.classList.toggle("is-invalid", !isValid && cleanVal.length > 0);
 
-    if (!isValid && val.length > 0) {
+    if (!isValid && cleanVal.length > 0) {
       commentHint.textContent = "Слишком короткое сообщение (минимум 5 символов)";
       commentHint.className = "field-hint error-text";
     } else if (isValid) {
       commentHint.textContent = "✓ Текст обращения заполнен";
       commentHint.className = "field-hint valid-text";
     } else {
-      commentHint.textContent = "Пожалуйста, изложите суть вашего вопроса";
+      commentHint.textContent = "Пожалуйста, изложите суть вашего вопроса (от 5 до 2000 символов)";
       commentHint.className = "field-hint";
     }
     return isValid;
@@ -291,9 +320,15 @@ function initFeedbackForm() {
   contactInput.addEventListener("input", validateContact);
   commentInput.addEventListener("input", validateComment);
 
-  // Отправка формы через fetch POST
+  // Отправка формы
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    // Жесткая блокировка отправки, если согласие 152-ФЗ не было подтверждено
+    if (!isConsentConfirmed || formFieldset.disabled) {
+      return;
+    }
+
     formResponse.classList.add("hidden");
 
     const isFioOk = validateFio();
@@ -307,21 +342,24 @@ function initFeedbackForm() {
       return;
     }
 
-    // Включаем лоадер
+    // Санитизация всех значений перед формированием пакета для отправки
+    const sanitizedFio = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
+    const sanitizedContact = sanitizeInput(contactInput.value, 100);
+    const sanitizedComment = sanitizeInput(commentInput.value, 2000);
+
     submitBtn.disabled = true;
     submitBtnText.textContent = "Отправка обращения...";
     submitLoader.classList.remove("hidden");
 
     const payload = {
-      fio: fioInput.value.trim().replace(/\s+/g, " "),
-      contact: contactInput.value.trim(),
-      comment: commentInput.value.trim(),
+      fio: sanitizedFio,
+      contact: sanitizedContact,
+      comment: sanitizedComment,
       consent152FZ: true,
       timestamp: new Date().toISOString()
     };
 
     try {
-      // Используем text/plain для предотвращения блокировки CORS preflight в Google Apps Script
       const response = await fetch(FEEDBACK_POST_URL, {
         method: "POST",
         headers: {
@@ -342,7 +380,7 @@ function initFeedbackForm() {
       [fioInput, contactInput, commentInput].forEach((el) => {
         el.classList.remove("is-valid", "is-invalid");
       });
-    } catch (error) {
+    } catch (_) {
       formResponse.textContent = "Не удалось отправить обращение. Проверьте подключение к интернету и попробуйте снова.";
       formResponse.className = "form-response error";
       formResponse.classList.remove("hidden");
@@ -355,13 +393,12 @@ function initFeedbackForm() {
 }
 
 /* ==========================================================================
-   ЧАСТЬ 5: UX-ИННОВАЦИИ (INTERSECTION OBSERVER, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ)
+   4. ПЛАВНОЕ ПОЯВЛЕНИЕ ЭЛЕМЕНТОВ, СЧЕТЧИКИ И ФИЛЬТР ПЕДАГОГОВ
    ========================================================================== */
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
   const counters = document.querySelectorAll("[data-target]");
 
-  // Если браузер старый или включен режим для слабовидящих — показываем сразу
   if (!("IntersectionObserver" in window) || document.body.classList.contains("visually-impaired")) {
     revealElements.forEach((el) => el.classList.add("visible"));
     return;
@@ -381,7 +418,6 @@ function initScrollRevealAndCounters() {
 
   revealElements.forEach((el) => revealObserver.observe(el));
 
-  // Анимация числовых показателей
   const animateCounter = (el) => {
     const target = parseFloat(el.getAttribute("data-target"));
     const decimals = parseInt(el.getAttribute("data-decimals") || "0", 10);
