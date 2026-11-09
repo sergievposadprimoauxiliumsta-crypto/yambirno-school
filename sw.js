@@ -1,4 +1,4 @@
-const CACHE_NAME = "yambirno-school-v2";
+const CACHE_NAME = "yambirno-school-v3";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
