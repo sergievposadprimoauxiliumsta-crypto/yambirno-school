@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Официальный сайт</title>
-  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Живое расписание, электронный дневник Моя школа, Учи.ру и обратная связь.">
+  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Живое расписание, подробные инструкции к Госуслугам, электронному дневнику Моя школа и Учи.ру.">
 
   <!-- Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
-  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Живая информация, расписание, инструкции к электронному дневнику и Учи.ру.">
+  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Живая информация, расписание, инструкции для родителей по Дневнику и Учи.ру.">
   <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Ямбирнский+филиал+МОУ+Лесно-Конобеевская+СШ">
 
   <link rel="stylesheet" href="styles.css">
@@ -20,33 +20,52 @@
 
   <a href="#main-content" class="skip-link">Перейти к основному содержанию</a>
 
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ ЖИВОГО ВРЕМЕНИ, ДАТЫ И СТАТУСА ШКОЛЫ -->
-  <div class="top-datetime-bar" role="region" aria-label="Текущая дата и время">
-    <div class="container datetime-inner">
-      <div class="datetime-left">
-        <span class="clock-icon" aria-hidden="true">🗓️</span>
-        <span id="live-date-display">Загрузка даты...</span>
-        <span class="datetime-sep" aria-hidden="true">•</span>
-        <span id="live-time-display" class="live-clock-digits">--:--:--</span>
-      </div>
-      <div class="datetime-right">
-        <span id="school-day-status" class="school-status-pill">Определение режима работы...</span>
+  <!-- 1. ИННОВАЦИОННАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА -->
+  <header class="site-header" id="top">
+    
+    <!-- Верхний смарт-контур: Живая дата, часы, честный статус и ЗАКРЕПЛЕННАЯ кнопка для слабовидящих -->
+    <div class="top-utility-bar" role="region" aria-label="Панель текущего времени и специальных возможностей">
+      <div class="container utility-inner">
+        <div class="utility-datetime">
+          <span class="utility-icon" aria-hidden="true">🗓️</span>
+          <span id="live-date-display" class="utility-date-text">Загрузка даты...</span>
+          <span class="utility-sep" aria-hidden="true">|</span>
+          <span id="live-time-display" class="live-clock-digits" aria-label="Текущее время">--:--:--</span>
+          <span id="school-day-status" class="school-status-pill">Режим работы: Пн–Пт</span>
+        </div>
+
+        <!-- Кнопка жестко закреплена в правом углу верхнего бара и НЕ прыгает при смене шрифта -->
+        <div class="utility-a11y-slot">
+          <button 
+            type="button" 
+            id="a11y-toggle" 
+            class="btn-a11y" 
+            aria-label="Версия для слабовидящих" 
+            aria-pressed="false"
+          >
+            <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span class="a11y-btn-text">Версия для слабовидящих</span>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- 1. ШАПКА (HEADER) -->
-  <header class="site-header" id="top">
-    <div class="container header-inner">
+    <!-- Основной навигационный контур шапки -->
+    <div class="container header-main-inner">
       <a href="index.html" class="brand" aria-label="Ямбирнский филиал МОУ Лесно-Конобеевская СШ — на главную">
+        <!-- Красивая художественная эмблема школы (Книга знаний, солнце и золотой колос) -->
         <img 
-          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cpath d='M40 4 L72 16 V40 C72 58 40 74 40 74 C40 74 8 58 8 40 V16 Z' fill='%231e40af' stroke='%23fbbf24' stroke-width='4'/%3E%3Cpath d='M24 34 L40 26 L56 34 L40 42 Z' fill='%23fbbf24'/%3E%3Cpath d='M28 40 V50 C28 54 52 54 52 50 V40' fill='none' stroke='%23ffffff' stroke-width='3'/%3E%3Ctext x='40' y='65' font-family='sans-serif' font-size='9' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EГЕРБ%3C/text%3E%3C/svg%3E" 
-          alt="Герб Ямбирнского филиала МОУ Лесно-Конобеевская СШ" 
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" 
+          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ" 
           class="logo-img" 
-          width="52" 
-          height="52"
+          width="58" 
+          height="58"
         >
         <div class="brand-text">
+          <span class="brand-sub">Шацкий муниципальный район Рязанской области</span>
           <span class="brand-title">Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</span>
           <span class="brand-motto">Небольшая школа — большие возможности</span>
         </div>
@@ -54,35 +73,22 @@
 
       <nav class="main-nav" aria-label="Основная навигация по сайту">
         <a href="#about" class="nav-link">О школе</a>
-        <a href="#digital-guide" class="nav-link nav-link-accent">Дневник и Учи.ру</a>
+        <a href="#digital-guide" class="nav-link nav-link-accent">📘 Дневник и Учи.ру</a>
         <a href="#teachers" class="nav-link">Педагоги</a>
         <a href="#achievements" class="nav-link">Достижения</a>
-        <a href="#school-life" class="nav-link">Питание и жизнь</a>
+        <a href="#school-life" class="nav-link">Питание и безопасность</a>
         <a href="#contacts" class="nav-link">Контакты</a>
+        <a href="feedback.html" class="nav-cta-btn">Обращение</a>
       </nav>
-
-      <button 
-        type="button" 
-        id="a11y-toggle" 
-        class="btn-a11y" 
-        aria-label="Версия для слабовидящих" 
-        aria-pressed="false"
-      >
-        <svg class="icon-eye" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-          <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-        <span class="a11y-btn-text">Версия для слабовидящих</span>
-      </button>
     </div>
   </header>
 
   <main id="main-content">
-    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO) + ОБНОВЛЕННЫЙ ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" -->
+    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO) + ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" -->
     <section class="hero-section">
       <div class="container hero-grid">
         
-        <!-- Левая колонка -->
+        <!-- Левая колонка: Приветствие (Единственный H1 на странице) -->
         <div class="hero-content reveal">
           <span class="badge">Рязанская область • Шацкий район • с. Ямбирно</span>
           <h1 class="hero-title">Небольшая школа — большие возможности: обучение, воспитание и единство</h1>
@@ -90,8 +96,8 @@
             Рады приветствовать вас в Ямбирнском филиале МОУ «Лесно-Конобеевская средняя школа». Здесь хорошо знают каждого ребёнка, его семью, способности и трудности. Наша цель — чтобы каждый ученик мог сказать: <strong>«Раньше я этого не умел, а теперь у меня получается»</strong>.
           </p>
           <div class="hero-actions">
-            <a href="#digital-guide" class="btn btn-primary">Электронный дневник и Учи.ру</a>
-            <a href="feedback.html" class="btn btn-secondary">Написать обращение</a>
+            <a href="#digital-guide" class="btn btn-primary">Как войти в Дневник и Учи.ру</a>
+            <a href="feedback.html" class="btn btn-secondary">Написать в школу</a>
           </div>
           <div class="director-note">
             <div class="director-avatar-badge" aria-hidden="true">ЕА</div>
@@ -102,7 +108,7 @@
           </div>
         </div>
 
-        <!-- Правая колонка: Проработанный виджет "Живая информация" с анимацией и датой -->
+        <!-- Правая колонка: Виджет "Живая информация" (Берет данные СТРОГО из 2-й строки Google Таблицы) -->
         <aside class="live-widget surface-card reveal" id="live-widget-card" aria-labelledby="live-widget-title">
           <div class="widget-header">
             <div class="live-badge-capsule">
@@ -110,7 +116,7 @@
                 <span class="radar-ping"></span>
                 <span class="radar-core"></span>
               </span>
-              <span class="live-badge-tag">LIVE</span>
+              <span class="live-badge-tag">ОНЛАЙН-ТАБЛО</span>
               <h2 id="live-widget-title">Живая информация</h2>
             </div>
 
@@ -124,9 +130,8 @@
             </button>
           </div>
 
-          <!-- Строка сегодняшней даты и статуса синхронизации внутри виджета -->
           <div class="widget-meta-bar">
-            <span id="widget-today-pill" class="widget-today-pill">Сегодня</span>
+            <span id="widget-today-pill" class="widget-today-pill">📅 Сегодня</span>
             <span id="widget-status" class="widget-status" aria-live="polite">Синхронизация...</span>
           </div>
 
@@ -150,7 +155,7 @@
             <div class="widget-block widget-block-highlight">
               <div class="widget-block-head">
                 <span class="widget-block-icon" aria-hidden="true">⚡</span>
-                <h3>Важные новости</h3>
+                <h3>Важные объявления</h3>
               </div>
               <div id="col-important" class="widget-value is-loading-shimmer">Загрузка данных...</div>
             </div>
@@ -190,25 +195,25 @@
 
         <div class="pillars-grid">
           <article class="pillar-card surface-card reveal">
-            <span class="pillar-num">01</span>
+            <span class="pillar-num">Приоритет 01</span>
             <h3>ИИ и диагностика знаний</h3>
             <p>При подготовке девятиклассников к ОГЭ используются современные ИИ-инструменты для анализа диагностических работ, выявления пробелов и подбора индивидуальных заданий под контролем педагога.</p>
           </article>
 
           <article class="pillar-card surface-card reveal">
-            <span class="pillar-num">02</span>
+            <span class="pillar-num">Приоритет 02</span>
             <h3>Профессиональный рост</h3>
             <p>Руководитель и педагоги систематически проходят курсы повышения квалификации, участвуют в районных методических объединениях и проводят открытые уроки.</p>
           </article>
 
           <article class="pillar-card surface-card reveal">
-            <span class="pillar-num">03</span>
+            <span class="pillar-num">Приоритет 03</span>
             <h3>Успех для каждого ребёнка</h3>
             <p>Мы создаём условия, в которых каждый ученик находит своё призвание: в предметных конкурсах, художественном чтении, спортивной борьбе, хореографии или добровольчестве.</p>
           </article>
 
           <article class="pillar-card surface-card reveal">
-            <span class="pillar-num">04</span>
+            <span class="pillar-num">Приоритет 04</span>
             <h3>Сотрудничество с родителями</h3>
             <p>Открытый диалог с семьями и привлечение спонсорской поддержки позволили провести летний ремонт школы и сделать учебные кабинеты ещё комфортнее и безопаснее.</p>
           </article>
@@ -216,41 +221,110 @@
       </div>
     </section>
 
-    <!-- 4. НОВЫЙ ИНТЕРАКТИВНЫЙ РАЗДЕЛ: ЦИФРОВОЙ НАВИГАТОР («МОЯ ШКОЛА» / ДНЕВНИК И «УЧИ.РУ» / ЦДЗ / ОЛИМПИАДЫ) -->
+    <!-- 4. ПОДРОБНАЯ ПОШАГОВАЯ ШПАРГАЛКА ДЛЯ РОДИТЕЛЕЙ И УЧЕНИКОВ: ГОСУСЛУГИ, ДНЕВНИК, УЧИ.РУ (ЦДЗ И ОЛИМПИАДЫ) -->
     <section id="digital-guide" class="section section-alt">
       <div class="container">
         <div class="section-header reveal">
-          <span class="badge">Цифровая образовательная среда</span>
-          <h2 class="section-title">Электронный дневник «Моя школа» и платформа «Учи.ру»</h2>
-          <p class="section-subtitle">Понятные пошаговые инструкции для учеников и родителей: как войти, где смотреть оценки, как выполнять ЦДЗ и участвовать в олимпиадах</p>
+          <span class="badge">Пошаговая помощь родителям и детям</span>
+          <h2 class="section-title">Школьный цифровой навигатор: просто и понятно</h2>
+          <p class="section-subtitle">Даже если вы редко пользуетесь компьютером или смартфоном — выберите нужную вкладку ниже и просто повторяйте шаги по порядку</p>
         </div>
 
-        <!-- Переключатели вкладок цифрового навигатора -->
-        <div class="digital-tabs reveal" role="tablist" aria-label="Инструкции по цифровым платформам">
-          <button type="button" class="digital-tab-btn active" data-dtab="tab-myschool" role="tab" aria-selected="true">
-            📘 Электронный дневник («Моя школа»)
+        <!-- 4 крупные вкладки-инструкции -->
+        <div class="digital-tabs reveal" role="tablist" aria-label="Подробные инструкции для родителей">
+          <button type="button" class="digital-tab-btn active" data-dtab="tab-gosuslugi" role="tab" aria-selected="true">
+            1. 🇷🇺 Как зарегистрировать Госуслуги (себе и ребёнку)
+          </button>
+          <button type="button" class="digital-tab-btn" data-dtab="tab-diary" role="tab" aria-selected="false">
+            2. 📘 Как войти в Электронный дневник («Моя школа»)
           </button>
           <button type="button" class="digital-tab-btn" data-dtab="tab-uchiru-cdz" role="tab" aria-selected="false">
-            💻 «Учи.ру»: как зайти в ЦДЗ
+            3. 💻 «Учи.ру»: как найти и сделать ЦДЗ
           </button>
           <button type="button" class="digital-tab-btn" data-dtab="tab-uchiru-olymp" role="tab" aria-selected="false">
-            🏆 Олимпиады и марафоны на «Учи.ру»
+            4. 🏆 Олимпиады на «Учи.ру» и дипломы
           </button>
         </div>
 
-        <!-- ВКЛАДКА 1: ФГИС МОЯ ШКОЛА И ЭЛЕКТРОННЫЙ ДНЕВНИК -->
-        <div id="tab-myschool" class="digital-panel active surface-card">
+        <!-- ВКЛАДКА 1: РЕГИСТРАЦИЯ НА ГОСУСЛУГАХ РОДИТЕЛЯ И РЕБЁНКА (С НУЛЯ) -->
+        <div id="tab-gosuslugi" class="digital-panel active surface-card">
           <div class="digital-panel-header">
             <div>
-              <h3>ФГИС «Моя школа» и Электронный дневник (Госуслуги)</h3>
-              <p>С 2023–2026 гг. вход в электронный дневник для родителей и учеников осуществляется исключительно через подтверждённую учётную запись портала <strong>Госуслуги (ЕСИА)</strong>.</p>
+              <h3>Шаг за шагом: регистрация родителя и создание детской учётной записи на Госуслугах</h3>
+              <p>Без подтверждённых Госуслуг сейчас нельзя открыть электронный дневник. Вот самая простая инструкция, как всё настроить один раз с телефона или компьютера.</p>
+            </div>
+            <div class="digital-quick-links">
+              <a href="https://www.gosuslugi.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                Открыть Госуслуги (gosuslugi.ru) ↗
+              </a>
+            </div>
+          </div>
+
+          <div class="detailed-guide-box">
+            <div class="prep-notice">
+              <strong>📋 Что положить перед собой перед началом:</strong> Паспорт родителя, СНИЛС родителя, <strong>Свидетельство о рождении ребёнка</strong> (или паспорт, если ребёнку уже 14 лет) и <strong>СНИЛС ребёнка</strong>.
+            </div>
+
+            <div class="steps-guide-grid">
+              <div class="guide-step-card">
+                <span class="guide-step-num">Этап 1 из 4</span>
+                <h4>Как родителю сделать свои Госуслуги</h4>
+                <ol class="step-sublist">
+                  <li>Зайдите на сайт <strong>gosuslugi.ru</strong> или скачайте на телефон приложение <strong>«Госуслуги»</strong>.</li>
+                  <li>Нажмите <strong>«Зарегистрироваться» → «Онлайн через банк»</strong>.</li>
+                  <li>Если на вашем телефоне есть <strong>СберБанк Онлайн</strong> (или ВТБ / Т-Банк / Почта Банк), войдите в приложение банка, наберите в поиске сверху слово <strong>«Госуслуги»</strong> и нажмите «Регистрация на Госуслугах». Банк сам заполнит ваши данные и сразу сделает запись <strong>подтверждённой</strong>!</li>
+                  <li><em>Если приложения банка нет:</em> обратитесь с паспортом и СНИЛС в ближайшее отделение Почты России или МФЦ — сотрудник бесплатно сделает это за 5 минут.</li>
+                </ol>
+              </div>
+
+              <div class="guide-step-card">
+                <span class="guide-step-num">Этап 2 из 4</span>
+                <h4>Как добавить ребёнка в профиль родителя</h4>
+                <ol class="step-sublist">
+                  <li>Войдите в свои Госуслуги под своим номером телефона и паролем.</li>
+                  <li>Нажмите на своё имя (в правом верхнем углу) и выберите раздел <strong>«Профиль» → «Семья и дети»</strong> (в телефоне: вкладка <strong>«Документы» → «Семья и дети»</strong>).</li>
+                  <li>Нажмите синюю кнопку <strong>«+ Добавить ребёнка»</strong>.</li>
+                  <li>Аккуратно перепишите ФИО, дату рождения, серию и номер <strong>Свидетельства о рождении</strong> и номер <strong>СНИЛС ребёнка</strong>. Нажмите «Сохранить» и дождитесь, пока данные пройдут проверку (обычно от 2 до 15 минут).</li>
+                </ol>
+              </div>
+
+              <div class="guide-step-card">
+                <span class="guide-step-num">Этап 3 из 4</span>
+                <h4>Как создать «Детскую учётную запись»</h4>
+                <ol class="step-sublist">
+                  <li>У ребёнка должна быть своя отдельная кнопка входа в дневник. Для этого нужна <strong>электронная почта ребёнка</strong> (если её нет — создайте бесплатную почту на <em>mail.ru</em> или <em>yandex.ru</em> и запишите её на листок).</li>
+                  <li>В том же разделе Госуслуг <strong>«Семья и дети»</strong> откройте карточку вашего ребёнка, прокрутите чуть ниже до блока <strong>«Учётная запись ребёнка»</strong> и нажмите кнопку <strong>«Создать»</strong>.</li>
+                  <li>Введите электронную почту ребёнка и его телефон (если телефона у ребёнка нет — нажмите «Указать телефон родителя»).</li>
+                  <li>Подтвердите код из СМС и код, который пришёл на почту.</li>
+                </ol>
+              </div>
+
+              <div class="guide-step-card">
+                <span class="guide-step-num">Этап 4 из 4</span>
+                <h4>Придумайте пароль для ребёнка</h4>
+                <ol class="step-sublist">
+                  <li>На почту ребёнка придёт письмо от Госуслуг со ссылкой <strong>«Перейти к созданию пароля»</strong>. Нажмите на неё.</li>
+                  <li>Придумайте надёжный пароль (большие и маленькие латинские буквы, цифры и знак, например: <code>Yambirno_2026!</code>).</li>
+                  <li><strong>Обязательно запишите в блокнот</strong> логин (почту или СНИЛС ребёнка) и этот пароль! Теперь и у вас, и у ребёнка есть полноценный доступ к Электронному дневнику и образовательной платформе «Моя школа».</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ВКЛАДКА 2: КАК ПОЛЬЗОВАТЬСЯ ЭЛЕКТРОННЫМ ДНЕВНИКОМ («МОЯ ШКОЛА» / БАРС) -->
+        <div id="tab-diary" class="digital-panel hidden surface-card">
+          <div class="digital-panel-header">
+            <div>
+              <h3>Как войти в Электронный дневник («Моя школа») и смотреть оценки</h3>
+              <p>В Рязанской области электронный дневник работает через государственную систему ФГИС «Моя школа» и региональный портал электронного образования с единым входом через Госуслуги.</p>
             </div>
             <div class="digital-quick-links">
               <a href="https://myschool.edu.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
                 Войти в ФГИС «Моя школа» ↗
               </a>
-              <a href="https://www.gosuslugi.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
-                Портал Госуслуги ↗
+              <a href="https://e-school.ryazangov.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                Электронный дневник (Рязанская обл.) ↗
               </a>
             </div>
           </div>
@@ -258,40 +332,56 @@
           <div class="steps-guide-grid">
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 1</span>
-              <h4>Проверьте учётную запись Госуслуг</h4>
-              <p>У родителя должна быть <strong>подтверждённая</strong> учётная запись на Госуслугах. В личном кабинете Госуслуг (раздел «Семья и дети») проверьте, что карточка ребёнка добавлена, и создайте для школьника <strong>детскую учётную запись Госуслуг</strong>.</p>
+              <h4>Как зайти родителю</h4>
+              <ol class="step-sublist">
+                <li>Нажмите на синюю кнопку выше («Войти в ФГИС "Моя школа"» или «Электронный дневник Рязанской области»).</li>
+                <li>На открывшейся странице нажмите кнопку <strong>«Войти через Госуслуги (ЕСИА)»</strong>.</li>
+                <li>Введите <strong>свой (родительский)</strong> телефон/СНИЛС и пароль от Госуслуг. Вы сразу увидите дневник своего ребёнка!</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 2</span>
-              <h4>Перейдите в классного помощника</h4>
-              <p>Нажмите синюю кнопку <strong>«Войти в ФГИС "Моя школа"»</strong> выше (или откройте мобильное приложение «Госуслуги Моя школа»). Нажмите кнопку <strong>«Войти через Госуслуги»</strong> и введите свой телефон/СНИЛС и пароль.</p>
+              <h4>Как зайти самому ученику</h4>
+              <ol class="step-sublist">
+                <li>Ученик нажимает ту же кнопку <strong>«Войти через Госуслуги»</strong>.</li>
+                <li>Но вводит <strong>свой детский логин</strong> (СНИЛС ребёнка или детскую почту) и <strong>детский пароль</strong>, который вы создали на предыдущем шаге.</li>
+                <li>Внутри ученик видит своё расписание, домашние задания и учебные материалы.</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 3</span>
-              <h4>Если дневник не открывается</h4>
-              <p>Если при входе появляется ошибка «Пользователь не найден», сообщите классному руководителю или заведующему филиалом Попихиной Е.А. СНИЛС и адрес электронной почты, привязанный к вашим Госуслугам — школа сверит данные в системе.</p>
+              <h4>Какие вкладки нажимать внутри</h4>
+              <ol class="step-sublist">
+                <li><strong>«Дневник» / «Расписание»:</strong> какие уроки будут завтра, в каком кабинете и что задано на дом.</li>
+                <li><strong>«Отметки» / «Успеваемость»:</strong> все текущие оценки по предметам, средний балл и итоговые оценки за четверть.</li>
+                <li><strong>«Библиотека»:</strong> бесплатные проверенные видеоуроки и тесты по всем школьным темам с 1 по 9 класс.</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
-              <span class="guide-step-num">Шаг 4</span>
-              <h4>Что доступно внутри дневника</h4>
-              <p>В разделе <strong>«Дневник»</strong> отображаются расписание уроков на неделю, темы занятий, домашние задания, текущие и четвертные оценки, а в разделе <strong>«Библиотека»</strong> — бесплатные проверенные видеоуроки и тренажёры.</p>
+              <span class="guide-step-num">Шаг 4 (Важно!)</span>
+              <h4>Если пишет «Пользователь не найден»</h4>
+              <ol class="step-sublist">
+                <li>Не пугайтесь! Это значит, что в школьной базе ещё не привязан ваш СНИЛС.</li>
+                <li>Проверьте, что в ваших Госуслугах в разделе «Семья и дети» у ребёнка указан <strong>СНИЛС</strong>.</li>
+                <li>Передайте классному руководителю или заведующему филиалом Попихиной Е.А. СНИЛС родителя и СНИЛС ребёнка — школа внесёт их в систему, и дневник сразу откроется.</li>
+              </ol>
             </div>
           </div>
         </div>
 
-        <!-- ВКЛАДКА 2: УЧИ.РУ И ЦИФРОВОЕ ДОМАШНЕЕ ЗАДАНИЕ (ЦДЗ) -->
+        <!-- ВКЛАДКА 3: ПЛАТФОРМА «УЧИ.РУ» И ВЫПОЛНЕНИЕ ЦДЗ -->
         <div id="tab-uchiru-cdz" class="digital-panel hidden surface-card">
           <div class="digital-panel-header">
             <div>
-              <h3>Как зайти на «Учи.ру» и выполнить ЦДЗ (Цифровое домашнее задание)</h3>
-              <p><strong>ЦДЗ (Цифровое домашнее задание)</strong> — это интерактивные карточки, которые учитель задаёт классу или индивидуально ученику для закрепления темы и подготовки к ВПР/ОГЭ.</p>
+              <h3>Платформа «Учи.ру»: как войти и выполнить ЦДЗ (Цифровое домашнее задание)</h3>
+              <p><strong>ЦДЗ (Цифровое домашнее задание)</strong> — это интересные обучающие карточки с картинками, которые учитель нашей школы отправляет детям для закрепления темы урока.</p>
             </div>
             <div class="digital-quick-links">
               <a href="https://uchi.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                Перейти на Учи.ру ↗
+                Перейти на сайт Учи.ру (uchi.ru) ↗
               </a>
             </div>
           </div>
@@ -299,40 +389,54 @@
           <div class="steps-guide-grid">
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 1</span>
-              <h4>Получите логин и пароль у учителя</h4>
-              <p>Каждый ученик Ямбирнского филиала получает у классного руководителя или учителя-предметника индивидуальный <strong>Логин (ID)</strong> и <strong>Пароль</strong>. Также войти можно в один клик через кнопку «Войти через Госуслуги / Моя школа».</p>
+              <h4>Два способа войти на «Учи.ру»</h4>
+              <ol class="step-sublist">
+                <li><strong>По бумажной памятке от учителя:</strong> откройте сайт <code>uchi.ru</code>, введите <strong>Логин</strong> (только цифры) и <strong>Пароль</strong> (печатные буквы), которые выдал классный руководитель, и нажмите «Войти».</li>
+                <li><strong>Через Госуслуги («Моя школа»):</strong> под полями ввода нажмите синюю кнопку «Войти через Госуслуги» и используйте аккаунт ученика.</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 2</span>
-              <h4>Найдите кнопку «Задания от учителя»</h4>
-              <p>После входа на главную страницу ученика на `uchi.ru` посмотрите в <strong>левое меню</strong> (или в центр экрана) и нажмите на плашку <strong>«Мои задания»</strong> / <strong>«Задания от учителя»</strong> с фиолетовой или оранжевой иконкой.</p>
+              <h4>Где найти кнопку ЦДЗ на экране</h4>
+              <ol class="step-sublist">
+                <li>Сразу после входа на главную страницу ученика найдите яркую кнопку <strong>«Мои задания»</strong> (или <strong>«Задания от учителя»</strong> — на ней нарисована тетрадь с галочкой).</li>
+                <li><em>На компьютере</em> она находится в левом столбике меню и по центру экрана.</li>
+                <li><em>На телефоне</em> нажмите на значок меню (три полоски в углу) или прокрутите экран чуть ниже до блока «Задания от учителя».</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 3</span>
-              <h4>Выполните карточки в срок</h4>
-              <p>Откройте активное задание по нужному предмету (обратите внимание на дату окончания срока!). Решайте интерактивные задачи до тех пор, пока кружок прогресса не станет полностью зелёным (100%).</p>
+              <h4>Как правильно решить карточки</h4>
+              <ol class="step-sublist">
+                <li>Нажмите на нужное задание (например, «Русский язык» или «Математика»). Обратите внимание на <strong>срок сдачи</strong> (до какого числа нужно успеть).</li>
+                <li>Внутри задания вы увидите кружочки («бусинки»). Решайте примеры по очереди: когда кружочек закрасился <strong>зелёным цветом</strong> — задание зачтено!</li>
+                <li>Если ребёнок ошибся — «Учи.ру» не снижает оценку, а даёт подсказку и похожий пример, чтобы ученик сам понял тему.</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 4</span>
-              <h4>Нужно ли отправлять скриншот?</h4>
-              <p><strong>Скриншоты отправлять не нужно!</strong> Как только вы решили все карточки ЦДЗ, оценка и процент выполнения мгновенно появляются в личном кабинете учителя нашей школы.</p>
+              <h4>Как учитель узнает результат</h4>
+              <ol class="step-sublist">
+                <li>Когда все кружочки в задании стали зелёными, на экране появится надпись <strong>«Задание выполнено на 100%!»</strong>.</li>
+                <li><strong>Фотографировать экран и пересылать учителю не нужно!</strong> В ту же секунду в компьютер учителя приходит автоматический отчёт с оценкой ребёнка.</li>
+              </ol>
             </div>
           </div>
         </div>
 
-        <!-- ВКЛАДКА 3: ОЛИМПИАДЫ НА УЧИ.РУ -->
+        <!-- ВКЛАДКА 4: ОЛИМПИАДЫ НА «УЧИ.РУ» И ПОРТФОЛИО -->
         <div id="tab-uchiru-olymp" class="digital-panel hidden surface-card">
           <div class="digital-panel-header">
             <div>
-              <h3>Как участвовать в олимпиадах на «Учи.ру» (100% бесплатно)</h3>
-              <p>Всероссийские онлайн-олимпиады на «Учи.ру» развивают нестандартное мышление, финансовую грамотность, знание ПДД («Безопасные дороги»), экологии и предметов школьной программы.</p>
+              <h3>Как участвовать во Всероссийских олимпиадах на «Учи.ру» (100% бесплатно)</h3>
+              <p>Ученики Ямбирнского филиала регулярно участвуют в бесплатных олимпиадах («Безопасные дороги», «Финансовая грамотность», «Русский язык», «Математика», «Экология») и получают официальные дипломы.</p>
             </div>
             <div class="digital-quick-links">
               <a href="https://uchi.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                Открыть раздел Олимпиад ↗
+                Открыть Олимпиады на Учи.ру ↗
               </a>
             </div>
           </div>
@@ -340,26 +444,40 @@
           <div class="steps-guide-grid">
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 1</span>
-              <h4>Перейдите в раздел «Олимпиады»</h4>
-              <p>Авторизуйтесь под своим школьным аккаунтом на `uchi.ru`. В левой колонке меню выберите пункт <strong>«Олимпиады»</strong> и нажмите на баннер текущего соревнования.</p>
+              <h4>Где находятся олимпиады</h4>
+              <ol class="step-sublist">
+                <li>Войдите в личный кабинет ученика на <code>uchi.ru</code> (по логину и паролю от учителя).</li>
+                <li>В меню слева (или внизу экрана на телефоне) нажмите на раздел <strong>«Олимпиады»</strong> (иконка с кубком 🏆).</li>
+                <li>Вы увидите список всех олимпиад, которые открыты прямо сейчас для вашего класса.</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 2</span>
-              <h4>Сначала пройдите Пробный тур</h4>
-              <p>Если олимпиада разделена на два этапа, рекомендуем начать с <strong>Пробного тура</strong>: баллы за него не влияют на итог, зато ребёнок спокойно разберётся с управлением и механикой задач.</p>
+              <h4>Сначала — «Пробный тур»</h4>
+              <ol class="step-sublist">
+                <li>Нажмите на выбранную олимпиаду. Если вы видите кнопку <strong>«Пробный тур»</strong> — обязательно начните с него!</li>
+                <li>В пробном туре время не ограничено, а ошибки ни на что не влияют. Ребёнок спокойно потренируется двигать предметы на экране и поймёт правила.</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 3</span>
-              <h4>Запустите Основной тур (60 минут)</h4>
-              <p>Выберите спокойное время, когда интернет работает стабильно, и нажмите <strong>«Начать олимпиаду»</strong>. На решение задач основного тура обычно даётся ровно <strong>60 минут</strong>.</p>
+              <h4>Как пройти «Основной тур»</h4>
+              <ol class="step-sublist">
+                <li>Когда ребёнок готов и интернет работает стабильно, нажмите кнопку <strong>«Начать основной тур»</strong>.</li>
+                <li>Включится таймер (обычно даётся ровно <strong>60 минут</strong>). Пройти все задачи нужно за один раз.</li>
+                <li>Пожалуйста, не решайте задачи вместо ребёнка — задания озвучены голосом и рассчитаны именно на детскую смекалку!</li>
+              </ol>
             </div>
 
             <div class="guide-step-card">
               <span class="guide-step-num">Шаг 4</span>
-              <h4>Скачайте диплом в портфолио</h4>
-              <p>После завершения олимпиады в разделе <strong>«Портфолио»</strong> в личном кабинете ученика появится именной Диплом победителя, Похвальная грамота или Сертификат участника, который учитывается в достижениях школы.</p>
+              <h4>Где забрать Диплом или Грамоту</h4>
+              <ol class="step-sublist">
+                <li>Сразу после окончания олимпиады (или на следующий день после подведения итогов) зайдите в раздел <strong>«Портфолио»</strong> в кабинете ученика.</li>
+                <li>Нажмите на полученный <strong>Диплом победителя</strong>, <strong>Похвальную грамоту</strong> или <strong>Сертификат участника</strong> — его можно сохранить на телефон или распечатать в школе.</li>
+              </ol>
             </div>
           </div>
         </div>
@@ -566,34 +684,34 @@
       </div>
     </section>
 
-    <!-- 7. ЖИВОЕ МЕНЮ СТОЛОВОЙ (СТРОКА 3 GOOGLE ТАБЛИЦЫ), БЕЗОПАСНОСТЬ И ШКОЛЬНАЯ ЖИЗНЬ -->
+    <!-- 7. ОРГАНИЗАЦИЯ ПИТАНИЯ (С ЮРИДИЧЕСКИ ЧИСТЫМ ОБОБЩЕННЫМ МЕНЮ), БЕЗОПАСНОСТЬ И ШКОЛЬНАЯ ЖИЗНЬ -->
     <section id="school-life" class="section">
       <div class="container">
         <div class="info-blocks-grid">
-          <!-- Организация питания + Живое меню из 3-й строки таблицы -->
+          <!-- Организация питания (без вымышленных конкретных блюд по умолчанию!) -->
           <article class="info-box surface-card reveal">
             <div class="info-box-header">
               <span class="info-icon" aria-hidden="true">🍎</span>
               <h2>Организация горячего питания</h2>
             </div>
             <p>
-              В Ямбирнском филиале организовано сбалансированное горячее питание (1–4 классы — 100% бесплатно), действует бракеражная комиссия и родительский контроль.
+              В Ямбирнском филиале организовано полноценное горячее питание в соответствии с нормами СанПиН. Обучающиеся 1–4 классов обеспечены бесплатным горячим питанием в полном объёме, осуществляется ежедневный бракераж готовой продукции и родительский контроль.
             </p>
-            <!-- Блок динамического меню из Строки 3 Google Таблицы -->
+            <!-- Блок рациона: если 3-я строка таблицы пуста, выводится строгий обобщённый норматив без конкретных названий блюд -->
             <div class="live-menu-box">
-              <div class="live-menu-title">🍽️ Меню столовой на сегодня (из панели школы):</div>
+              <div class="live-menu-title">🍽️ структура ежедневного горячего рациона:</div>
               <div class="live-menu-grid">
                 <div class="menu-slot">
                   <span class="menu-slot-label">Завтрак:</span>
-                  <span id="menu-breakfast" class="menu-slot-val">Каша молочная, бутерброд с маслом и сыром, какао</span>
+                  <span id="menu-breakfast" class="menu-slot-val">Горячее блюдо, витаминизированный горячий напиток, хлебобулочное/молочное изделие согласно утверждённому 10-дневному цикличному меню.</span>
                 </div>
                 <div class="menu-slot">
                   <span class="menu-slot-label">Обед:</span>
-                  <span id="menu-lunch" class="menu-slot-val">Суп овощной, котлета куриная с пюре, компот из сухофруктов</span>
+                  <span id="menu-lunch" class="menu-slot-val">Первое горячее блюдо, порционное мясное/рыбное блюдо с гарниром, сезонная овощная нарезка/салат, напиток по нормам СанПиН.</span>
                 </div>
                 <div class="menu-slot">
-                  <span class="menu-slot-label">Примечание:</span>
-                  <span id="menu-note" class="menu-slot-val">Витаминизированный стол по СанПиН</span>
+                  <span class="menu-slot-label">Контроль меню:</span>
+                  <span id="menu-note" class="menu-slot-val">Фактическое ежедневное меню заверяется руководителем и размещается на информационном стенде школьной столовой.</span>
                 </div>
               </div>
             </div>
@@ -605,12 +723,12 @@
               <h2>Комплексная безопасность</h2>
             </div>
             <p>
-              Безопасность и комфорт 36 учеников обеспечиваются на всех уровнях:
+              Сохранение здоровья и безопасности каждого из 36 учеников — главный приоритет школы:
             </p>
             <ul class="info-list">
-              <li><strong>Инженерная защита:</strong> контрольно-пропускной режим, автоматическая пожарная сигнализация, система оповещения и тревожная кнопка.</li>
-              <li><strong>Обновлённая школа:</strong> благодаря спонсорской помощи и участию родителей выполнен летний ремонт помещений.</li>
-              <li><strong>Профилактика:</strong> регулярные учебные тренировки по эвакуации, уроки ПДД, пожарной и цифровой безопасности.</li>
+              <li><strong>Инженерная защита:</strong> контрольно-пропускной режим, автоматическая пожарная сигнализация (АПС), система речевого оповещения и кнопка экстренного вызова.</li>
+              <li><strong>Комфортная среда:</strong> при участии спонсоров и родителей проведён летний ремонт учебных кабинетов и помещений филиала.</li>
+              <li><strong>Навыки безопасности:</strong> регулярные учебные тренировки по эвакуации, практические занятия по ПДД, пожарной, антитеррористической и цифровой безопасности.</li>
             </ul>
           </article>
         </div>
@@ -647,7 +765,7 @@
       </div>
     </section>
 
-    <!-- 8. КОНТАКТЫ (РЕАЛЬНЫЕ ДАННЫЕ ИЗ ГОСВЕБ) -->
+    <!-- 8. КОНТАКТЫ (БЕЗ ЛИЧНОГО МОБИЛЬНОГО НОМЕРА РУКОВОДИТЕЛЯ) -->
     <section id="contacts" class="section section-alt">
       <div class="container">
         <div class="section-header reveal">
@@ -659,37 +777,62 @@
           <div class="contact-card surface-card">
             <span class="contact-label">📍 Почтовый адрес филиала</span>
             <strong class="contact-value">391573, Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11</strong>
-            <span class="contact-note">Головное учреждение: с. Лесное Конобеево (МОУ «Лесно-Конобеевская СШ»)</span>
+            <span class="contact-note">Головное учреждение: МОУ «Лесно-Конобеевская СШ» (с. Лесное Конобеево)</span>
           </div>
 
           <div class="contact-card surface-card">
-            <span class="contact-label">📞 Телефоны для связи</span>
+            <span class="contact-label">📞 Официальный телефон</span>
             <a href="tel:+74914726368" class="contact-value">8 (49147) 2-63-68</a>
-            <a href="tel:+79773154853" class="contact-value">+7 (977) 315-48-53</a>
-            <span class="contact-note">Заведующий филиалом: Попихина Елена Александровна</span>
+            <span class="contact-note">Приёмная и администрация • Пн–Пт: с 08:00 до 17:00</span>
           </div>
 
           <div class="contact-card surface-card">
-            <span class="contact-label">✉️ Электронная почта и порталы</span>
+            <span class="contact-label">✉️ Электронная почта и Госвеб</span>
             <a href="mailto:yambirno-school@yandex.ru" class="contact-value">yambirno-school@yandex.ru</a>
             <span class="contact-note">
-              Госвеб: <a href="https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/" target="_blank" rel="noopener noreferrer">sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru</a> •
-              <a href="https://vk.ru/public216706445" target="_blank" rel="noopener noreferrer">ВКонтакте</a>
+              Официальный портал: <a href="https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/" target="_blank" rel="noopener noreferrer">Госвеб школы</a> •
+              <a href="https://vk.ru/public216706445" target="_blank" rel="noopener noreferrer">Сообщество ВКонтакте</a>
             </span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 9. ПРИЗЫВ К ДЕЙСТВИЮ (CTA) -->
+    <!-- 9. НОВЫЙ ВДОХНОВЛЯЮЩИЙ БЛОК ОБРАТНОЙ СВЯЗИ: БЛАГОДАРНОСТЬ / ИДЕЯ / ВОПРОС -->
     <section class="cta-section">
       <div class="container">
         <div class="cta-card reveal">
-          <h2 class="cta-title">Есть вопрос, предложение или отзыв?</h2>
+          <span class="cta-eyebrow">Открытая линия с руководством школы</span>
+          <h2 class="cta-title">Мы ценим каждое ваше слово, идею и отклик!</h2>
           <p class="cta-text">
-            Напишите напрямую администрации Ямбирнского филиала. Обращение мгновенно фиксируется в электронной таблице школы и направляется руководителю филиала в мессенджер MAX.
+            Наша небольшая сельская школа живёт как одна большая семья. Хотите сказать тёплые слова любимому учителю, предложить идею для школьного праздника или задать вопрос руководителю? Выберите повод ниже:
           </p>
-          <a href="feedback.html" class="btn btn-cta">Оставить обращение</a>
+
+          <!-- 3 интерактивные карточки-повода (передают повод в форму на feedback.html) -->
+          <div class="cta-reasons-grid">
+            <a href="feedback.html?topic=thanks" class="cta-reason-card">
+              <span class="cta-reason-icon" aria-hidden="true">❤️</span>
+              <strong>Сказать «Спасибо» педагогу</strong>
+              <span>Выразить благодарность учителю или коллективу школы за заботу о детях</span>
+            </a>
+
+            <a href="feedback.html?topic=idea" class="cta-reason-card">
+              <span class="cta-reason-icon" aria-hidden="true">💡</span>
+              <strong>Предложить идею</strong>
+              <span>Поделиться предложением по кружкам, праздникам или развитию школы</span>
+            </a>
+
+            <a href="feedback.html?topic=question" class="cta-reason-card">
+              <span class="cta-reason-icon" aria-hidden="true">❓</span>
+              <strong>Задать вопрос руководителю</strong>
+              <span>Уточнить расписание, вход в электронный дневник или записаться на встречу</span>
+            </a>
+          </div>
+
+          <div class="cta-bottom-action">
+            <a href="feedback.html" class="btn btn-cta">Перейти к написанию обращения →</a>
+            <span class="cta-security-note">🔒 Защищено по 152-ФЗ • Поступает лично заведующему филиалом Попихиной Е.А.</span>
+          </div>
         </div>
       </div>
     </section>
