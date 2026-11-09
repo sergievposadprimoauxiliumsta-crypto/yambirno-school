@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Официальный сайт</title>
-  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно). Небольшая школа — большие возможности: обучение, воспитание и единство.">
+  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Живое расписание, электронный дневник Моя школа, Учи.ру и обратная связь.">
 
-  <!-- Open Graph разметка для Telegram и ВКонтакте -->
+  <!-- Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
-  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Педагогический коллектив, живое расписание, достижения учеников и электронная приёмная.">
+  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Живая информация, расписание, инструкции к электронному дневнику и Учи.ру.">
   <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Ямбирнский+филиал+МОУ+Лесно-Конобеевская+СШ">
 
   <link rel="stylesheet" href="styles.css">
@@ -18,8 +18,22 @@
 </head>
 <body>
 
-  <!-- Быстрый переход к основному контенту для клавиатурной навигации -->
   <a href="#main-content" class="skip-link">Перейти к основному содержанию</a>
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ ЖИВОГО ВРЕМЕНИ, ДАТЫ И СТАТУСА ШКОЛЫ -->
+  <div class="top-datetime-bar" role="region" aria-label="Текущая дата и время">
+    <div class="container datetime-inner">
+      <div class="datetime-left">
+        <span class="clock-icon" aria-hidden="true">🗓️</span>
+        <span id="live-date-display">Загрузка даты...</span>
+        <span class="datetime-sep" aria-hidden="true">•</span>
+        <span id="live-time-display" class="live-clock-digits">--:--:--</span>
+      </div>
+      <div class="datetime-right">
+        <span id="school-day-status" class="school-status-pill">Определение режима работы...</span>
+      </div>
+    </div>
+  </div>
 
   <!-- 1. ШАПКА (HEADER) -->
   <header class="site-header" id="top">
@@ -40,14 +54,13 @@
 
       <nav class="main-nav" aria-label="Основная навигация по сайту">
         <a href="#about" class="nav-link">О школе</a>
+        <a href="#digital-guide" class="nav-link nav-link-accent">Дневник и Учи.ру</a>
         <a href="#teachers" class="nav-link">Педагоги</a>
         <a href="#achievements" class="nav-link">Достижения</a>
-        <a href="#school-life" class="nav-link">Условия и жизнь</a>
-        <a href="#faq" class="nav-link">Вопросы</a>
+        <a href="#school-life" class="nav-link">Питание и жизнь</a>
         <a href="#contacts" class="nav-link">Контакты</a>
       </nav>
 
-      <!-- Кнопка "Версия для слабовидящих" -->
       <button 
         type="button" 
         id="a11y-toggle" 
@@ -65,37 +78,42 @@
   </header>
 
   <main id="main-content">
-    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO) + ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" -->
+    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO) + ОБНОВЛЕННЫЙ ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" -->
     <section class="hero-section">
       <div class="container hero-grid">
         
-        <!-- Левая колонка: Приветствие (Единственный H1 на странице) -->
+        <!-- Левая колонка -->
         <div class="hero-content reveal">
           <span class="badge">Рязанская область • Шацкий район • с. Ямбирно</span>
           <h1 class="hero-title">Небольшая школа — большие возможности: обучение, воспитание и единство</h1>
           <p class="hero-lead">
-            Рады приветствовать вас в Ямбирнском филиале. Здесь хорошо знают каждого ребёнка, его семью, способности и трудности. Наша цель — чтобы каждый ребёнок мог сказать: <strong>«Раньше я этого не умел, а теперь у меня получается»</strong>.
+            Рады приветствовать вас в Ямбирнском филиале МОУ «Лесно-Конобеевская средняя школа». Здесь хорошо знают каждого ребёнка, его семью, способности и трудности. Наша цель — чтобы каждый ученик мог сказать: <strong>«Раньше я этого не умел, а теперь у меня получается»</strong>.
           </p>
           <div class="hero-actions">
-            <a href="#about" class="btn btn-primary">Узнать о школе</a>
+            <a href="#digital-guide" class="btn btn-primary">Электронный дневник и Учи.ру</a>
             <a href="feedback.html" class="btn btn-secondary">Написать обращение</a>
           </div>
           <div class="director-note">
             <div class="director-avatar-badge" aria-hidden="true">ЕА</div>
             <div class="director-note-text">
               <strong>Попихина Елена Александровна</strong>
-              <span>Заведующий филиалом • личный контроль качества обучения и открытый диалог с семьями</span>
+              <span>Заведующий Ямбирнским филиалом (руководитель школы)</span>
             </div>
           </div>
         </div>
 
-        <!-- Правая колонка: Виджет "Живая информация" (Берет данные СТРОГО из 2-й строки Google Таблицы) -->
-        <aside class="live-widget surface-card reveal" aria-labelledby="live-widget-title">
+        <!-- Правая колонка: Проработанный виджет "Живая информация" с анимацией и датой -->
+        <aside class="live-widget surface-card reveal" id="live-widget-card" aria-labelledby="live-widget-title">
           <div class="widget-header">
-            <div class="widget-title-wrap">
-              <span class="live-dot" aria-hidden="true"></span>
+            <div class="live-badge-capsule">
+              <span class="radar-dot-wrap" aria-hidden="true">
+                <span class="radar-ping"></span>
+                <span class="radar-core"></span>
+              </span>
+              <span class="live-badge-tag">LIVE</span>
               <h2 id="live-widget-title">Живая информация</h2>
             </div>
+
             <button type="button" id="refresh-sheet-btn" class="btn-refresh" aria-label="Обновить данные расписания и новостей">
               <svg class="icon-refresh" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <polyline points="23 4 23 10 17 10"></polyline>
@@ -106,20 +124,35 @@
             </button>
           </div>
 
-          <div id="widget-status" class="widget-status" aria-live="polite">Синхронизация со школьным табло...</div>
+          <!-- Строка сегодняшней даты и статуса синхронизации внутри виджета -->
+          <div class="widget-meta-bar">
+            <span id="widget-today-pill" class="widget-today-pill">Сегодня</span>
+            <span id="widget-status" class="widget-status" aria-live="polite">Синхронизация...</span>
+          </div>
 
           <div class="widget-body" id="widget-content">
             <div class="widget-block">
-              <h3>📰 Новости дня</h3>
-              <div id="col-news" class="widget-value">Загрузка данных...</div>
+              <div class="widget-block-head">
+                <span class="widget-block-icon" aria-hidden="true">📰</span>
+                <h3>Новости дня</h3>
+              </div>
+              <div id="col-news" class="widget-value is-loading-shimmer">Загрузка данных...</div>
             </div>
+
             <div class="widget-block">
-              <h3>🕒 Расписание уроков</h3>
-              <div id="col-schedule" class="widget-value">Загрузка данных...</div>
+              <div class="widget-block-head">
+                <span class="widget-block-icon" aria-hidden="true">🕒</span>
+                <h3>Расписание уроков</h3>
+              </div>
+              <div id="col-schedule" class="widget-value is-loading-shimmer">Загрузка данных...</div>
             </div>
+
             <div class="widget-block widget-block-highlight">
-              <h3>⚡ Важные новости</h3>
-              <div id="col-important" class="widget-value">Загрузка данных...</div>
+              <div class="widget-block-head">
+                <span class="widget-block-icon" aria-hidden="true">⚡</span>
+                <h3>Важные новости</h3>
+              </div>
+              <div id="col-important" class="widget-value is-loading-shimmer">Загрузка данных...</div>
             </div>
           </div>
         </aside>
@@ -127,7 +160,7 @@
       </div>
     </section>
 
-    <!-- 3. О ШКОЛЕ (ФАКТЫ И ПРИОРИТЕТЫ УПРАВЛЕНИЯ) -->
+    <!-- 3. О ШКОЛЕ (ФАКТЫ И ПРИОРИТЕТЫ) -->
     <section id="about" class="section">
       <div class="container">
         <div class="section-header reveal">
@@ -138,61 +171,209 @@
         <div class="facts-grid">
           <article class="fact-card surface-card reveal">
             <div class="fact-number" data-target="36" data-suffix="">36</div>
-            <h3 class="fact-title">Учеников в школе</h3>
-            <p class="fact-text">Камерная атмосфера, где каждый ребёнок на виду. Мы вовремя замечаем динамику развития ученика, поддерживаем таланты и адресно помогаем преодолеть учебные затруднения.</p>
+            <h3 class="fact-title">Учеников в филиале</h3>
+            <p class="fact-text">Небольшой и дружный коллектив, в котором каждый ребёнок на виду, а учителя вовремя замечают успехи и адресно помогают преодолеть трудности.</p>
           </article>
 
           <article class="fact-card surface-card reveal">
             <div class="fact-number" data-target="50" data-suffix="%">50%</div>
             <h3 class="fact-title">Семей с разными культурными традициями</h3>
-            <p class="fact-text">Для многих семей село Ямбирно стало родным уже несколько поколений назад. Мы бережно храним взаимное уважение, семейные обычаи, почитание старших и единство народов России.</p>
+            <p class="fact-text">В семьях сохраняются и передаются детям культурные обычаи и уважение к старшим. Мы учим ребят дружить, уважать семейные традиции одноклассников и помогать друг другу.</p>
           </article>
 
           <article class="fact-card surface-card reveal">
             <div class="fact-icon" aria-hidden="true">🤝</div>
-            <h3 class="fact-title">Учим дружить и отвечать за общее дело</h3>
-            <p class="fact-text">В филиале действует Совет школы. Через совместную учёбу, волонтёрство, творческие выставки и сотрудничество с сельской библиотекой дети учатся работать в команде.</p>
+            <h3 class="fact-title">Школа, семья и село — единое целое</h3>
+            <p class="fact-text">В филиале работает Совет школы. Через совместную учёбу, волонтёрство, творческие выставки и проекты с сельской библиотекой дети учатся отвечать за общее дело.</p>
           </article>
         </div>
 
-        <!-- Профессиональный блок: 4 ключевых приоритета работы школы -->
         <div class="pillars-grid">
           <article class="pillar-card surface-card reveal">
             <span class="pillar-num">01</span>
             <h3>ИИ и диагностика знаний</h3>
-            <p>При подготовке 9-классников к ОГЭ применяются современные цифровые и ИИ-инструменты для анализа диагностических работ, выявления индивидуальных пробелов и подбора разноуровневых заданий под контролем учителя.</p>
+            <p>При подготовке девятиклассников к ОГЭ используются современные ИИ-инструменты для анализа диагностических работ, выявления пробелов и подбора индивидуальных заданий под контролем педагога.</p>
           </article>
 
           <article class="pillar-card surface-card reveal">
             <span class="pillar-num">02</span>
-            <h3>Непрерывное развитие педагогов</h3>
-            <p>Учителя филиала систематически повышают квалификацию, участвуют в районных методических объединениях и обмениваются эффективными педагогическими приёмами на открытых уроках.</p>
+            <h3>Профессиональный рост</h3>
+            <p>Руководитель и педагоги систематически проходят курсы повышения квалификации, участвуют в районных методических объединениях и проводят открытые уроки.</p>
           </article>
 
           <article class="pillar-card surface-card reveal">
             <span class="pillar-num">03</span>
-            <h3>Участие каждого ребёнка</h3>
-            <p>Мы создаём ситуации успеха для детей с разными склонностями: один ученик раскрывается в науке и олимпиадах, другой — в художественном слове и хореографии, третий — в спортивной борьбе или добровольчестве.</p>
+            <h3>Успех для каждого ребёнка</h3>
+            <p>Мы создаём условия, в которых каждый ученик находит своё призвание: в предметных конкурсах, художественном чтении, спортивной борьбе, хореографии или добровольчестве.</p>
           </article>
 
           <article class="pillar-card surface-card reveal">
             <span class="pillar-num">04</span>
-            <h3>Партнёрство с семьями и селом</h3>
-            <p>Школа, родители и спонсоры действуют сообща: от понятных договорённостей по воспитанию и совместного летнего ремонта кабинетов до краеведческих проектов с сельской библиотекой.</p>
+            <h3>Сотрудничество с родителями</h3>
+            <p>Открытый диалог с семьями и привлечение спонсорской поддержки позволили провести летний ремонт школы и сделать учебные кабинеты ещё комфортнее и безопаснее.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- 4. ПЕДАГОГИ (СЕТКА НА 12 КАРТОЧЕК С РЕАЛЬНЫМИ УЧИТЕЛЯМИ ШКОЛЫ) -->
-    <section id="teachers" class="section section-alt">
+    <!-- 4. НОВЫЙ ИНТЕРАКТИВНЫЙ РАЗДЕЛ: ЦИФРОВОЙ НАВИГАТОР («МОЯ ШКОЛА» / ДНЕВНИК И «УЧИ.РУ» / ЦДЗ / ОЛИМПИАДЫ) -->
+    <section id="digital-guide" class="section section-alt">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="badge">Цифровая образовательная среда</span>
+          <h2 class="section-title">Электронный дневник «Моя школа» и платформа «Учи.ру»</h2>
+          <p class="section-subtitle">Понятные пошаговые инструкции для учеников и родителей: как войти, где смотреть оценки, как выполнять ЦДЗ и участвовать в олимпиадах</p>
+        </div>
+
+        <!-- Переключатели вкладок цифрового навигатора -->
+        <div class="digital-tabs reveal" role="tablist" aria-label="Инструкции по цифровым платформам">
+          <button type="button" class="digital-tab-btn active" data-dtab="tab-myschool" role="tab" aria-selected="true">
+            📘 Электронный дневник («Моя школа»)
+          </button>
+          <button type="button" class="digital-tab-btn" data-dtab="tab-uchiru-cdz" role="tab" aria-selected="false">
+            💻 «Учи.ру»: как зайти в ЦДЗ
+          </button>
+          <button type="button" class="digital-tab-btn" data-dtab="tab-uchiru-olymp" role="tab" aria-selected="false">
+            🏆 Олимпиады и марафоны на «Учи.ру»
+          </button>
+        </div>
+
+        <!-- ВКЛАДКА 1: ФГИС МОЯ ШКОЛА И ЭЛЕКТРОННЫЙ ДНЕВНИК -->
+        <div id="tab-myschool" class="digital-panel active surface-card">
+          <div class="digital-panel-header">
+            <div>
+              <h3>ФГИС «Моя школа» и Электронный дневник (Госуслуги)</h3>
+              <p>С 2023–2026 гг. вход в электронный дневник для родителей и учеников осуществляется исключительно через подтверждённую учётную запись портала <strong>Госуслуги (ЕСИА)</strong>.</p>
+            </div>
+            <div class="digital-quick-links">
+              <a href="https://myschool.edu.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                Войти в ФГИС «Моя школа» ↗
+              </a>
+              <a href="https://www.gosuslugi.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                Портал Госуслуги ↗
+              </a>
+            </div>
+          </div>
+
+          <div class="steps-guide-grid">
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 1</span>
+              <h4>Проверьте учётную запись Госуслуг</h4>
+              <p>У родителя должна быть <strong>подтверждённая</strong> учётная запись на Госуслугах. В личном кабинете Госуслуг (раздел «Семья и дети») проверьте, что карточка ребёнка добавлена, и создайте для школьника <strong>детскую учётную запись Госуслуг</strong>.</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 2</span>
+              <h4>Перейдите в классного помощника</h4>
+              <p>Нажмите синюю кнопку <strong>«Войти в ФГИС "Моя школа"»</strong> выше (или откройте мобильное приложение «Госуслуги Моя школа»). Нажмите кнопку <strong>«Войти через Госуслуги»</strong> и введите свой телефон/СНИЛС и пароль.</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 3</span>
+              <h4>Если дневник не открывается</h4>
+              <p>Если при входе появляется ошибка «Пользователь не найден», сообщите классному руководителю или заведующему филиалом Попихиной Е.А. СНИЛС и адрес электронной почты, привязанный к вашим Госуслугам — школа сверит данные в системе.</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 4</span>
+              <h4>Что доступно внутри дневника</h4>
+              <p>В разделе <strong>«Дневник»</strong> отображаются расписание уроков на неделю, темы занятий, домашние задания, текущие и четвертные оценки, а в разделе <strong>«Библиотека»</strong> — бесплатные проверенные видеоуроки и тренажёры.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ВКЛАДКА 2: УЧИ.РУ И ЦИФРОВОЕ ДОМАШНЕЕ ЗАДАНИЕ (ЦДЗ) -->
+        <div id="tab-uchiru-cdz" class="digital-panel hidden surface-card">
+          <div class="digital-panel-header">
+            <div>
+              <h3>Как зайти на «Учи.ру» и выполнить ЦДЗ (Цифровое домашнее задание)</h3>
+              <p><strong>ЦДЗ (Цифровое домашнее задание)</strong> — это интерактивные карточки, которые учитель задаёт классу или индивидуально ученику для закрепления темы и подготовки к ВПР/ОГЭ.</p>
+            </div>
+            <div class="digital-quick-links">
+              <a href="https://uchi.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                Перейти на Учи.ру ↗
+              </a>
+            </div>
+          </div>
+
+          <div class="steps-guide-grid">
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 1</span>
+              <h4>Получите логин и пароль у учителя</h4>
+              <p>Каждый ученик Ямбирнского филиала получает у классного руководителя или учителя-предметника индивидуальный <strong>Логин (ID)</strong> и <strong>Пароль</strong>. Также войти можно в один клик через кнопку «Войти через Госуслуги / Моя школа».</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 2</span>
+              <h4>Найдите кнопку «Задания от учителя»</h4>
+              <p>После входа на главную страницу ученика на `uchi.ru` посмотрите в <strong>левое меню</strong> (или в центр экрана) и нажмите на плашку <strong>«Мои задания»</strong> / <strong>«Задания от учителя»</strong> с фиолетовой или оранжевой иконкой.</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 3</span>
+              <h4>Выполните карточки в срок</h4>
+              <p>Откройте активное задание по нужному предмету (обратите внимание на дату окончания срока!). Решайте интерактивные задачи до тех пор, пока кружок прогресса не станет полностью зелёным (100%).</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 4</span>
+              <h4>Нужно ли отправлять скриншот?</h4>
+              <p><strong>Скриншоты отправлять не нужно!</strong> Как только вы решили все карточки ЦДЗ, оценка и процент выполнения мгновенно появляются в личном кабинете учителя нашей школы.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ВКЛАДКА 3: ОЛИМПИАДЫ НА УЧИ.РУ -->
+        <div id="tab-uchiru-olymp" class="digital-panel hidden surface-card">
+          <div class="digital-panel-header">
+            <div>
+              <h3>Как участвовать в олимпиадах на «Учи.ру» (100% бесплатно)</h3>
+              <p>Всероссийские онлайн-олимпиады на «Учи.ру» развивают нестандартное мышление, финансовую грамотность, знание ПДД («Безопасные дороги»), экологии и предметов школьной программы.</p>
+            </div>
+            <div class="digital-quick-links">
+              <a href="https://uchi.ru/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                Открыть раздел Олимпиад ↗
+              </a>
+            </div>
+          </div>
+
+          <div class="steps-guide-grid">
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 1</span>
+              <h4>Перейдите в раздел «Олимпиады»</h4>
+              <p>Авторизуйтесь под своим школьным аккаунтом на `uchi.ru`. В левой колонке меню выберите пункт <strong>«Олимпиады»</strong> и нажмите на баннер текущего соревнования.</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 2</span>
+              <h4>Сначала пройдите Пробный тур</h4>
+              <p>Если олимпиада разделена на два этапа, рекомендуем начать с <strong>Пробного тура</strong>: баллы за него не влияют на итог, зато ребёнок спокойно разберётся с управлением и механикой задач.</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 3</span>
+              <h4>Запустите Основной тур (60 минут)</h4>
+              <p>Выберите спокойное время, когда интернет работает стабильно, и нажмите <strong>«Начать олимпиаду»</strong>. На решение задач основного тура обычно даётся ровно <strong>60 минут</strong>.</p>
+            </div>
+
+            <div class="guide-step-card">
+              <span class="guide-step-num">Шаг 4</span>
+              <h4>Скачайте диплом в портфолио</h4>
+              <p>После завершения олимпиады в разделе <strong>«Портфолио»</strong> в личном кабинете ученика появится именной Диплом победителя, Похвальная грамота или Сертификат участника, который учитывается в достижениях школы.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ПЕДАГОГИЧЕСКИЙ КОЛЛЕКТИВ (12 КАРТОЧЕК) -->
+    <section id="teachers" class="section">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="section-title">Педагогический коллектив</h2>
-          <p class="section-subtitle">Главная опора Ямбирнского филиала: сплав 49-летнего наставнического опыта и современных образовательных технологий</p>
+          <p class="section-subtitle">Главная опора Ямбирнского филиала: 9 основных педагогов и 3 учителя-совместителя</p>
         </div>
 
-        <!-- Быстрый фильтр карточек -->
         <div class="filter-tabs reveal" role="group" aria-label="Фильтр педагогического состава">
           <button type="button" class="filter-btn active" data-filter="all">Все педагоги (12)</button>
           <button type="button" class="filter-btn" data-filter="main">Основной состав (9)</button>
@@ -200,33 +381,21 @@
         </div>
 
         <div class="teachers-grid" id="teachers-grid">
-          <!-- 1. Попихина Е.А. -->
+          <!-- 1 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e40af' text-anchor='middle'%3EЕА%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Попихина Елена Александровна, заведующий филиалом" 
-                class="teacher-photo"
-                width="96"
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e40af' text-anchor='middle'%3EЕА%3C/text%3E%3C/svg%3E" alt="Аватар: Попихина Елена Александровна, заведующий филиалом" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Руководитель филиала</span>
             <h3 class="teacher-name">Попихина Елена Александровна</h3>
             <p class="teacher-role">Заведующий филиалом, учитель химии и физической культуры</p>
-            <p class="teacher-meta">Внедряет инструменты искусственного интеллекта при подготовке к ОГЭ. За два учебных года прошла 8 курсов повышения квалификации.</p>
+            <p class="teacher-meta">Внедряет инструменты искусственного интеллекта при подготовке к ОГЭ. Прошла 8 программ повышения квалификации за два учебных года.</p>
           </article>
 
-          <!-- 2. Колупаева М.М. -->
+          <!-- 2 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fef3c7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%23b45309' text-anchor='middle'%3EММ%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Колупаева Мария Михайловна, учитель начальных классов" 
-                class="teacher-photo"
-                width="96"
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fef3c7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%23b45309' text-anchor='middle'%3EММ%3C/text%3E%3C/svg%3E" alt="Аватар: Колупаева Мария Михайловна, учитель начальных классов" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge badge-gold">Отличник народного просвещения</span>
             <h3 class="teacher-name">Колупаева Мария Михайловна</h3>
@@ -234,185 +403,125 @@
             <p class="teacher-meta">Стаж в школе — 49 лет. Награждена знаком Губернатора «Доброволец Рязанской области» и Почётной грамотой Минобразования региона.</p>
           </article>
 
-          <!-- 3. Грошева Е.П. -->
+          <!-- 3 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dcfce7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2315803d' text-anchor='middle'%3EЕП%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Грошева Елена Петровна, учитель русского языка и литературы" 
-                class="teacher-photo"
-                width="96"
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dcfce7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2315803d' text-anchor='middle'%3EЕП%3C/text%3E%3C/svg%3E" alt="Аватар: Грошева Елена Петровна, учитель русского языка и литературы" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Благодарность Минпросвещения РФ</span>
             <h3 class="teacher-name">Грошева Елена Петровна</h3>
             <p class="teacher-role">Учитель русского языка и литературы</p>
-            <p class="teacher-meta">Готовит победителей всероссийских конкурсов («Живая классика», «Без срока давности»). Участник регионального этапа «Учитель года».</p>
+            <p class="teacher-meta">Готовит победителей всероссийских конкурсов («Живая классика», «Без срока давности»). Участник региональных этапов «Учитель года».</p>
           </article>
 
-          <!-- 4. Матыкина В.А. -->
+          <!-- 4 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0e7ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233730a3' text-anchor='middle'%3EВА%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Матыкина Валентина Александровна, учитель английского языка" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0e7ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233730a3' text-anchor='middle'%3EВА%3C/text%3E%3C/svg%3E" alt="Аватар: Матыкина Валентина Александровна, учитель английского языка" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Матыкина Валентина Александровна</h3>
             <p class="teacher-role">Учитель английского языка</p>
-            <p class="teacher-meta">Высшая квалификация. Развивает коммуникативную культуру, интерес к языкам и межкультурному диалогу.</p>
+            <p class="teacher-meta">Развивает коммуникативную культуру школьников, интерес к изучению иностранных языков и страноведению.</p>
           </article>
 
-          <!-- 5. Киселёв Н.А. -->
+          <!-- 5 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ccfbf1'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230f766e' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Киселёв Николай Александрович, учитель географии" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ccfbf1'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230f766e' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёв Николай Александрович, учитель географии" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Киселёв Николай Александрович</h3>
             <p class="teacher-role">Учитель географии</p>
-            <p class="teacher-meta">Формирует целостную естественно-научную картину мира, экологическую грамотность и любовь к родному Рязанскому краю.</p>
+            <p class="teacher-meta">Формирует естественно-научную грамотность, навыки работы с картами и бережное отношение к природе Рязанского края.</p>
           </article>
 
-          <!-- 6. Агафонова Л.Н. -->
+          <!-- 6 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fce7f3'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239d174d' text-anchor='middle'%3EЛН%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Агафонова Людмила Николаевна, учитель истории и обществознания" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fce7f3'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239d174d' text-anchor='middle'%3EЛН%3C/text%3E%3C/svg%3E" alt="Аватар: Агафонова Людмила Николаевна, учитель истории и обществознания" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Агафонова Людмила Николаевна</h3>
             <p class="teacher-role">Учитель истории и обществознания</p>
-            <p class="teacher-meta">Курирует историко-патриотическое направление, сохранение семейной памяти и гражданско-правовое воспитание школьников.</p>
+            <p class="teacher-meta">Ведёт историко-патриотическую и краеведческую работу, помогает детям изучать историю своей семьи и родного села.</p>
           </article>
 
-          <!-- 7. Корягина Н.А. -->
+          <!-- 7 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0f2fe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230369a1' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Корягина Нина Алексеевна, учитель математики" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0f2fe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230369a1' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Корягина Нина Алексеевна, учитель математики" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Корягина Нина Алексеевна</h3>
             <p class="teacher-role">Учитель математики</p>
-            <p class="teacher-meta">Системная подготовка учащихся к государственной итоговой аттестации (ОГЭ) и ВПР, развитие логического мышления.</p>
+            <p class="teacher-meta">Обеспечивает фундаментальную математическую подготовку, регулярную диагностику и подготовку выпускников к ОГЭ.</p>
           </article>
 
-          <!-- 8. Киселёва С.Н. -->
+          <!-- 8 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ecfccb'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233f6212' text-anchor='middle'%3EСН%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Киселёва Светлана Николаевна, учитель биологии" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ecfccb'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233f6212' text-anchor='middle'%3EСН%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёва Светлана Николаевна, учитель биологии" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Киселёва Светлана Николаевна</h3>
             <p class="teacher-role">Учитель биологии</p>
-            <p class="teacher-meta">Руководитель учебно-исследовательских проектов учащихся, формирует культуру здоровья и бережного отношения к природе.</p>
+            <p class="teacher-meta">Руководит исследовательскими и экологическими проектами школьников, развивает культуру здорового образа жизни.</p>
           </article>
 
-          <!-- 9. Пителина А.А. -->
+          <!-- 9 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f3e8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%236b21a8' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Пителина Анна Александровна, учитель физики и информатики" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f3e8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%236b21a8' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" alt="Аватар: Пителина Анна Александровна, учитель физики и информатики" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Пителина Анна Александровна</h3>
             <p class="teacher-role">Учитель физики и информатики</p>
-            <p class="teacher-meta">Обучает современным цифровым технологиям, основам программирования, информационной безопасности и физическому эксперименту.</p>
+            <p class="teacher-meta">Обучает цифровой грамотности, работе с образовательными платформами, алгоритмике и законам физики.</p>
           </article>
 
-          <!-- 10. Оглу Л.Ю. (Совместитель 1) -->
+          <!-- 10 -->
           <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ffedd5'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239a3412' text-anchor='middle'%3EЛЮ%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Оглу Лариса Юрьевна, учитель технологии" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ffedd5'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239a3412' text-anchor='middle'%3EЛЮ%3C/text%3E%3C/svg%3E" alt="Аватар: Оглу Лариса Юрьевна, учитель технологии" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">Оглу Лариса Юрьевна</h3>
             <p class="teacher-role">Учитель технологии (труда)</p>
-            <p class="teacher-meta">Развивает прикладные навыки, культуру созидательного труда и готовит школьные выставки декоративно-прикладного творчества.</p>
+            <p class="teacher-meta">Прививает практические навыки созидательного труда, кулинарии, рукоделия и проектного творчества.</p>
           </article>
 
-          <!-- 11. Сидорова Т.Л. (Совместитель 2) -->
+          <!-- 11 -->
           <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fae8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2386198f' text-anchor='middle'%3EТЛ%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Сидорова Татьяна Ласловна, учитель изобразительного искусства" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fae8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2386198f' text-anchor='middle'%3EТЛ%3C/text%3E%3C/svg%3E" alt="Аватар: Сидорова Татьяна Ласловна, учитель ИЗО" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">Сидорова Татьяна Ласловна</h3>
             <p class="teacher-role">Учитель изобразительного искусства</p>
-            <p class="teacher-meta">Раскрывает художественно-эстетический потенциал детей, организует тематические конкурсы рисунков и творческие мастерские.</p>
+            <p class="teacher-meta">Развивает художественный вкус, живописное мастерство и готовит школьные выставки детского рисунка.</p>
           </article>
 
-          <!-- 12. Педагог дополнительного образования / Советник по воспитанию (Совместитель 3) -->
+          <!-- 12 -->
           <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%23334155' text-anchor='middle'%3EДО%3C/text%3E%3C/svg%3E" 
-                alt="Аватар: Педагог внеурочной деятельности и дополнительного образования" 
-                class="teacher-photo" 
-                width="96" 
-                height="96"
-              >
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f1f5f9'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%23334155' text-anchor='middle'%3EДО%3C/text%3E%3C/svg%3E" alt="Аватар: Педагог внеурочной деятельности и дополнительного образования" class="teacher-photo" width="96" height="96">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">Куратор внеурочной деятельности</h3>
             <p class="teacher-role">Педагог дополнительного образования и ОБЗР</p>
-            <p class="teacher-meta">Сопровождает деятельность Совета школы, волонтёрских отрядов, спортивных секций и совместных программ с сельской библиотекой.</p>
+            <p class="teacher-meta">Координирует Совет школы, спортивно-оздоровительные секции и совместные мероприятия с сельской библиотекой.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- 5. ДОСТИЖЕНИЯ -->
-    <section id="achievements" class="section">
+    <!-- 6. ДОСТИЖЕНИЯ -->
+    <section id="achievements" class="section section-alt">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="section-title">Учебные результаты и достижения</h2>
-          <p class="section-subtitle">За каждой цифрой — индивидуальный маршрут ребёнка, поддержка семьи и ежедневный труд учителя</p>
+          <p class="section-subtitle">За каждой цифрой — индивидуальный маршрут ребёнка, поддержка семьи и труд педагогов</p>
         </div>
 
         <div class="stats-banner reveal">
@@ -430,7 +539,7 @@
           </div>
           <div class="stat-item">
             <span class="stat-val" data-target="12" data-suffix="">12</span>
-            <span class="stat-label">призовых мест в конкурсах за год</span>
+            <span class="stat-label">призовых мест в конкурсах</span>
           </div>
         </div>
 
@@ -445,35 +554,49 @@
           <article class="success-card surface-card reveal">
             <div class="success-tag">Спортивная воля и знания</div>
             <h4>Наврозов Азиз</h4>
-            <p>Завоевал <strong>1 место</strong> в Первенстве по <strong>греко-римской борьбе</strong>. Образец дисциплины: завершил учебный год всего с двумя четвёрками, остальные оценки — «отлично».</p>
+            <p>Завоевал <strong>1 место</strong> в Первенстве по <strong>греко-римской борьбе</strong>. Успешно совмещает спорт с учёбой — окончил учебный год всего с двумя четвёрками, остальные «5».</p>
           </article>
 
           <article class="success-card surface-card reveal">
             <div class="success-tag">Хореография и сцена</div>
             <h4>Григорян Айкануш</h4>
-            <p>Призёр престижного регионального конкурса вокального и хореографического искусства <strong>«Артверетено»</strong> (<strong>3 место</strong> в танцевальной номинации).</p>
+            <p>Призёр регионального конкурса вокального и хореографического искусства <strong>«Артверетено»</strong> (<strong>3 место</strong> в номинации «Танцы»).</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- 6. ОРГАНИЗАЦИЯ ПИТАНИЯ, БЕЗОПАСНОСТЬ И ШКОЛЬНАЯ ЖИЗНЬ -->
-    <section id="school-life" class="section section-alt">
+    <!-- 7. ЖИВОЕ МЕНЮ СТОЛОВОЙ (СТРОКА 3 GOOGLE ТАБЛИЦЫ), БЕЗОПАСНОСТЬ И ШКОЛЬНАЯ ЖИЗНЬ -->
+    <section id="school-life" class="section">
       <div class="container">
         <div class="info-blocks-grid">
+          <!-- Организация питания + Живое меню из 3-й строки таблицы -->
           <article class="info-box surface-card reveal">
             <div class="info-box-header">
               <span class="info-icon" aria-hidden="true">🍎</span>
               <h2>Организация горячего питания</h2>
             </div>
             <p>
-              В Ямбирнском филиале организовано полноценное сбалансированное горячее питание, соответствующее нормам СанПиН:
+              В Ямбирнском филиале организовано сбалансированное горячее питание (1–4 классы — 100% бесплатно), действует бракеражная комиссия и родительский контроль.
             </p>
-            <ul class="info-list">
-              <li><strong>100% охват начальной школы:</strong> ученики 1–4 классов обеспечены бесплатным горячим питанием.</li>
-              <li><strong>Тройной контроль качества:</strong> ежедневный мониторинг бракеражной комиссией, проверка температурного режима блюд и открытый родительский контроль.</li>
-              <li><strong>Учёт традиций и здоровья:</strong> цикличное меню, витаминизация блюд и соблюдение питьевого режима в течение всего учебного дня.</li>
-            </ul>
+            <!-- Блок динамического меню из Строки 3 Google Таблицы -->
+            <div class="live-menu-box">
+              <div class="live-menu-title">🍽️ Меню столовой на сегодня (из панели школы):</div>
+              <div class="live-menu-grid">
+                <div class="menu-slot">
+                  <span class="menu-slot-label">Завтрак:</span>
+                  <span id="menu-breakfast" class="menu-slot-val">Каша молочная, бутерброд с маслом и сыром, какао</span>
+                </div>
+                <div class="menu-slot">
+                  <span class="menu-slot-label">Обед:</span>
+                  <span id="menu-lunch" class="menu-slot-val">Суп овощной, котлета куриная с пюре, компот из сухофруктов</span>
+                </div>
+                <div class="menu-slot">
+                  <span class="menu-slot-label">Примечание:</span>
+                  <span id="menu-note" class="menu-slot-val">Витаминизированный стол по СанПиН</span>
+                </div>
+              </div>
+            </div>
           </article>
 
           <article class="info-box surface-card reveal">
@@ -482,122 +605,77 @@
               <h2>Комплексная безопасность</h2>
             </div>
             <p>
-              Сохранение жизни и здоровья каждого из 36 учеников — безусловный приоритет администрации школы:
+              Безопасность и комфорт 36 учеников обеспечиваются на всех уровнях:
             </p>
             <ul class="info-list">
-              <li><strong>Инженерная защита:</strong> контрольно-пропускной режим, автоматическая пожарная сигнализация (АПС), система речевого оповещения и тревожная кнопка.</li>
-              <li><strong>Обновлённая инфраструктура:</strong> при участии спонсоров и родителей проведён летний ремонт учебных помещений.</li>
-              <li><strong>Практическая готовность:</strong> регулярные учебные тренировки по эвакуации, инструктажи по ПДД, пожарной, антитеррористической и цифровой безопасности.</li>
+              <li><strong>Инженерная защита:</strong> контрольно-пропускной режим, автоматическая пожарная сигнализация, система оповещения и тревожная кнопка.</li>
+              <li><strong>Обновлённая школа:</strong> благодаря спонсорской помощи и участию родителей выполнен летний ремонт помещений.</li>
+              <li><strong>Профилактика:</strong> регулярные учебные тренировки по эвакуации, уроки ПДД, пожарной и цифровой безопасности.</li>
             </ul>
           </article>
         </div>
 
-        <!-- Галерея "Школьная жизнь" (4 иллюстрации ключевых направлений) -->
+        <!-- Галерея "Школьная жизнь" -->
         <div class="gallery-wrapper">
           <div class="section-header reveal">
             <h2 class="section-title">Школьная жизнь и традиции</h2>
-            <p class="section-subtitle">Взаимное уважение, совместные праздники, память поколений и поддержка каждого ребёнка</p>
+            <p class="section-subtitle">Уважение, дружба, ответственность и любовь к родному краю</p>
           </div>
 
           <div class="gallery-grid">
             <figure class="gallery-item surface-card reveal">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dbeafe'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%233b82f6' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EЕдинство культур%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%231e40af' text-anchor='middle'%3EФестивали семейных традиций%3C/text%3E%3C/svg%3E" 
-                alt="Иллюстрация: Выставки творчества и фестиваль национальных блюд в школе" 
-                class="gallery-img"
-              >
-              <figcaption>Разные традиции — общие ценности: выставки творчества и фестивали семейной культуры</figcaption>
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dbeafe'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%233b82f6' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EЕдинство культур%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%231e40af' text-anchor='middle'%3EФестивали семейных традиций%3C/text%3E%3C/svg%3E" alt="Иллюстрация: Выставки творчества и фестиваль национальных блюд в школе" class="gallery-img">
+              <figcaption>Разные традиции — общие ценности: выставки творчества и национальных блюд</figcaption>
             </figure>
 
             <figure class="gallery-item surface-card reveal">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dcfce7'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%2322c55e' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%2314532d' text-anchor='middle'%3EОткрытая практика%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%2315803d' text-anchor='middle'%3EИндивидуальный подход на уроке%3C/text%3E%3C/svg%3E" 
-                alt="Иллюстрация: Открытые уроки и индивидуальная работа учителей с учениками" 
-                class="gallery-img"
-              >
-              <figcaption>Современный урок: интерактивные доски, работа над речью и поддержка самостоятельности</figcaption>
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dcfce7'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%2322c55e' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%2314532d' text-anchor='middle'%3EОткрытая практика%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%2315803d' text-anchor='middle'%3EИндивидуальный подход на уроке%3C/text%3E%3C/svg%3E" alt="Иллюстрация: Открытые уроки и индивидуальная работа учителей с учениками" class="gallery-img">
+              <figcaption>Учебные занятия: внимание к каждому ученику и работа с интерактивной доской</figcaption>
             </figure>
 
             <figure class="gallery-item surface-card reveal">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23fef3c7'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%23f59e0b' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%2378350f' text-anchor='middle'%3EПамять и волонтёрство%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%2392400e' text-anchor='middle'%3EБессмертный полк и помощь фронту%3C/text%3E%3C/svg%3E" 
-                alt="Иллюстрация: Шествие Бессмертного полка и волонтёрская мастерская" 
-                class="gallery-img"
-              >
-              <figcaption>Патриотическое воспитание: «Бессмертный полк», краеведение и добровольческие акции</figcaption>
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23fef3c7'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%23f59e0b' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%2378350f' text-anchor='middle'%3EПамять и волонтёрство%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%2392400e' text-anchor='middle'%3EБессмертный полк и помощь фронту%3C/text%3E%3C/svg%3E" alt="Иллюстрация: Шествие Бессмертного полка и волонтёрская мастерская" class="gallery-img">
+              <figcaption>Патриотическое воспитание: «Бессмертный полк» и волонтёрская помощь</figcaption>
             </figure>
 
             <figure class="gallery-item surface-card reveal">
-              <img 
-                src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3e8ff'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%23a855f7' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%23581c87' text-anchor='middle'%3EШкола и семья%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%236b21a8' text-anchor='middle'%3EСпортивные старты и библиотека%3C/text%3E%3C/svg%3E" 
-                alt="Иллюстрация: Совместные спортивные эстафеты родителей и детей, занятия в библиотеке" 
-                class="gallery-img"
-              >
-              <figcaption>Действуем вместе: семейные спортивные турниры и занятия в сельской библиотеке</figcaption>
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3e8ff'/%3E%3Ccircle cx='300' cy='165' r='55' fill='%23a855f7' opacity='0.22'/%3E%3Ctext x='300' y='195' font-family='sans-serif' font-size='22' font-weight='bold' fill='%23581c87' text-anchor='middle'%3EШкола и семья%3C/text%3E%3Ctext x='300' y='230' font-family='sans-serif' font-size='15' fill='%236b21a8' text-anchor='middle'%3EСпортивные старты и библиотека%3C/text%3E%3C/svg%3E" alt="Иллюстрация: Совместные спортивные эстафеты родителей и детей, занятия в библиотеке" class="gallery-img">
+              <figcaption>Школа и семья: совместные спортивные игры и встречи в сельской библиотеке</figcaption>
             </figure>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 7. ИННОВАЦИОННЫЙ БЛОК: ЧАСТЫЕ ВОПРОСЫ РОДИТЕЛЕЙ (FAQ НА ЧИСТОМ HTML5) -->
-    <section id="faq" class="section">
-      <div class="container">
-        <div class="section-header reveal">
-          <h2 class="section-title">Частые вопросы родителей</h2>
-          <p class="section-subtitle">Короткие и понятные ответы о распорядке работы Ямбирнского филиала</p>
-        </div>
-
-        <div class="faq-list reveal">
-          <details class="faq-item surface-card">
-            <summary class="faq-question">Как оперативно узнать об изменениях в расписании уроков?</summary>
-            <div class="faq-answer">
-              Актуальное расписание и объявления дня публикуются на главном экране сайта в блоке «Живая информация». Данные обновляются администрацией школы в режиме реального времени напрямую из школьной панели управления.
-            </div>
-          </details>
-
-          <details class="faq-item surface-card">
-            <summary class="faq-question">Как организована подготовка девятиклассников к сдаче ОГЭ?</summary>
-            <div class="faq-answer">
-              В школе выстроена система регулярной предметной диагностики. Педагоги совместно с заведующим филиалом анализируют тренировочные работы (в том числе с применением алгоритмов ИИ для выявления типичных ошибок) и формируют для каждого ученика индивидуальную подборку заданий с понятными ближайшими целями.
-            </div>
-          </details>
-
-          <details class="faq-item surface-card">
-            <summary class="faq-question">Как записаться на личную встречу с заведующим филиалом или учителем?</summary>
-            <div class="faq-answer">
-              Вы можете оставить электронное обращение через кнопку «Написать обращение» на сайте (указав удобный телефон или Email для связи) либо позвонить по рабочему телефону школы в будние дни с 08:00 до 17:00.
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- 8. КОНТАКТЫ -->
+    <!-- 8. КОНТАКТЫ (РЕАЛЬНЫЕ ДАННЫЕ ИЗ ГОСВЕБ) -->
     <section id="contacts" class="section section-alt">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="section-title">Контактная информация</h2>
-          <p class="section-subtitle">Мы всегда открыты для личного разговора и сотрудничества с семьями наших учеников</p>
+          <p class="section-subtitle">Официальные реквизиты и контакты Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»</p>
         </div>
 
         <div class="contacts-grid reveal">
           <div class="contact-card surface-card">
-            <span class="contact-label">📍 Адрес филиала</span>
-            <strong class="contact-value">391584, Рязанская область, Шацкий район, с. Ямбирно</strong>
-            <span class="contact-note">Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</span>
+            <span class="contact-label">📍 Почтовый адрес филиала</span>
+            <strong class="contact-value">391573, Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11</strong>
+            <span class="contact-note">Головное учреждение: с. Лесное Конобеево (МОУ «Лесно-Конобеевская СШ»)</span>
           </div>
 
           <div class="contact-card surface-card">
-            <span class="contact-label">📞 Телефон приёмной</span>
-            <a href="tel:+74914724110" class="contact-value">+7 (49147) 2-41-10</a>
-            <span class="contact-note">Пн–Пт: с 08:00 до 17:00</span>
+            <span class="contact-label">📞 Телефоны для связи</span>
+            <a href="tel:+74914726368" class="contact-value">8 (49147) 2-63-68</a>
+            <a href="tel:+79773154853" class="contact-value">+7 (977) 315-48-53</a>
+            <span class="contact-note">Заведующий филиалом: Попихина Елена Александровна</span>
           </div>
 
           <div class="contact-card surface-card">
-            <span class="contact-label">✉️ Электронная почта</span>
-            <a href="mailto:yambirno-school@ryazan.gov.ru" class="contact-value">yambirno-school@ryazan.gov.ru</a>
-            <span class="contact-note">Официальные обращения граждан</span>
+            <span class="contact-label">✉️ Электронная почта и порталы</span>
+            <a href="mailto:yambirno-school@yandex.ru" class="contact-value">yambirno-school@yandex.ru</a>
+            <span class="contact-note">
+              Госвеб: <a href="https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/" target="_blank" rel="noopener noreferrer">sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru</a> •
+              <a href="https://vk.ru/public216706445" target="_blank" rel="noopener noreferrer">ВКонтакте</a>
+            </span>
           </div>
         </div>
       </div>
@@ -609,7 +687,7 @@
         <div class="cta-card reveal">
           <h2 class="cta-title">Есть вопрос, предложение или отзыв?</h2>
           <p class="cta-text">
-            Напишите напрямую администрации Ямбирнского филиала. Каждое обращение поступает в защищённый реестр школы и рассматривается руководителем филиала.
+            Напишите напрямую администрации Ямбирнского филиала. Обращение мгновенно фиксируется в электронной таблице школы и направляется руководителю филиала в мессенджер MAX.
           </p>
           <a href="feedback.html" class="btn btn-cta">Оставить обращение</a>
         </div>
@@ -617,10 +695,9 @@
     </section>
   </main>
 
-  <!-- ПОДВАЛ (FOOTER) -->
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Все права защищены.</p>
+      <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11.</p>
       <p>Заведующий филиалом: Попихина Елена Александровна</p>
     </div>
   </footer>
