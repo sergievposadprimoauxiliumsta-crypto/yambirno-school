@@ -59,7 +59,7 @@
   <main id="feedback-main" class="feedback-main">
     <div class="container feedback-container">
       
-      <!-- Единственный заголовок H1 на странице (строгая SEO-иерархия) -->
+      <!-- Единственный заголовок H1 на странице -->
       <h1 class="page-main-title">Обращение в администрацию школы</h1>
 
       <!-- Индикатор шагов -->
@@ -74,20 +74,21 @@
         <div class="law-badge">Федеральный закон № 152-ФЗ</div>
         <h2 id="consent-title" class="feedback-title">Согласие на обработку персональных данных</h2>
         <p class="consent-text">
-          В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», нажимая кнопку, я даю согласие Администрации школы на обработку моих данных (ФИО, телефон/email) для рассмотрения обращения. Согласие действует до момента отзыва.
+          В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», нажимая кнопку ниже, я подтверждаю ознакомление с правилами приёма обращений и даю согласие Администрации школы на обработку моих персональных данных (ФИО, телефон или адрес электронной почты) для рассмотрения обращения и подготовки ответа. Согласие действует до момента его отзыва.
         </p>
         <div class="consent-actions">
+          <!-- Гендерно-нейтральная, официальная формулировка от первого лица -->
           <button type="button" id="accept-consent-btn" class="btn btn-primary btn-full">
-            Ознакомлен и согласен
+            Подтверждаю ознакомление и даю согласие
           </button>
         </div>
       </section>
 
       <!-- ЭТАП 2: СКРЫТЫЙ И ЗАБЛОКИРОВАННЫЙ БЛОК ФОРМЫ (Разблокируется только после согласия) -->
       <section id="form-step" class="feedback-card surface-card hidden" aria-labelledby="form-title" aria-hidden="true" hidden>
-        <h2 id="form-title" class="feedback-title">Анкета обращения</h2>
+        <h2 id="form-title" class="feedback-title">Анкета электронного обращения</h2>
         <p class="feedback-subtitle">
-          Заполните поля ниже. Ваше сообщение поступит руководителю филиала Попихиной Елене Александровне.
+          Заполните поля ниже. Ваше обращение поступит заведующему филиалом Попихиной Елене Александровне.
         </p>
 
         <form id="feedback-form" novalidate autocomplete="on">
@@ -100,16 +101,16 @@
                 id="fio-input" 
                 name="fio" 
                 class="form-control" 
-                placeholder="Например: Иванов Иван Иванович" 
+                placeholder="Например: Попихина Елена Александровна" 
                 maxlength="120"
                 autocomplete="name"
                 required
               >
-              <span id="fio-hint" class="field-hint">Только буквы и пробелы, минимум 2 слова</span>
+              <span id="fio-hint" class="field-hint">Только буквы и пробелы, минимум 2 слова (Фамилия и Имя)</span>
             </div>
 
             <div class="form-group">
-              <label for="contact-input" class="form-label">Контакт для связи (телефон или Email) <span class="req">*</span></label>
+              <label for="contact-input" class="form-label">Контакт для обратной связи (телефон или Email) <span class="req">*</span></label>
               <input 
                 type="text" 
                 id="contact-input" 
@@ -137,12 +138,11 @@
             </div>
 
             <div class="consent-confirmed-note">
-              ✓ Согласие на обработку персональных данных (152-ФЗ) подтверждено
+              ✓ Условия обработки персональных данных (152-ФЗ) приняты
             </div>
 
-            <!-- Кнопка дополнительно имеет атрибут disabled по умолчанию -->
             <button type="submit" id="submit-btn" class="btn btn-primary btn-full" disabled>
-              <span id="submit-btn-text">Отправить</span>
+              <span id="submit-btn-text">Отправить обращение</span>
               <span id="submit-loader" class="spinner hidden" aria-hidden="true"></span>
             </button>
           </fieldset>
