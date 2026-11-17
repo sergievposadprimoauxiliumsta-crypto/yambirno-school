@@ -16,9 +16,15 @@
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
 </head>
-<body>
+<body class="paper-texture">
 
   <a href="#feedback-main" class="skip-link">Перейти к форме обращения</a>
+
+  <!-- ВСПЛЫВАЮЩАЯ КАПСУЛА УВЕДОМЛЕНИЙ (DYNAMIC ISLAND TOAST) -->
+  <div id="dynamic-island-toast" class="dynamic-island" role="status" aria-live="polite" aria-hidden="true">
+    <span class="island-dot" aria-hidden="true"></span>
+    <span id="dynamic-island-text" class="island-text">Готово</span>
+  </div>
 
   <!-- 1. ДВУХУРОВНЕВАЯ ШАПКА С ЗАКРЕПЛЕННОЙ КНОПКОЙ СЛАБОВИДЯЩИХ -->
   <header class="site-header">
@@ -78,15 +84,27 @@
       <!-- Единственный заголовок H1 на странице -->
       <h1 class="page-main-title">Электронное обращение в школу</h1>
 
-      <!-- Индикатор шагов -->
+      <!-- Карточка адресата (Электронный талон приёмной) -->
+      <div class="recipient-ticket surface-card">
+        <div class="director-avatar-badge" aria-hidden="true">ЕА</div>
+        <div class="recipient-ticket-info">
+          <span class="recipient-ticket-label">Прямая линия руководителя филиала</span>
+          <strong>Попихина Елена Александровна</strong>
+          <span>Заведующий Ямбирнским филиалом МОУ «Лесно-Конобеевская СШ»</span>
+        </div>
+      </div>
+
+      <!-- Индикатор шагов с анимированной линией морфинга -->
       <div class="steps-indicator" aria-label="Этапы отправки обращения">
         <div class="step-pill active" id="step-indicator-1">Этап 1. Согласие 152-ФЗ</div>
-        <div class="step-divider" aria-hidden="true">→</div>
+        <div class="steps-progress-track" aria-hidden="true">
+          <div id="steps-progress-bar" class="steps-progress-bar"></div>
+        </div>
         <div class="step-pill" id="step-indicator-2">Этап 2. Ваше сообщение</div>
       </div>
 
       <!-- ЭТАП 1: СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ (152-ФЗ) -->
-      <section id="consent-step" class="feedback-card surface-card" aria-labelledby="consent-title">
+      <section id="consent-step" class="feedback-card surface-card step-transition-card" aria-labelledby="consent-title">
         <div class="law-badge">Федеральный закон № 152-ФЗ</div>
         <h2 id="consent-title" class="feedback-title">Согласие на обработку персональных данных</h2>
         <p class="consent-text">
@@ -99,23 +117,23 @@
         </div>
       </section>
 
-      <!-- ЭТАП 2: СКРЫТЫЙ И ЗАБЛОКИРОВАННЫЙ БЛОК ФОРМЫ -->
-      <section id="form-step" class="feedback-card surface-card hidden" aria-labelledby="form-title" aria-hidden="true" hidden>
+      <!-- ЭТАП 2: СКРЫТЫЙ И ЗАБЛОКИРОВАННЫЙ БЛОК ФОРМЫ С ДИНАМИЧЕСКИМ АКЦЕНТОМ ТЕМЫ -->
+      <section id="form-step" class="feedback-card surface-card step-transition-card topic-theme-question hidden" aria-labelledby="form-title" aria-hidden="true" hidden>
         <h2 id="form-title" class="feedback-title">Напишите ваше обращение, идею или благодарность</h2>
         <p class="feedback-subtitle">
-          Выберите тему и заполните поля ниже. Сообщение поступит заведующему филиалом Попихиной Елене Александровне.
+          Выберите тему и заполните поля ниже. Сообщение регистрируется на защищённом листе «Обращения» и направляется руководителю.
         </p>
 
         <form id="feedback-form" novalidate autocomplete="on">
           <fieldset id="form-fieldset" class="form-fieldset" disabled>
             
-            <!-- Быстрый выбор повода обращения (Благодарность / Идея / Вопрос) -->
+            <!-- Быстрый выбор повода обращения с изменением цветовой темы карточки -->
             <div class="form-group">
               <span class="form-label">Повод обращения:</span>
               <div class="topic-selector" role="group" aria-label="Выберите повод обращения">
-                <button type="button" class="topic-chip active" data-topic-prefix="[Вопрос руководителю] ">❓ Вопрос</button>
-                <button type="button" class="topic-chip" data-topic-prefix="[Благодарность учителю] ">❤️ Благодарность</button>
-                <button type="button" class="topic-chip" data-topic-prefix="[Предложение / Идея] ">💡 Идея / Предложение</button>
+                <button type="button" class="topic-chip active" data-topic-theme="question" data-topic-prefix="[Вопрос руководителю] ">❓ Вопрос</button>
+                <button type="button" class="topic-chip" data-topic-theme="thanks" data-topic-prefix="[Благодарность учителю] ">❤️ Благодарность</button>
+                <button type="button" class="topic-chip" data-topic-theme="idea" data-topic-prefix="[Предложение / Идея] ">💡 Идея / Предложение</button>
               </div>
             </div>
 
@@ -149,7 +167,10 @@
             </div>
 
             <div class="form-group">
-              <label for="comment-input" class="form-label">Текст сообщения <span class="req">*</span></label>
+              <div class="form-label-row">
+                <label for="comment-input" class="form-label">Текст сообщения <span class="req">*</span></label>
+                <span id="comment-char-counter" class="char-counter">0 / 2000</span>
+              </div>
               <textarea 
                 id="comment-input" 
                 name="comment" 
@@ -174,6 +195,35 @@
 
           <div id="form-response" class="form-response hidden" role="status" aria-live="polite"></div>
         </form>
+
+        <!-- ЭЛЕКТРОННАЯ КВИТАНЦИЯ-ПОДТВЕРЖДЕНИЕ (ПОЯВЛЯЕТСЯ ПОСЛЕ УСПЕШНОЙ ОТПРАВКИ) -->
+        <div id="feedback-receipt" class="receipt-box hidden" aria-live="polite">
+          <div class="receipt-header">
+            <span class="receipt-check-icon" aria-hidden="true">✓</span>
+            <div>
+              <h3>Обращение успешно зарегистрировано!</h3>
+              <span id="receipt-meta" class="receipt-meta">Талон № ...</span>
+            </div>
+          </div>
+          <div class="receipt-body">
+            <div class="receipt-row">
+              <span>Заявитель:</span>
+              <strong id="receipt-fio"></strong>
+            </div>
+            <div class="receipt-row">
+              <span>Контакт:</span>
+              <strong id="receipt-contact"></strong>
+            </div>
+            <div class="receipt-row">
+              <span>Текст:</span>
+              <p id="receipt-comment" class="receipt-comment-text"></p>
+            </div>
+          </div>
+          <div class="receipt-actions">
+            <button type="button" id="copy-receipt-btn" class="btn btn-secondary">📋 Скопировать текст для себя</button>
+            <button type="button" id="new-feedback-btn" class="btn btn-primary">Написать ещё одно обращение</button>
+          </div>
+        </div>
       </section>
 
     </div>
