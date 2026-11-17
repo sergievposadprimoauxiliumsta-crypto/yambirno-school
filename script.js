@@ -1,10 +1,11 @@
 /**
  * Основной скрипт сайта Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»
  * Включает:
- * 1) Автоматический прогноз погоды в с. Ямбирно (сейчас + завтра утром к 08:00 с советом про зонтик/одежду)
- * 2) Индивидуальное расписание для каждого класса с 1 по 9 (с сохранением выбранного класса в памяти телефона)
- * 3) Поддержку ссылок на фото из Скриншотера (skrinshoter.ru), Google Диска и GitHub
- * 4) Динамическое создание 13-й, 14-й и последующих карточек учителей из столбцов F–J с защитой от пересечения с расписанием
+ * 1) Автоматическое превращение текста уроков в карточки-строки дневника с иконками, цветами и статусом звонка
+ * 2) Погоду в с. Ямбирно + совет родителям на завтрашнее утро к 08:00
+ * 3) Интерактивную фотогалерею с Lightbox и управлением из Google Таблицы (начиная с ячейки A35)
+ * 4) Динамическое обновление и добавление учителей (F2:J13+) с защитой от пересечения с расписанием
+ * 5) Всплывающую капсулу Dynamic Island, квитанцию обращения на feedback.html и кольцо прогресса чтения
  */
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
@@ -15,7 +16,7 @@ const YAMBIRNO_LON = 41.9708;
 
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v8";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v9";
 
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
@@ -40,6 +41,17 @@ const DAY_NAMES_FULL = {
   5: "Пятница"
 };
 
+// Сетка звонков для подсветки текущего урока ("Идёт сейчас" / "Прошёл")
+const LESSON_BELL_TIMES = {
+  1: { start: "08:30", end: "09:15", startMin: 510, endMin: 555 },
+  2: { start: "09:25", end: "10:10", startMin: 565, endMin: 610 },
+  3: { start: "10:25", end: "11:10", startMin: 625, endMin: 670 },
+  4: { start: "11:25", end: "12:10", startMin: 685, endMin: 730 },
+  5: { start: "12:20", end: "13:05", startMin: 740, endMin: 785 },
+  6: { start: "13:15", end: "14:00", startMin: 795, endMin: 840 },
+  7: { start: "14:10", end: "14:55", startMin: 850, endMin: 895 }
+};
+
 const DEFAULT_SANPIN_BREAKFAST =
   "Горячее блюдо, витаминизированный горячий напиток, хлебобулочное/молочное изделие согласно утверждённому 10-дневному цикличному меню.";
 const DEFAULT_SANPIN_LUNCH =
@@ -49,67 +61,67 @@ const DEFAULT_SANPIN_NOTE =
 
 const DEFAULT_GRADE_SCHEDULES = {
   1: {
-    1: "1. Разговоры о важном\n2. Обучение грамоте\n3. Письмо\n4. Математика",
-    2: "1. Обучение грамоте\n2. Письмо\n3. Математика\n4. Окружающий мир",
-    3: "1. Обучение грамоте\n2. Письмо\n3. Математика\n4. Физкультура",
-    4: "1. Обучение грамоте\n2. Письмо\n3. Музыка\n4. ИЗО",
-    5: "1. Обучение грамоте\n2. Окружающий мир\n3. Труд (технология)\n4. Физкультура"
+    1: "1. Разговоры о важном 2. Обучение грамоте 3. Письмо 4. Математика",
+    2: "1. Обучение грамоте 2. Письмо 3. Математика 4. Окружающий мир",
+    3: "1. Обучение грамоте 2. Письмо 3. Математика 4. Физкультура",
+    4: "1. Обучение грамоте 2. Письмо 3. Музыка 4. ИЗО",
+    5: "1. Обучение грамоте 2. Окружающий мир 3. Труд (технология) 4. Физкультура"
   },
   2: {
-    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. Литературное чтение",
-    2: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Окружающий мир",
-    3: "1. Математика\n2. Русский язык\n3. Литературное чтение\n4. Физкультура",
-    4: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Музыка",
-    5: "1. Русский язык\n2. Литературное чтение\n3. ИЗО\n4. Труд (технология)"
+    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. Литературное чтение",
+    2: "1. Русский язык 2. Математика 3. Английский язык 4. Окружающий мир",
+    3: "1. Математика 2. Русский язык 3. Литературное чтение 4. Физкультура",
+    4: "1. Русский язык 2. Математика 3. Английский язык 4. Музыка",
+    5: "1. Русский язык 2. Литературное чтение 3. ИЗО 4. Труд (технология)"
   },
   3: {
-    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. Литературное чтение",
-    2: "1. Математика\n2. Русский язык\n3. Английский язык\n4. Окружающий мир",
-    3: "1. Русский язык\n2. Математика\n3. Литературное чтение\n4. Физкультура",
-    4: "1. Математика\n2. Русский язык\n3. Английский язык\n4. Музыка",
-    5: "1. Русский язык\n2. Окружающий мир\n3. ИЗО\n4. Труд (технология)"
+    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. Литературное чтение",
+    2: "1. Математика 2. Русский язык 3. Английский язык 4. Окружающий мир",
+    3: "1. Русский язык 2. Математика 3. Литературное чтение 4. Физкультура",
+    4: "1. Математика 2. Русский язык 3. Английский язык 4. Музыка",
+    5: "1. Русский язык 2. Окружающий мир 3. ИЗО 4. Труд (технология)"
   },
   4: {
-    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. Литературное чтение",
-    2: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Окружающий мир",
-    3: "1. Математика\n2. Русский язык\n3. ОРКСЭ\n4. Физкультура",
-    4: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Литературное чтение",
-    5: "1. Русский язык\n2. Окружающий мир\n3. ИЗО\n4. Труд (технология)"
+    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. Литературное чтение",
+    2: "1. Русский язык 2. Математика 3. Английский язык 4. Окружающий мир",
+    3: "1. Математика 2. Русский язык 3. ОРКСЭ 4. Физкультура",
+    4: "1. Русский язык 2. Математика 3. Английский язык 4. Литературное чтение",
+    5: "1. Русский язык 2. Окружающий мир 3. ИЗО 4. Труд (технология)"
   },
   5: {
-    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. История\n5. Биология",
-    2: "1. Математика\n2. Русский язык\n3. Английский язык\n4. Литература\n5. Физкультура",
-    3: "1. Русский язык\n2. Математика\n3. География\n4. Литература\n5. Труд (технология)",
-    4: "1. Математика\n2. Русский язык\n3. История\n4. Английский язык\n5. Музыка",
-    5: "1. Русский язык\n2. Математика\n3. Литература\n4. ИЗО\n5. Физкультура"
+    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. История 5. Биология",
+    2: "1. Математика 2. Русский язык 3. Английский язык 4. Литература 5. Физкультура",
+    3: "1. Русский язык 2. Математика 3. География 4. Литература 5. Труд (технология)",
+    4: "1. Математика 2. Русский язык 3. История 4. Английский язык 5. Музыка",
+    5: "1. Русский язык 2. Математика 3. Литература 4. ИЗО 5. Физкультура"
   },
   6: {
-    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. История\n5. Биология",
-    2: "1. Математика\n2. Русский язык\n3. Английский язык\n4. География\n5. Литература",
-    3: "1. Русский язык\n2. Математика\n3. Обществознание\n4. Литература\n5. Физкультура",
-    4: "1. Математика\n2. Русский язык\n3. История\n4. Английский язык\n5. Труд (технология)",
-    5: "1. Русский язык\n2. Математика\n3. Литература\n4. Музыка / ИЗО\n5. Физкультура"
+    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. История 5. Биология",
+    2: "1. Математика 2. Русский язык 3. Английский язык 4. География 5. Литература",
+    3: "1. Русский язык 2. Математика 3. Обществознание 4. Литература 5. Физкультура",
+    4: "1. Математика 2. Русский язык 3. История 4. Английский язык 5. Труд (технология)",
+    5: "1. Русский язык 2. Математика 3. Литература 4. Музыка / ИЗО 5. Физкультура"
   },
   7: {
-    1: "1. Разговоры о важном\n2. Русский язык\n3. Алгебра\n4. Физика\n5. История",
-    2: "1. Геометрия\n2. Русский язык\n3. Английский язык\n4. География\n5. Биология",
-    3: "1. Алгебра\n2. Русский язык\n3. Литература\n4. Физика\n5. Информатика",
-    4: "1. Геометрия\n2. Русский язык\n3. История\n4. Обществознание\n5. Английский язык",
-    5: "1. Алгебра\n2. Литература\n3. География\n4. Труд (технология)\n5. Физкультура"
+    1: "1. Разговоры о важном 2. Русский язык 3. Алгебра 4. Физика 5. История",
+    2: "1. Геометрия 2. Русский язык 3. Английский язык 4. География 5. Биология",
+    3: "1. Алгебра 2. Русский язык 3. Литература 4. Физика 5. Информатика",
+    4: "1. Геометрия 2. Русский язык 3. История 4. Обществознание 5. Английский язык",
+    5: "1. Алгебра 2. Литература 3. География 4. Труд (технология) 5. Физкультура"
   },
   8: {
-    1: "1. Разговоры о важном\n2. Алгебра\n3. Русский язык\n4. Химия\n5. История\n6. Биология",
-    2: "1. Геометрия\n2. Литература\n3. Английский язык\n4. Физика\n5. География\n6. Физкультура",
-    3: "1. Алгебра\n2. Русский язык\n3. Химия\n4. Обществознание\n5. Информатика\n6. ОБЗР",
-    4: "1. Геометрия\n2. Русский язык\n3. История\n4. Физика\n5. Английский язык\n6. Биология",
-    5: "1. Алгебра\n2. Литература\n3. География\n4. Английский язык\n5. Профориентация\n6. Физкультура"
+    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Химия 5. История 6. Биология",
+    2: "1. Геометрия 2. Литература 3. Английский язык 4. Физика 5. География 6. Физкультура",
+    3: "1. Алгебра 2. Русский язык 4. Химия 4. Обществознание 5. Информатика 6. ОБЗР",
+    4: "1. Геометрия 2. Русский язык 3. История 4. Физика 5. Английский язык 6. Биология",
+    5: "1. Алгебра 2. Литература 3. География 4. Английский язык 5. Профориентация 6. Физкультура"
   },
   9: {
-    1: "1. Разговоры о важном\n2. Алгебра\n3. Русский язык\n4. Физика\n5. История\n6. Химия",
-    2: "1. Геометрия\n2. Литература\n3. Английский язык\n4. Обществознание\n5. Биология\n6. Информатика",
-    3: "1. Алгебра\n2. Русский язык\n3. Химия\n4. География\n5. Физика\n6. Физкультура",
-    4: "1. Геометрия\n2. Русский язык\n3. История\n4. Литература\n5. Английский язык\n6. ОБЗР",
-    5: "1. Алгебра\n2. Литература\n3. Физика\n4. Химия\n5. Биология\n6. Консультация ОГЭ"
+    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Физика 5. История 6. Химия",
+    2: "1. Геометрия 2. Литература 3. Английский язык 4. Обществознание 5. Биология 6. Информатика",
+    3: "1. Алгебра 2. Русский язык 3. Химия 4. География 5. Физика 6. Физкультура",
+    4: "1. Геометрия 2. Русский язык 3. История 4. Литература 5. Английский язык 6. ОБЗР",
+    5: "1. Алгебра 2. Литература 3. Физика 4. Химия 5. Биология 6. Консультация ОГЭ"
   }
 };
 
@@ -117,6 +129,7 @@ let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
 let currentSelectedWeekday = getDefaultSchoolWeekday();
 let currentSelectedGrade = getSavedGradeSelection();
+let toastTimeoutId = null;
 
 function getDefaultSchoolWeekday() {
   const jsDay = new Date().getDay();
@@ -142,6 +155,25 @@ function sanitizeInput(rawString, maxLength = 1000) {
     .slice(0, maxLength);
 }
 
+/**
+ * Показ всплывающей капсулы уведомлений Dynamic Island
+ */
+function showDynamicIslandToast(message) {
+  const toast = document.getElementById("dynamic-island-toast");
+  const textEl = document.getElementById("dynamic-island-text");
+  if (!toast || !textEl) return;
+
+  textEl.textContent = message;
+  toast.setAttribute("aria-hidden", "false");
+  toast.classList.add("show");
+
+  if (toastTimeoutId) clearTimeout(toastTimeoutId);
+  toastTimeoutId = setTimeout(() => {
+    toast.classList.remove("show");
+    toast.setAttribute("aria-hidden", "true");
+  }, 2600);
+}
+
 function buildInitialsSvgDataUri(initials, index = 0) {
   const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
   const safeChars = sanitizeInput(initials, 3).toUpperCase() || "УЧ";
@@ -157,23 +189,16 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
-function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
-  const cleaned = (rawPhotoCell || "").trim();
-  const fallbackSvg = buildInitialsSvgDataUri(extractInitialsFromFio(teacherFio), cardIndex);
-
+function resolveImageLinkSource(rawUrlCell, fallbackSvg) {
+  const cleaned = (rawUrlCell || "").trim();
   if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
-
-  if (/^[А-Яа-яЁёA-Za-z]{1,3}$/.test(cleaned)) {
-    const customSvg = buildInitialsSvgDataUri(cleaned, cardIndex);
-    return { src: customSvg, altTry: null, fallback: customSvg };
-  }
 
   const driveMatch =
     cleaned.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
     cleaned.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (cleaned.includes("drive.google.com") && driveMatch && driveMatch[1]) {
     return {
-      src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w400`,
+      src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w800`,
       altTry: null,
       fallback: fallbackSvg
     };
@@ -184,13 +209,13 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
     if (hasImgExt) {
       return {
         src: cleaned,
-        altTry: `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=300&h=300&fit=cover`,
+        altTry: `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=800`,
         fallback: fallbackSvg
       };
     }
     const cleanNoSlash = cleaned.replace(/\/+$/, "");
     return {
-      src: `https://wsrv.nl/?url=${encodeURIComponent(cleanNoSlash)}&w=300&h=300&fit=cover`,
+      src: `https://wsrv.nl/?url=${encodeURIComponent(cleanNoSlash)}&w=800`,
       altTry: `${cleanNoSlash}.jpg`,
       fallback: fallbackSvg
     };
@@ -203,7 +228,7 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
   if (isSafeUrlOrPath) {
     return {
       src: cleaned,
-      altTry: cleaned.startsWith("http") ? `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=300&h=300&fit=cover` : null,
+      altTry: cleaned.startsWith("http") ? `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=800` : null,
       fallback: fallbackSvg
     };
   }
@@ -211,21 +236,208 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
   return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
 }
 
+function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
+  const cleaned = (rawPhotoCell || "").trim();
+  const fallbackSvg = buildInitialsSvgDataUri(extractInitialsFromFio(teacherFio), cardIndex);
+
+  if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
+
+  if (/^[А-Яа-яЁёA-Za-z]{1,3}$/.test(cleaned)) {
+    const customSvg = buildInitialsSvgDataUri(cleaned, cardIndex);
+    return { src: customSvg, altTry: null, fallback: customSvg };
+  }
+
+  return resolveImageLinkSource(cleaned, fallbackSvg);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  initLiveDateTimeClock();
+  initLiveDateTimeClockAndAmbient();
   initYambirnoWeatherWidget();
   initAccessibilityMode();
   initScrollRevealAndCounters();
   initTeacherFilter();
   initDigitalNavigatorTabs();
   initWeekdayAndGradeSwitchers();
+  initCopyButtons();
+  initGalleryLightbox();
+  initScrollSpyAndProgressRing();
   initLiveSheetWidgetAndMenu();
   initFeedbackForm();
   registerOfflineServiceWorker();
 });
 
 /* ==========================================================================
-   1. ПРОГНОЗ ПОГОДЫ В С. ЯМБИРНО (СЕЙЧАС + ЗАВТРА К 08:00 УТРА С СОВЕТОМ)
+   1. АВТОМАТИЧЕСКОЕ ПРЕВРАЩЕНИЕ ТЕКСТА УРОКОВ В КАРТОЧКИ-СТРОКИ ДНЕВНИКА
+   ========================================================================== */
+function classifyLessonSubject(subjectTitle) {
+  const s = (subjectTitle || "").toLowerCase();
+  if (s.includes("математ") || s.includes("алгебр") || s.includes("геометр") || s.includes("информат") || s.includes("физик") || s.includes("вероятност")) {
+    return { cls: "subj-math", icon: "📐" };
+  }
+  if (s.includes("русск") || s.includes("литерат") || s.includes("чтени") || s.includes("грамот") || s.includes("письм") || s.includes("английск") || s.includes("родной")) {
+    return { cls: "subj-lang", icon: "📖" };
+  }
+  if (s.includes("биолог") || s.includes("хими") || s.includes("географ") || s.includes("окружающ")) {
+    return { cls: "subj-sci", icon: "🌿" };
+  }
+  if (s.includes("истори") || s.includes("обществ") || s.includes("важном") || s.includes("орксэ") || s.includes("профориент")) {
+    return { cls: "subj-hist", icon: "🏛️" };
+  }
+  return { cls: "subj-art", icon: "⚡" };
+}
+
+function parseRawScheduleIntoLessons(rawText) {
+  const cleaned = sanitizeInput(rawText || "", 800);
+  if (!cleaned) return [];
+
+  // Разбиваем по паттерну "1. Предмет 2. Предмет" или по переносам строк
+  const parts = cleaned
+    .replace(/(\d+)\s*[.)]\s*/g, "\n$1. ")
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return parts.map((item, idx) => {
+    const match = item.match(/^(\d+)\.\s*(.+)$/);
+    if (match) {
+      return { num: parseInt(match[1], 10), title: match[2].trim() };
+    }
+    return { num: idx + 1, title: item };
+  });
+}
+
+function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
+  if (!containerEl) return;
+  containerEl.innerHTML = "";
+
+  const lessons = parseRawScheduleIntoLessons(rawScheduleText);
+  if (lessons.length === 0) {
+    containerEl.textContent = "Занятия проводятся согласно основному расписанию уроков";
+    return;
+  }
+
+  const now = new Date();
+  const isTodaySelected = now.getDay() === selectedDayNum;
+  const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
+  lessons.forEach((lessonObj, idx) => {
+    const row = document.createElement("div");
+    const subjMeta = classifyLessonSubject(lessonObj.title);
+    row.className = `diary-lesson-row ${subjMeta.cls}`;
+    row.style.setProperty("--step", String(idx));
+
+    const left = document.createElement("div");
+    left.className = "diary-lesson-left";
+
+    const numBadge = document.createElement("span");
+    numBadge.className = "diary-lesson-num";
+    numBadge.textContent = String(lessonObj.num);
+
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "diary-lesson-icon";
+    iconSpan.setAttribute("aria-hidden", "true");
+    iconSpan.textContent = subjMeta.icon;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "diary-lesson-name";
+    nameSpan.textContent = lessonObj.title;
+
+    left.appendChild(numBadge);
+    left.appendChild(iconSpan);
+    left.appendChild(nameSpan);
+
+    const right = document.createElement("div");
+    right.className = "diary-lesson-right";
+
+    const bell = LESSON_BELL_TIMES[lessonObj.num];
+    if (bell) {
+      if (isTodaySelected && currentTotalMinutes >= bell.startMin && currentTotalMinutes <= bell.endMin) {
+        const livePill = document.createElement("span");
+        livePill.className = "lesson-live-pill";
+        livePill.textContent = "● Идёт сейчас";
+        right.appendChild(livePill);
+      } else if (isTodaySelected && currentTotalMinutes > bell.endMin && currentTotalMinutes < 960) {
+        const donePill = document.createElement("span");
+        donePill.className = "lesson-done-pill";
+        donePill.textContent = "✓ Прошёл";
+        right.appendChild(donePill);
+      }
+
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "diary-lesson-time";
+      timeSpan.textContent = `${bell.start}–${bell.end}`;
+      right.appendChild(timeSpan);
+    }
+
+    row.appendChild(left);
+    row.appendChild(right);
+    containerEl.appendChild(row);
+  });
+}
+
+/* ==========================================================================
+   2. ЖИВЫЕ ЧАСЫ, ДАТА, СТАТУС ШКОЛЫ И AMBIENT-АТМОСФЕРА ВРЕМЕНИ СУТОК
+   ========================================================================== */
+function initLiveDateTimeClockAndAmbient() {
+  const dateEl = document.getElementById("live-date-display");
+  const timeEl = document.getElementById("live-time-display");
+  const statusEl = document.getElementById("school-day-status");
+  const widgetTodayPill = document.getElementById("widget-today-pill");
+  const heroAmbient = document.getElementById("hero-ambient");
+
+  const updateClock = () => {
+    const now = new Date();
+    const hour = now.getHours();
+
+    if (heroAmbient) {
+      heroAmbient.classList.toggle("ambient-morning", hour >= 6 && hour < 11);
+      heroAmbient.classList.toggle("ambient-evening", hour >= 17 || hour < 6);
+    }
+
+    const dateFormatted = now.toLocaleDateString("ru-RU", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+    const capitalizedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+
+    const timeFormatted = now.toLocaleTimeString("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    if (dateEl) dateEl.textContent = capitalizedDate;
+    if (timeEl) timeEl.textContent = timeFormatted;
+
+    if (widgetTodayPill) {
+      const shortDate = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "long" });
+      widgetTodayPill.textContent = `📅 Сегодня, ${shortDate}`;
+    }
+
+    if (statusEl) {
+      if (customSheetSchoolStatus) {
+        statusEl.textContent = `🟢 ${customSheetSchoolStatus}`;
+      } else {
+        const day = now.getDay();
+        if (day === 0 || day === 6) {
+          statusEl.textContent = "🏡 Выходной день • Приём обращений открыт";
+        } else if (hour >= 8 && hour < 17) {
+          statusEl.textContent = "🟢 Учебный день (работа по расписанию)";
+        } else {
+          statusEl.textContent = "🌙 Учебный день завершён • Приём обращений 24/7";
+        }
+      }
+    }
+  };
+
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
+/* ==========================================================================
+   3. ПРОГНОЗ ПОГОДЫ В С. ЯМБИРНО (СЕЙЧАС + ЗАВТРА К 08:00 УТРА)
    ========================================================================== */
 function decodeWmoWeather(code) {
   if (code === 0) return { icon: "☀️", text: "Ясно", rain: false, snow: false };
@@ -262,9 +474,7 @@ async function initYambirnoWeatherWidget() {
     const curWmo = decodeWmoWeather(data.current.weather_code);
     const curWind = Math.round(data.current.wind_speed_10m);
 
-    if (topPill) {
-      topPill.textContent = `${curWmo.icon} с. Ямбирно: ${curSign}`;
-    }
+    if (topPill) topPill.textContent = `${curWmo.icon} с. Ямбирно: ${curSign}`;
     if (nowIconEl) nowIconEl.textContent = curWmo.icon;
     if (nowTempEl) nowTempEl.textContent = curSign;
     if (nowDescEl) nowDescEl.textContent = `${curWmo.text}, ветер ${curWind} м/с`;
@@ -314,69 +524,13 @@ async function initYambirnoWeatherWidget() {
 }
 
 /* ==========================================================================
-   2. ЖИВЫЕ ЧАСЫ, ДАТА И СТАТУС ШКОЛЫ
-   ========================================================================== */
-function initLiveDateTimeClock() {
-  const dateEl = document.getElementById("live-date-display");
-  const timeEl = document.getElementById("live-time-display");
-  const statusEl = document.getElementById("school-day-status");
-  const widgetTodayPill = document.getElementById("widget-today-pill");
-
-  const updateClock = () => {
-    const now = new Date();
-
-    const dateFormatted = now.toLocaleDateString("ru-RU", {
-      weekday: "short",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-    const capitalizedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
-
-    const timeFormatted = now.toLocaleTimeString("ru-RU", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-
-    if (dateEl) dateEl.textContent = capitalizedDate;
-    if (timeEl) timeEl.textContent = timeFormatted;
-
-    if (widgetTodayPill) {
-      const shortDate = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "long" });
-      widgetTodayPill.textContent = `📅 Сегодня, ${shortDate}`;
-    }
-
-    if (statusEl) {
-      if (customSheetSchoolStatus) {
-        statusEl.textContent = `🟢 ${customSheetSchoolStatus}`;
-      } else {
-        const day = now.getDay();
-        const hour = now.getHours();
-
-        if (day === 0 || day === 6) {
-          statusEl.textContent = "🏡 Выходной день • Приём обращений открыт";
-        } else if (hour >= 8 && hour < 17) {
-          statusEl.textContent = "🟢 Учебный день (работа по расписанию)";
-        } else {
-          statusEl.textContent = "🌙 Учебный день завершён • Приём обращений 24/7";
-        }
-      }
-    }
-  };
-
-  updateClock();
-  setInterval(updateClock, 1000);
-}
-
-/* ==========================================================================
-   3. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
+   4. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
    ========================================================================== */
 function initAccessibilityMode() {
   const toggleBtn = document.getElementById("a11y-toggle");
   if (!toggleBtn) return;
 
-  const applyMode = (isEnabled) => {
+  const applyMode = (isEnabled, announce = false) => {
     document.body.classList.toggle("visually-impaired", isEnabled);
     toggleBtn.setAttribute("aria-pressed", String(isEnabled));
     toggleBtn.setAttribute("aria-label", "Версия для слабовидящих");
@@ -385,6 +539,9 @@ function initAccessibilityMode() {
     if (textSpan) {
       textSpan.textContent = isEnabled ? "✕ Обычный вид сайта" : "Версия для слабовидящих";
     }
+    if (announce) {
+      showDynamicIslandToast(isEnabled ? "Включена версия для слабовидящих" : "Включён обычный вид сайта");
+    }
   };
 
   let savedState = false;
@@ -392,11 +549,11 @@ function initAccessibilityMode() {
     savedState = localStorage.getItem(A11Y_STORAGE_KEY) === "true";
   } catch (_) {}
 
-  applyMode(savedState);
+  applyMode(savedState, false);
 
   toggleBtn.addEventListener("click", () => {
     const nextState = !document.body.classList.contains("visually-impaired");
-    applyMode(nextState);
+    applyMode(nextState, true);
     try {
       localStorage.setItem(A11Y_STORAGE_KEY, String(nextState));
     } catch (_) {}
@@ -404,11 +561,146 @@ function initAccessibilityMode() {
 }
 
 /* ==========================================================================
-   4. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ
+   5. ФОТОГАЛЕРЕЯ (УПРАВЛЕНИЕ ИЗ ЯЧЕЙКИ A35 + LIGHTBOX-ПРОСМОТРЩИК)
+   ========================================================================== */
+function updateGalleryFromSheetRows(galleryArray) {
+  if (!Array.isArray(galleryArray) || galleryArray.length === 0) return;
+
+  const grid = document.getElementById("gallery-grid");
+  if (!grid) return;
+
+  const existingItems = Array.from(grid.querySelectorAll(".gallery-item"));
+
+  galleryArray.forEach((itemData, idx) => {
+    if (!itemData) return;
+
+    let figure = existingItems[idx];
+    if (!figure) {
+      figure = document.createElement("figure");
+      figure.className = "gallery-item surface-card elevate-card reveal visible";
+      figure.setAttribute("tabindex", "0");
+      figure.setAttribute("role", "button");
+      figure.innerHTML = `
+        <div class="gallery-img-wrap">
+          <img src="" alt="" class="gallery-img" referrerpolicy="no-referrer">
+          <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
+        </div>
+        <figcaption class="gallery-caption"></figcaption>
+      `;
+      grid.appendChild(figure);
+    }
+
+    const imgEl = figure.querySelector(".gallery-img");
+    const capEl = figure.querySelector(".gallery-caption");
+    const defaultSvg = imgEl ? imgEl.getAttribute("src") : "";
+
+    const newTitle = itemData.title || (capEl ? capEl.textContent : `Школьная жизнь #${idx + 1}`);
+    const newDesc = itemData.desc || figure.getAttribute("data-desc") || newTitle;
+
+    figure.setAttribute("data-caption", newTitle);
+    figure.setAttribute("data-desc", newDesc);
+    figure.setAttribute("aria-label", `Открыть фото: ${newTitle}`);
+    if (capEl && itemData.title) capEl.textContent = itemData.title;
+
+    if (imgEl && itemData.url) {
+      const resolved = resolveImageLinkSource(itemData.url, defaultSvg);
+      let triedAlt = false;
+      imgEl.onerror = () => {
+        if (!triedAlt && resolved.altTry) {
+          triedAlt = true;
+          imgEl.src = resolved.altTry;
+        } else {
+          imgEl.onerror = null;
+          imgEl.src = resolved.fallback;
+        }
+      };
+      imgEl.src = resolved.src;
+      imgEl.alt = newTitle;
+    }
+  });
+}
+
+function initGalleryLightbox() {
+  const grid = document.getElementById("gallery-grid");
+  const lightbox = document.getElementById("gallery-lightbox");
+  const lbImg = document.getElementById("lightbox-img");
+  const lbTitle = document.getElementById("lightbox-title");
+  const lbDesc = document.getElementById("lightbox-desc");
+  const lbCounter = document.getElementById("lightbox-counter");
+  const closeBtn = document.getElementById("lightbox-close");
+  const prevBtn = document.getElementById("lightbox-prev");
+  const nextBtn = document.getElementById("lightbox-next");
+
+  if (!grid || !lightbox || !lbImg) return;
+
+  let currentSlideIdx = 0;
+
+  const getFigures = () => Array.from(grid.querySelectorAll(".gallery-item"));
+
+  const openLightboxAt = (idx) => {
+    const figures = getFigures();
+    if (figures.length === 0) return;
+
+    currentSlideIdx = (idx + figures.length) % figures.length;
+    const fig = figures[currentSlideIdx];
+    const imgEl = fig.querySelector(".gallery-img");
+
+    lbImg.src = imgEl ? imgEl.src : "";
+    lbImg.alt = fig.getAttribute("data-caption") || "";
+    if (lbTitle) lbTitle.textContent = fig.getAttribute("data-caption") || "";
+    if (lbDesc) lbDesc.textContent = fig.getAttribute("data-desc") || "";
+    if (lbCounter) lbCounter.textContent = `${currentSlideIdx + 1} / ${figures.length}`;
+
+    lightbox.classList.remove("hidden");
+    lightbox.removeAttribute("hidden");
+  };
+
+  const closeLightbox = () => {
+    lightbox.classList.add("hidden");
+    lightbox.setAttribute("hidden", "");
+  };
+
+  grid.addEventListener("click", (e) => {
+    const fig = e.target.closest(".gallery-item");
+    if (!fig) return;
+    const figures = getFigures();
+    const idx = figures.indexOf(fig);
+    if (idx !== -1) openLightboxAt(idx);
+  });
+
+  grid.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      const fig = e.target.closest(".gallery-item");
+      if (!fig) return;
+      e.preventDefault();
+      const figures = getFigures();
+      const idx = figures.indexOf(fig);
+      if (idx !== -1) openLightboxAt(idx);
+    }
+  });
+
+  if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
+  if (prevBtn) prevBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx - 1));
+  if (nextBtn) nextBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx + 1));
+
+  lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (lightbox.classList.contains("hidden")) return;
+    if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowLeft") openLightboxAt(currentSlideIdx - 1);
+    if (e.key === "ArrowRight") openLightboxAt(currentSlideIdx + 1);
+  });
+}
+
+/* ==========================================================================
+   6. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ
    ========================================================================== */
 function createNewTeacherCardElement() {
   const article = document.createElement("article");
-  article.className = "teacher-card surface-card reveal visible";
+  article.className = "teacher-card surface-card elevate-card reveal visible";
   article.setAttribute("data-category", "main");
 
   article.innerHTML = `
@@ -538,7 +830,7 @@ function recalculateTeacherFilterCounts() {
 }
 
 /* ==========================================================================
-   5. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–9 КЛАСС)
+   7. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–9 КЛАСС)
    ========================================================================== */
 function initWeekdayAndGradeSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill");
@@ -614,12 +906,8 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
     scheduleText = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
   }
 
-  if (scheduleEl) {
-    scheduleEl.classList.remove("flash-updated");
-    void scheduleEl.offsetWidth;
-    scheduleEl.classList.add("flash-updated");
-    scheduleEl.textContent = scheduleText;
-  }
+  // Превращаем текст уроков в карточки-строки дневника с каскадной анимацией
+  renderDiaryLessonCards(scheduleEl, scheduleText, dayNum);
 
   const dayMenuObj = (dataObj.menuByDay && dataObj.menuByDay[dayNum]) ? dataObj.menuByDay[dayNum] : {};
 
@@ -635,7 +923,7 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
 }
 
 /* ==========================================================================
-   6. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (С ЗАЩИТОЙ ОТ ПЕРЕСЕЧЕНИЯ РАСПИСАНИЯ И УЧИТЕЛЕЙ)
+   8. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (ВКЛЮЧАЯ ФОТОГАЛЕРЕЮ С ЯЧЕЙКИ A35)
    ========================================================================== */
 function detectWeekdayIndexFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
@@ -650,10 +938,13 @@ function detectWeekdayIndexFromCell(cellString) {
 function detectGradeNumberFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
   const match = s.match(/^([1-9])\s*(класс|кл\.?|кл)$/i);
-  if (match && match[1]) {
-    return parseInt(match[1], 10);
-  }
+  if (match && match[1]) return parseInt(match[1], 10);
   return 0;
+}
+
+function detectPhotoRowFromCell(cellString) {
+  const s = (cellString || "").toLowerCase().trim();
+  return /^фото\s*\d+/i.test(s);
 }
 
 function initLiveSheetWidgetAndMenu() {
@@ -727,6 +1018,10 @@ function initLiveSheetWidgetAndMenu() {
       updateTeachersFromSheetRows(dataObj.teachers);
     }
 
+    if (Array.isArray(dataObj.gallery) && dataObj.gallery.some(Boolean)) {
+      updateGalleryFromSheetRows(dataObj.gallery);
+    }
+
     if (statusEl) {
       statusEl.textContent = isFromCache
         ? `Офлайн-копия (${dataObj.timeLabel || "сохранено"})`
@@ -757,6 +1052,7 @@ function initLiveSheetWidgetAndMenu() {
       }
 
       const menuByDay = {};
+      const galleryList = [];
       let currentMode = "schedule_grouped";
 
       for (let rIdx = 2; rIdx < rows.length; rIdx++) {
@@ -767,6 +1063,23 @@ function initLiveSheetWidgetAndMenu() {
         const colC = (r[2] || "").trim();
         const colD = (r[3] || "").trim();
 
+        // 1. Строки фотогалереи (начиная с A35: "Фотогалерея" -> "Фото 1", "Фото 2"...)
+        if (colALower.includes("фотогалере")) {
+          currentMode = "gallery";
+          continue;
+        }
+        if (currentMode === "gallery" || detectPhotoRowFromCell(colA)) {
+          if (detectPhotoRowFromCell(colA)) {
+            galleryList.push({
+              url: colB,
+              title: sanitizeInput(colC, 140),
+              desc: sanitizeInput(colD, 400)
+            });
+            continue;
+          }
+        }
+
+        // 2. Строки матрицы расписания 1–9 классов (A15:F24)
         const gradeNum = detectGradeNumberFromCell(colA);
         if (gradeNum >= 1 && gradeNum <= 9) {
           for (let d = 1; d <= 5; d++) {
@@ -778,6 +1091,7 @@ function initLiveSheetWidgetAndMenu() {
           continue;
         }
 
+        // 3. Заголовки "День недели" / "День питания"
         if (colALower.includes("день")) {
           if (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")) {
             currentMode = "menu";
@@ -799,27 +1113,18 @@ function initLiveSheetWidgetAndMenu() {
             const s14 = sanitizeInput(colB, 600);
             const s57 = sanitizeInput(colC, 600);
             const s89 = sanitizeInput(colD, 600);
-            if (s14) {
-              [1, 2, 3, 4].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s14; });
-            }
-            if (s57) {
-              [5, 6, 7].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s57; });
-            }
-            if (s89) {
-              [8, 9].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
-            }
+            if (s14) [1, 2, 3, 4].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s14; });
+            if (s57) [5, 6, 7].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s57; });
+            if (s89) [8, 9].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
           }
         }
       }
 
-      // БЛОК УЧИТЕЛЕЙ: читаем столбцы F, G, H, I, J (индексы 5..9), только если заполнено ФИО в столбце H
+      // 4. Блок учителей (столбцы F–J) с защитой от пересечения с расписанием
       const teachersList = [];
       for (let rIdx = 1; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
         const colA = (r[0] || "").trim().toLowerCase();
-
-        // Если в этой строке в столбце A находится матрица расписания ("Класс" или "1 класс".."9 класс"),
-        // то ячейка F занята уроками Пятницы — игнорируем её как фото учителя!
         const isScheduleMatrixRow = colA === "класс" || detectGradeNumberFromCell(colA) > 0;
 
         const rawPhoto = isScheduleMatrixRow ? "" : (r[5] || "").trim();
@@ -844,6 +1149,7 @@ function initLiveSheetWidgetAndMenu() {
         scheduleByGradeAndDay,
         menuByDay,
         teachers: teachersList,
+        gallery: galleryList,
         timeLabel: nowLabel
       };
 
@@ -864,7 +1170,11 @@ function initLiveSheetWidgetAndMenu() {
       } else {
         [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
         newsEl.textContent = "Информация обновляется";
-        scheduleEl.textContent = DEFAULT_GRADE_SCHEDULES[currentSelectedGrade][currentSelectedWeekday];
+        renderDiaryLessonCards(
+          scheduleEl,
+          DEFAULT_GRADE_SCHEDULES[currentSelectedGrade][currentSelectedWeekday],
+          currentSelectedWeekday
+        );
         importantEl.textContent = "Желаем хорошего дня!";
         if (statusEl) statusEl.textContent = "Автономный режим";
       }
@@ -877,14 +1187,82 @@ function initLiveSheetWidgetAndMenu() {
   };
 
   if (refreshBtn) {
-    refreshBtn.addEventListener("click", loadSheetData);
+    refreshBtn.addEventListener("click", () => {
+      loadSheetData();
+      showDynamicIslandToast("Данные расписания и табло обновлены");
+    });
   }
 
   loadSheetData();
 }
 
 /* ==========================================================================
-   7. ВКЛАДКИ ЦИФРОВОГО НАВИГАТОРА И ФОРМА ОБРАТНОЙ СВЯЗИ
+   9. КОПИРОВАНИЕ КОНТАКТОВ В 1 КЛИК, SCROLL-SPY И КОЛЬЦО ПРОГРЕССА ЧТЕНИЯ
+   ========================================================================== */
+function initCopyButtons() {
+  const copyBtns = document.querySelectorAll(".btn-copy-mini");
+  copyBtns.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const textToCopy = btn.getAttribute("data-copy") || "";
+      if (!textToCopy) return;
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        showDynamicIslandToast(`✓ Скопировано: ${textToCopy}`);
+      } catch (_) {
+        showDynamicIslandToast("Скопировано в буфер обмена");
+      }
+    });
+  });
+}
+
+function initScrollSpyAndProgressRing() {
+  const scrollTopBtn = document.getElementById("scroll-top-btn");
+  const progressCircle = document.getElementById("scroll-progress-circle");
+  const spyLinks = document.querySelectorAll(".nav-link[data-scrollspy]");
+  const circumference = 119.38;
+
+  const onScroll = () => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+
+    if (scrollTopBtn) {
+      scrollTopBtn.classList.toggle("visible", scrollTop > 320);
+    }
+    if (progressCircle) {
+      progressCircle.style.strokeDashoffset = String(circumference - progress * circumference);
+    }
+
+    if (spyLinks.length > 0) {
+      let currentSectionId = "";
+      spyLinks.forEach((link) => {
+        const targetId = link.getAttribute("data-scrollspy");
+        const sec = document.getElementById(targetId);
+        if (sec) {
+          const rect = sec.getBoundingClientRect();
+          if (rect.top <= 160 && rect.bottom >= 140) {
+            currentSectionId = targetId;
+          }
+        }
+      });
+      spyLinks.forEach((link) => {
+        link.classList.toggle("spy-active", link.getAttribute("data-scrollspy") === currentSectionId);
+      });
+    }
+  };
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  if (scrollTopBtn) {
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+}
+
+/* ==========================================================================
+   10. ЦИФРОВОЙ НАВИГАТОР И ФОРМА ОБРАТНОЙ СВЯЗИ С ЭЛЕКТРОННОЙ КВИТАНЦИЕЙ
    ========================================================================== */
 function initDigitalNavigatorTabs() {
   const tabBtns = document.querySelectorAll(".digital-tab-btn");
@@ -916,6 +1294,7 @@ function initFeedbackForm() {
   const acceptBtn = document.getElementById("accept-consent-btn");
   const stepInd1 = document.getElementById("step-indicator-1");
   const stepInd2 = document.getElementById("step-indicator-2");
+  const stepsProgressBar = document.getElementById("steps-progress-bar");
 
   const form = document.getElementById("feedback-form");
   const formFieldset = document.getElementById("form-fieldset");
@@ -924,6 +1303,7 @@ function initFeedbackForm() {
   const fioInput = document.getElementById("fio-input");
   const contactInput = document.getElementById("contact-input");
   const commentInput = document.getElementById("comment-input");
+  const charCounter = document.getElementById("comment-char-counter");
   const topicChips = document.querySelectorAll(".topic-chip");
 
   const fioHint = document.getElementById("fio-hint");
@@ -935,14 +1315,24 @@ function initFeedbackForm() {
   const submitLoader = document.getElementById("submit-loader");
   const formResponse = document.getElementById("form-response");
 
+  const receiptBox = document.getElementById("feedback-receipt");
+  const receiptMeta = document.getElementById("receipt-meta");
+  const receiptFio = document.getElementById("receipt-fio");
+  const receiptContact = document.getElementById("receipt-contact");
+  const receiptComment = document.getElementById("receipt-comment");
+  const copyReceiptBtn = document.getElementById("copy-receipt-btn");
+  const newFeedbackBtn = document.getElementById("new-feedback-btn");
+
   let isConsentConfirmed = false;
   let selectedTopicPrefix = "[Вопрос руководителю] ";
 
   formFieldset.disabled = true;
   submitBtn.disabled = true;
 
-  const setTopicByPrefix = (prefix, placeholderText) => {
+  const setTopicByPrefix = (prefix, themeName, placeholderText) => {
     selectedTopicPrefix = prefix;
+    formStep.classList.remove("topic-theme-question", "topic-theme-thanks", "topic-theme-idea");
+    formStep.classList.add(`topic-theme-${themeName || "question"}`);
     if (commentInput && placeholderText) {
       commentInput.placeholder = placeholderText;
     }
@@ -953,13 +1343,14 @@ function initFeedbackForm() {
       topicChips.forEach((c) => c.classList.remove("active"));
       chip.classList.add("active");
       const prefix = chip.getAttribute("data-topic-prefix") || "[Вопрос руководителю] ";
+      const themeName = chip.getAttribute("data-topic-theme") || "question";
 
-      if (prefix.includes("Благодарность")) {
-        setTopicByPrefix(prefix, "Напишите, кого из педагогов или сотрудников школы вы хотите поблагодарить...");
-      } else if (prefix.includes("Предложение")) {
-        setTopicByPrefix(prefix, "Опишите вашу идею или предложение по развитию школы, кружкам или мероприятиям...");
+      if (themeName === "thanks") {
+        setTopicByPrefix(prefix, "thanks", "Напишите, кого из педагогов или сотрудников школы вы хотите поблагодарить...");
+      } else if (themeName === "idea") {
+        setTopicByPrefix(prefix, "idea", "Опишите вашу идею или предложение по развитию школы, кружкам или мероприятиям...");
       } else {
-        setTopicByPrefix(prefix, "Опишите ваш вопрос руководителю школы...");
+        setTopicByPrefix(prefix, "question", "Опишите ваш вопрос руководителю школы...");
       }
     });
   });
@@ -988,7 +1379,11 @@ function initFeedbackForm() {
       stepInd1.classList.remove("active");
       stepInd2.classList.add("active");
     }
+    if (stepsProgressBar) {
+      stepsProgressBar.style.width = "100%";
+    }
 
+    showDynamicIslandToast("✓ Согласие 152-ФЗ подтверждено");
     fioInput.focus();
   });
 
@@ -1043,6 +1438,11 @@ function initFeedbackForm() {
   };
 
   const validateComment = () => {
+    const rawLen = commentInput.value.length;
+    if (charCounter) {
+      charCounter.textContent = `${rawLen} / 2000`;
+    }
+
     const cleanVal = sanitizeInput(commentInput.value, 2000);
     const isValid = cleanVal.length >= 5;
 
@@ -1106,11 +1506,24 @@ function initFeedbackForm() {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      formResponse.textContent = "Спасибо! Ваше сообщение успешно записано в реестр школы и передано руководителю филиала.";
-      formResponse.className = "form-response success";
-      formResponse.classList.remove("hidden");
+      // Показываем цифровую квитанцию-подтверждение
+      const ticketNum = `ЯМБ-${new Date().toLocaleDateString("ru-RU").replace(/\./g, "")}-${Math.floor(100 + Math.random() * 900)}`;
+      if (receiptBox && receiptFio && receiptContact && receiptComment && receiptMeta) {
+        receiptMeta.textContent = `Талон № ${ticketNum} • ${new Date().toLocaleString("ru-RU")}`;
+        receiptFio.textContent = sanitizedFio;
+        receiptContact.textContent = sanitizedContact;
+        receiptComment.textContent = sanitizedComment;
+        form.classList.add("hidden");
+        receiptBox.classList.remove("hidden");
+      } else {
+        formResponse.textContent = "Спасибо! Ваше сообщение успешно записано в реестр школы.";
+        formResponse.className = "form-response success";
+        formResponse.classList.remove("hidden");
+      }
 
+      showDynamicIslandToast("✓ Обращение отправлено в школу");
       form.reset();
+      if (charCounter) charCounter.textContent = "0 / 2000";
       [fioInput, contactInput, commentInput].forEach((el) => {
         el.classList.remove("is-valid", "is-invalid");
       });
@@ -1124,10 +1537,28 @@ function initFeedbackForm() {
       submitLoader.classList.add("hidden");
     }
   });
+
+  if (copyReceiptBtn) {
+    copyReceiptBtn.addEventListener("click", async () => {
+      const receiptText = `${receiptMeta ? receiptMeta.textContent : ""}\nФИО: ${receiptFio ? receiptFio.textContent : ""}\nКонтакт: ${receiptContact ? receiptContact.textContent : ""}\nТекст: ${receiptComment ? receiptComment.textContent : ""}`;
+      try {
+        await navigator.clipboard.writeText(receiptText);
+        showDynamicIslandToast("✓ Текст квитанции скопирован");
+      } catch (_) {}
+    });
+  }
+
+  if (newFeedbackBtn && receiptBox) {
+    newFeedbackBtn.addEventListener("click", () => {
+      receiptBox.classList.add("hidden");
+      form.classList.remove("hidden");
+      fioInput.focus();
+    });
+  }
 }
 
 /* ==========================================================================
-   8. АНИМАЦИЯ ПОЯВЛЕНИЯ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
+   11. АНИМАЦИЯ ПОЯВЛЕНИЯ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
    ========================================================================== */
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
