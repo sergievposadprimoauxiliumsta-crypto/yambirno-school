@@ -4,19 +4,18 @@
  * 1) Автоматический прогноз погоды в с. Ямбирно (сейчас + завтра утром к 08:00 с советом про зонтик/одежду)
  * 2) Индивидуальное расписание для каждого класса с 1 по 9 (с сохранением выбранного класса в памяти телефона)
  * 3) Поддержку ссылок на фото из Скриншотера (skrinshoter.ru), Google Диска и GitHub
- * 4) Динамическое создание 13-й, 14-й и последующих карточек учителей из столбцов F–J
+ * 4) Динамическое создание 13-й, 14-й и последующих карточек учителей из столбцов F–J с защитой от пересечения с расписанием
  */
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 
-// Координаты с. Ямбирно (Шацкий район, Рязанская область) для метеосервиса Open-Meteo
 const YAMBIRNO_LAT = 54.1286;
 const YAMBIRNO_LON = 41.9708;
 
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v7";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v8";
 
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
@@ -48,7 +47,6 @@ const DEFAULT_SANPIN_LUNCH =
 const DEFAULT_SANPIN_NOTE =
   "Фактическое ежедневное меню заверяется руководителем и размещается на информационном стенде школьной столовой.";
 
-// Базовое резервное расписание по классам 1–9 (если в таблице пока заполнена только старая версия)
 const DEFAULT_GRADE_SCHEDULES = {
   1: {
     1: "1. Разговоры о важном\n2. Обучение грамоте\n3. Письмо\n4. Математика",
@@ -159,10 +157,6 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
-/**
- * Надежный обработчик фото (Столбец F):
- * Поддерживает Скриншотер (skrinshoter.ru), Google Диск, прямые URL и локальные файлы GitHub
- */
 function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
   const cleaned = (rawPhotoCell || "").trim();
   const fallbackSvg = buildInitialsSvgDataUri(extractInitialsFromFio(teacherFio), cardIndex);
@@ -174,7 +168,6 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
     return { src: customSvg, altTry: null, fallback: customSvg };
   }
 
-  // Ссылки с Google Диска
   const driveMatch =
     cleaned.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
     cleaned.match(/[?&]id=([a-zA-Z0-9_-]+)/);
@@ -186,7 +179,6 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
     };
   }
 
-  // Ссылки со Скриншотера (skrinshoter.ru)
   if (cleaned.includes("skrinshoter.ru")) {
     const hasImgExt = /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(cleaned);
     if (hasImgExt) {
@@ -196,11 +188,10 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
         fallback: fallbackSvg
       };
     }
-    // Если вставлена короткая ссылка на страницу просмотра skrinshoter.ru/s/XXXX, пробуем прямое расширение .jpg и прокси
     const cleanNoSlash = cleaned.replace(/\/+$/, "");
     return {
-      src: `${cleanNoSlash}.jpg`,
-      altTry: `${cleanNoSlash}.png`,
+      src: `https://wsrv.nl/?url=${encodeURIComponent(cleanNoSlash)}&w=300&h=300&fit=cover`,
+      altTry: `${cleanNoSlash}.jpg`,
       fallback: fallbackSvg
     };
   }
@@ -266,7 +257,6 @@ async function initYambirnoWeatherWidget() {
     if (!res.ok) throw new Error("Weather HTTP error");
     const data = await res.json();
 
-    // 1. Текущая погода в с. Ямбирно
     const curTemp = Math.round(data.current.temperature_2m);
     const curSign = curTemp > 0 ? `+${curTemp}°C` : `${curTemp}°C`;
     const curWmo = decodeWmoWeather(data.current.weather_code);
@@ -279,7 +269,6 @@ async function initYambirnoWeatherWidget() {
     if (nowTempEl) nowTempEl.textContent = curSign;
     if (nowDescEl) nowDescEl.textContent = `${curWmo.text}, ветер ${curWind} м/с`;
 
-    // 2. Погода завтра утром к 08:00 (индекс 24 + 8 = 32 в массиве hourly)
     const morningIndex = 32;
     const tomTempRaw =
       data.hourly && data.hourly.temperature_2m && data.hourly.temperature_2m[morningIndex] !== undefined
@@ -300,7 +289,6 @@ async function initYambirnoWeatherWidget() {
     if (tomTempEl) tomTempEl.textContent = `${tomWmo.icon} ${tomSign}`;
     if (tomDescEl) tomDescEl.textContent = `${tomWmo.text} (осадки ${tomPrecipProb}%)`;
 
-    // 3. Формируем понятную рекомендацию для родителей на утро
     if (adviceEl) {
       adviceEl.classList.remove("advice-rain", "advice-cold");
       if (tomWmo.rain || (tomPrecipProb >= 40 && tomTempRaw > 0)) {
@@ -416,7 +404,7 @@ function initAccessibilityMode() {
 }
 
 /* ==========================================================================
-   4. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ (С ПОДДЕРЖКОЙ SKRINSHOTER.RU)
+   4. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ
    ========================================================================== */
 function createNewTeacherCardElement() {
   const article = document.createElement("article");
@@ -613,7 +601,6 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
   const menuLunchEl = document.getElementById("menu-lunch");
   const menuNoteEl = document.getElementById("menu-note");
 
-  // 1. Ищем расписание для конкретного класса (1..9) и дня недели (1..5)
   let scheduleText = "";
   if (
     dataObj.scheduleByGradeAndDay &&
@@ -634,7 +621,6 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
     scheduleEl.textContent = scheduleText;
   }
 
-  // 2. Отрисовка меню столовой для выбранного дня недели
   const dayMenuObj = (dataObj.menuByDay && dataObj.menuByDay[dayNum]) ? dataObj.menuByDay[dayNum] : {};
 
   if (menuBreakfastEl) {
@@ -649,7 +635,7 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
 }
 
 /* ==========================================================================
-   6. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (БЕЗ ОШИБОЧНЫХ ПАРАМЕТРОВ URL + ПОДДЕРЖКА 1–9 КЛ)
+   6. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (С ЗАЩИТОЙ ОТ ПЕРЕСЕЧЕНИЯ РАСПИСАНИЯ И УЧИТЕЛЕЙ)
    ========================================================================== */
 function detectWeekdayIndexFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
@@ -757,17 +743,14 @@ function initLiveSheetWidgetAndMenu() {
     if (statusEl) statusEl.textContent = "Синхронизация...";
 
     try {
-      // Чистый запрос к опубликованному CSV без лишних query-параметров, чтобы Google не блокировал ответ
       const response = await fetch(SHEET_CSV_URL, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
 
       const csvText = await response.text();
       const rows = parseCSVPreserveRowIndex(csvText);
 
-      // БЛОК 1 (Строка 2): A2 = Новости дня, B2 = Общее расписание, C2 = Важные новости, D2 = Статус
       const secondRow = rows.length > 1 ? rows[1] : [];
 
-      // Структура расписания по каждому классу (1..9) и дню (1..5)
       const scheduleByGradeAndDay = {};
       for (let g = 1; g <= 9; g++) {
         scheduleByGradeAndDay[g] = { ...(DEFAULT_GRADE_SCHEDULES[g] || {}) };
@@ -784,7 +767,6 @@ function initLiveSheetWidgetAndMenu() {
         const colC = (r[2] || "").trim();
         const colD = (r[3] || "").trim();
 
-        // 1. Проверяем, если строка начинается с "1 класс" ... "9 класс" (Матрица Завуча A15:F24)
         const gradeNum = detectGradeNumberFromCell(colA);
         if (gradeNum >= 1 && gradeNum <= 9) {
           for (let d = 1; d <= 5; d++) {
@@ -796,7 +778,6 @@ function initLiveSheetWidgetAndMenu() {
           continue;
         }
 
-        // 2. Проверяем заголовки таблиц ("День недели", "День питания")
         if (colALower.includes("день")) {
           if (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")) {
             currentMode = "menu";
@@ -806,7 +787,6 @@ function initLiveSheetWidgetAndMenu() {
           continue;
         }
 
-        // 3. Если строка начинается с дня недели ("Понедельник" .. "Пятница")
         const dayIndex = detectWeekdayIndexFromCell(colA);
         if (dayIndex >= 1 && dayIndex <= 5) {
           if (currentMode === "menu") {
@@ -816,7 +796,6 @@ function initLiveSheetWidgetAndMenu() {
               note: sanitizeInput(colD, 400)
             };
           } else if (currentMode === "schedule_grouped") {
-            // Совместимость с таблицей A4:D9 (1–4 классы | 5–7 классы | 8–9 классы)
             const s14 = sanitizeInput(colB, 600);
             const s57 = sanitizeInput(colC, 600);
             const s89 = sanitizeInput(colD, 600);
@@ -833,20 +812,24 @@ function initLiveSheetWidgetAndMenu() {
         }
       }
 
-      // БЛОК УЧИТЕЛЕЙ: читаем столбцы F, G, H, I, J (индексы 5..9), пока в столбце H есть ФИО учителя
+      // БЛОК УЧИТЕЛЕЙ: читаем столбцы F, G, H, I, J (индексы 5..9), только если заполнено ФИО в столбце H
       const teachersList = [];
       for (let rIdx = 1; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
-        const rawPhoto = (r[5] || "").trim();
+        const colA = (r[0] || "").trim().toLowerCase();
+
+        // Если в этой строке в столбце A находится матрица расписания ("Класс" или "1 класс".."9 класс"),
+        // то ячейка F занята уроками Пятницы — игнорируем её как фото учителя!
+        const isScheduleMatrixRow = colA === "класс" || detectGradeNumberFromCell(colA) > 0;
+
+        const rawPhoto = isScheduleMatrixRow ? "" : (r[5] || "").trim();
         const badge = sanitizeInput(r[6] || "", 100);
         const fio = sanitizeInput(r[7] || "", 120);
         const role = sanitizeInput(r[8] || "", 160);
         const desc = sanitizeInput(r[9] || "", 450);
 
-        if (!fio && !role) continue;
-        if (fio.toLowerCase().includes("фио учителя") || fio.toLowerCase() === "фио") continue;
-        // Чтобы строка 15 (где в F15 написано "Пятница" для расписания) не считалась учителем, проверяем, что заполнен столбец H (ФИО)
         if (!fio) continue;
+        if (fio.toLowerCase().includes("фио учителя") || fio.toLowerCase() === "фио") continue;
 
         teachersList.push({ photo: rawPhoto, badge, fio, role, desc });
       }
