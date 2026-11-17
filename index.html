@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Официальный сайт</title>
-  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Поурочное расписание с 1 по 9 класс, погода в с. Ямбирно, инструкции к Госуслугам, электронному дневнику и Учи.ру.">
+  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Поурочное расписание с 1 по 11 класс, погода в с. Ямбирно, инструкции к Госуслугам, электронному дневнику и Учи.ру.">
 
   <!-- Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
-  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Расписание 1–9 классов, погода в с. Ямбирно, навигатор по Дневнику и Учи.ру.">
+  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Расписание 1–11 классов, погода в с. Ямбирно, навигатор по Дневнику и Учи.ру.">
   <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Ямбирнский+филиал+МОУ+Лесно-Конобеевская+СШ">
 
   <link rel="stylesheet" href="styles.css">
@@ -26,7 +26,7 @@
     <span id="dynamic-island-text" class="island-text">Скопировано в буфер обмена</span>
   </div>
 
-  <!-- 1. ИННОВАЦИОННАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА (OPTICAL GLASS HEADER) -->
+  <!-- 1. ОПТИЧЕСКАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА -->
   <header class="site-header" id="top">
     <div class="top-utility-bar" role="region" aria-label="Панель текущего времени, погоды и специальных возможностей">
       <div class="container utility-inner">
@@ -86,10 +86,11 @@
   </header>
 
   <main id="main-content">
-    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO) С ДИНАМИЧЕСКОЙ АТМОСФЕРОЙ ВРЕМЕНИ СУТОК -->
+    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO): СЛЕВА ПРИВЕТСТВИЕ + ЖИВАЯ ДОСКА (1–11 КЛ.), СПРАВА ОНЛАЙН-ТАБЛО -->
     <section class="hero-section" id="hero-ambient">
       <div class="container hero-grid">
         
+        <!-- Левая колонка (растягивается вровень с правой колонкой за счет Живой школьной доски) -->
         <div class="hero-content reveal">
           <span class="badge">Рязанская область • Шацкий район • с. Ямбирно</span>
           <h1 class="hero-title">Небольшая школа — большие возможности: обучение, воспитание и единство</h1>
@@ -107,9 +108,57 @@
               <span>Заведующий Ямбирнским филиалом (руководитель школы)</span>
             </div>
           </div>
+
+          <!-- ИНТЕРАКТИВНЫЙ ДВИЖОК "ЖИВАЯ ШКОЛЬНАЯ ДОСКА: ПУТЬ ЗНАНИЙ ОТ 1 ДО 11 КЛАССА" -->
+          <div class="chalkboard-card" id="chalkboard-widget" aria-label="Интерактивная школьная доска: примеры с 1 по 11 класс">
+            <div class="chalkboard-topbar">
+              <div class="chalkboard-meta">
+                <span class="chalk-icon" aria-hidden="true">✏️</span>
+                <span id="chalkboard-grade-badge" class="chalkboard-grade-badge">1 класс • Арифметика</span>
+                <span id="chalkboard-status-pill" class="chalkboard-status-pill">Пишет у доски...</span>
+              </div>
+              <div class="chalkboard-controls">
+                <button type="button" id="chalkboard-quiz-toggle" class="chalk-btn" aria-pressed="false" title="Скрывать ответ, чтобы проверить себя">
+                  💡 Решить самому
+                </button>
+                <button type="button" id="chalkboard-next-btn" class="chalk-btn" title="Переключить на следующий класс">
+                  ⏭ След. класс
+                </button>
+              </div>
+            </div>
+
+            <!-- Поверхность грифельной доски с меловой пылью и влажной волной стирания -->
+            <div class="chalkboard-stage" id="chalkboard-stage">
+              <div class="chalkboard-content" id="chalkboard-content">
+                <div class="chalk-topic-line" id="chalkboard-topic">Тема урока: Сложение чисел</div>
+                <div class="chalk-math-line">
+                  <span id="chalkboard-problem" class="chalk-problem-text"></span>
+                  <span id="chalkboard-steps" class="chalk-steps-text"></span>
+                  <span id="chalkboard-answer" class="chalk-answer-text"></span>
+                  <span id="chalkboard-cursor" class="chalk-cursor" aria-hidden="true"></span>
+                </div>
+                <button type="button" id="chalkboard-reveal-btn" class="chalk-reveal-btn hidden">
+                  Показать решение и ответ (= ?)
+                </button>
+              </div>
+              <!-- Слой эффекта влажной тряпки при стирании с доски -->
+              <div id="chalkboard-wet-wipe" class="chalkboard-wet-wipe" aria-hidden="true"></div>
+            </div>
+
+            <!-- Деревянная полочка доски с мелками и шкалой прогресса 1–11 кл. -->
+            <div class="chalkboard-tray">
+              <div class="chalk-pieces" aria-hidden="true">
+                <span class="chalk-piece chalk-white"></span>
+                <span class="chalk-piece chalk-yellow"></span>
+                <span class="chalk-piece chalk-blue"></span>
+                <span class="chalk-sponge"></span>
+              </div>
+              <span class="chalkboard-progress-label" id="chalkboard-step-counter">Ступень 1 из 11</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Правая колонка: Виджет "Живая информация" с карточками-строками дневника -->
+        <!-- Правая колонка: Виджет "Живая информация" -->
         <aside class="live-widget surface-card reveal" id="live-widget-card" aria-labelledby="live-widget-title">
           <div class="widget-header">
             <div class="live-badge-capsule">
@@ -138,7 +187,7 @@
 
           <div class="widget-body" id="widget-content">
             
-            <!-- БЛОК ПОГОДЫ В СЕЛЕ ЯМБИРНО -->
+            <!-- БЛОК ПОГОДЫ В СЕЛЕ ЯМБИРНО С МИКРО-АТМОСФЕРОЙ НЕБА -->
             <div class="widget-weather-card" id="yambirno-weather-box" aria-live="polite">
               <div class="weather-top-row">
                 <div class="weather-now-col">
@@ -171,23 +220,29 @@
               <div id="col-news" class="widget-value is-loading-shimmer">Загрузка данных...</div>
             </div>
 
-            <!-- Блок Расписания с автоматическим превращением уроков в карточки дневника -->
+            <!-- Блок Расписания (1–11 классы + кнопка отправки в чат + редактируемые звонки) -->
             <div class="widget-block widget-block-diary">
               <div class="widget-block-head widget-schedule-head">
                 <div class="schedule-title-line">
                   <span class="widget-block-icon" aria-hidden="true">🕒</span>
                   <h3>Дневник уроков: <span id="schedule-day-label" class="day-accent-label">Сегодня</span></h3>
                 </div>
-                <div class="weekday-pills" id="schedule-weekday-pills" role="group" aria-label="Выбор дня недели для расписания">
-                  <button type="button" class="day-pill" data-day="1" title="Понедельник">Пн</button>
-                  <button type="button" class="day-pill" data-day="2" title="Вторник">Вт</button>
-                  <button type="button" class="day-pill" data-day="3" title="Среда">Ср</button>
-                  <button type="button" class="day-pill" data-day="4" title="Четверг">Чт</button>
-                  <button type="button" class="day-pill" data-day="5" title="Пятница">Пт</button>
+                <div class="schedule-head-controls">
+                  <button type="button" id="share-schedule-btn" class="btn-share-chat" title="Скопировать расписание и погоду для родительского чата">
+                    📤 В чат
+                  </button>
+                  <div class="weekday-pills" id="schedule-weekday-pills" role="group" aria-label="Выбор дня недели для расписания">
+                    <button type="button" class="day-pill" data-day="1" title="Понедельник">Пн</button>
+                    <button type="button" class="day-pill" data-day="2" title="Вторник">Вт</button>
+                    <button type="button" class="day-pill" data-day="3" title="Среда">Ср</button>
+                    <button type="button" class="day-pill" data-day="4" title="Четверг">Чт</button>
+                    <button type="button" class="day-pill" data-day="5" title="Пятница">Пт</button>
+                  </div>
                 </div>
               </div>
 
-              <div class="grade-selector-bar" id="schedule-grade-pills" role="group" aria-label="Выберите класс (с 1 по 9)">
+              <!-- Панель выбора класса с 1 по 11 класс -->
+              <div class="grade-selector-bar" id="schedule-grade-pills" role="group" aria-label="Выберите класс (с 1 по 11)">
                 <button type="button" class="grade-pill active" data-grade="1">1 кл</button>
                 <button type="button" class="grade-pill" data-grade="2">2 кл</button>
                 <button type="button" class="grade-pill" data-grade="3">3 кл</button>
@@ -197,6 +252,13 @@
                 <button type="button" class="grade-pill" data-grade="7">7 кл</button>
                 <button type="button" class="grade-pill" data-grade="8">8 кл</button>
                 <button type="button" class="grade-pill" data-grade="9">9 кл</button>
+                <button type="button" class="grade-pill" data-grade="10">10 кл</button>
+                <button type="button" class="grade-pill" data-grade="11">11 кл</button>
+              </div>
+
+              <!-- Уведомление об изменении времени звонков (появляется автоматически при правке B29:B35 в таблице) -->
+              <div id="bell-shift-warning" class="bell-shift-banner hidden" role="status">
+                🔔 Внимание: сегодня действует изменённое расписание звонков
               </div>
 
               <!-- Контейнер для карточек-строк уроков -->
@@ -409,7 +471,7 @@
               <ol class="step-sublist">
                 <li><strong>«Дневник» / «Расписание»:</strong> какие уроки будут завтра, в каком кабинете и что задано на дом.</li>
                 <li><strong>«Отметки» / «Успеваемость»:</strong> все текущие оценки по предметам, средний балл и итоговые оценки за четверть.</li>
-                <li><strong>«Библиотека»:</strong> бесплатные проверенные видеоуроки и тесты по всем школьным темам с 1 по 9 класс.</li>
+                <li><strong>«Библиотека»:</strong> бесплатные проверенные видеоуроки и тесты по всем школьным темам с 1 по 11 класс.</li>
               </ol>
             </div>
 
@@ -537,18 +599,12 @@
       </div>
     </section>
 
-    <!-- 5. ПЕДАГОГИЧЕСКИЙ КОЛЛЕКТИВ -->
+    <!-- 5. ПЕДАГОГИЧЕСКИЙ КОЛЛЕКТИВ (ЕДИНАЯ СЕТКА БЕЗ КНОПОК ФИЛЬТРАЦИИ) -->
     <section id="teachers" class="section">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="section-title">Педагогический коллектив</h2>
-          <p class="section-subtitle" id="teachers-subtitle">Главная опора Ямбирнского филиала: 9 основных педагогов и 3 учителя-совместителя</p>
-        </div>
-
-        <div class="filter-tabs reveal" role="group" aria-label="Фильтр педагогического состава">
-          <button type="button" class="filter-btn active" data-filter="all">Все педагоги (12)</button>
-          <button type="button" class="filter-btn" data-filter="main">Основной состав (9)</button>
-          <button type="button" class="filter-btn" data-filter="part-time">Совместители (3)</button>
+          <p class="section-subtitle" id="teachers-subtitle">Главная опора Ямбирнского филиала: 9 основных педагогов и 3 учителя-совместителя (всего 12)</p>
         </div>
 
         <div class="teachers-grid" id="teachers-grid">
@@ -687,7 +743,7 @@
       </div>
     </section>
 
-    <!-- 6. ДОСТИЖЕНИЯ (BENTO DATA CARDS С ВИЗУАЛЬНЫМИ ШКАЛАМИ ПРОГРЕССА) -->
+    <!-- 6. ДОСТИЖЕНИЯ (BENTO DATA CARDS) -->
     <section id="achievements" class="section section-alt school-grid-texture">
       <div class="container">
         <div class="section-header reveal">
@@ -749,7 +805,7 @@
       </div>
     </section>
 
-    <!-- 7. ОРГАНИЗАЦИЯ ПИТАНИЯ, БЕЗОПАСНОСТЬ И ИНТЕРАКТИВНАЯ ФОТОГАЛЕРЕЯ (УПРАВЛЯЕМАЯ С ЯЧЕЙКИ A35) -->
+    <!-- 7. ОРГАНИЗАЦИЯ ПИТАНИЯ, БЕЗОПАСНОСТЬ И ИНТЕРАКТИВНАЯ ФОТОГАЛЕРЕЯ -->
     <section id="school-life" class="section">
       <div class="container">
         <div class="info-blocks-grid">
@@ -805,7 +861,6 @@
           </article>
         </div>
 
-        <!-- Интерактивная галерея "Школьная жизнь" (с Lightbox-просмотром и синхронизацией с A35) -->
         <div class="gallery-wrapper">
           <div class="section-header reveal">
             <span class="badge">Нажмите на карточку для увеличения</span>
@@ -814,7 +869,6 @@
           </div>
 
           <div class="gallery-grid" id="gallery-grid">
-            <!-- Карточка 1 -->
             <figure 
               class="gallery-item surface-card elevate-card reveal" 
               tabindex="0" 
@@ -835,7 +889,6 @@
               <figcaption class="gallery-caption">Разные традиции — общие ценности: выставки творчества и национальных блюд</figcaption>
             </figure>
 
-            <!-- Карточка 2 -->
             <figure 
               class="gallery-item surface-card elevate-card reveal" 
               tabindex="0" 
@@ -856,7 +909,6 @@
               <figcaption class="gallery-caption">Открытая практика: внимание к каждому ученику и интерактивные уроки</figcaption>
             </figure>
 
-            <!-- Карточка 3 -->
             <figure 
               class="gallery-item surface-card elevate-card reveal" 
               tabindex="0" 
@@ -877,7 +929,6 @@
               <figcaption class="gallery-caption">Патриотическое воспитание: «Бессмертный полк» и волонтёрская помощь</figcaption>
             </figure>
 
-            <!-- Карточка 4 -->
             <figure 
               class="gallery-item surface-card elevate-card reveal" 
               tabindex="0" 
@@ -902,7 +953,7 @@
       </div>
     </section>
 
-    <!-- 8. КОНТАКТЫ (С КНОПКАМИ МГНОВЕННОГО КОПИРОВАНИЯ В 1 КЛИК) -->
+    <!-- 8. КОНТАКТЫ -->
     <section id="contacts" class="section section-alt school-grid-texture">
       <div class="container">
         <div class="section-header reveal">
