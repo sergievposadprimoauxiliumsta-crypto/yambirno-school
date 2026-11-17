@@ -1,4 +1,4 @@
-const CACHE_NAME = "yambirno-school-v4";
+const CACHE_NAME = "yambirno-school-v5";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -25,7 +25,6 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
-  // Не перехватываем внешние запросы к Google Таблицам и погоде Open-Meteo, чтобы данные обновлялись мгновенно
   if (!event.request.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
