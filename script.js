@@ -1,15 +1,16 @@
 /**
  * Основной скрипт сайта Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»
  * Поддерживает:
- * 1) Расписание и меню на 5 дней недели (Пн–Пт) с автоопределением сегодняшнего дня
- * 2) Динамическое создание 13-й, 14-й и последующих карточек учителей из столбцов F–J
- * 3) Отправку обращений на Лист 2 (gid=834161632)
+ * 1) Расписание по дням недели (Пн–Пт, строки A5:D9) и по группам классов (B4, C4, D4)
+ * 2) Меню школьной столовой по дням недели (Пн–Пт, строки A12:D16)
+ * 3) Динамическое обновление и добавление 13-й, 14-й+ карточек учителей из столбцов F–J
+ * 4) Отправку обращений на Лист 2 (gid=834161632)
  */
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v5";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v6";
 
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
@@ -44,11 +45,8 @@ const DEFAULT_SANPIN_NOTE =
 let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
 let currentSelectedWeekday = getDefaultSchoolWeekday();
+let currentSelectedClassCol = 0; // 0 = B4 (1-4 кл.), 1 = C4 (5-7 кл.), 2 = D4 (8-9 кл.)
 
-/**
- * Определяет текущий учебный день (1 = Пн ... 5 = Пт).
- * В субботу (6) и воскресенье (0) возвращает 1 (Понедельник).
- */
 function getDefaultSchoolWeekday() {
   const jsDay = new Date().getDay();
   return jsDay >= 1 && jsDay <= 5 ? jsDay : 1;
@@ -118,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollRevealAndCounters();
   initTeacherFilter();
   initDigitalNavigatorTabs();
-  initWeekdaySwitchers();
+  initWeekdayAndClassSwitchers();
   initLiveSheetWidgetAndMenu();
   initFeedbackForm();
   registerOfflineServiceWorker();
@@ -296,13 +294,11 @@ function updateTeachersFromSheetRows(teachersDataArray) {
     if (!rowData) return;
 
     let card = existingCards[idx];
-    // Если в таблице добавлен 13-й, 14-й и т.д. учитель — динамически создаём новую карточку!
     if (!card) {
       card = createNewTeacherCardElement();
       grid.appendChild(card);
     }
 
-    // Если в ячейке ФИО написано "удалить" или "-" — скрываем карточку
     const fioLower = (rowData.fio || "").toLowerCase();
     if (fioLower === "-" || fioLower === "удалить" || fioLower === "скрыть") {
       card.remove();
@@ -332,7 +328,6 @@ function recalculateTeacherFilterCounts() {
     subtitleEl.textContent = `Главная опора Ямбирнского филиала: ${mainCards.length} основных педагогов и ${partTimeCards.length} совместителя (всего ${allCards.length})`;
   }
 
-  // Применяем текущий активный фильтр к новым карточкам
   const activeFilterBtn = document.querySelector(".filter-btn.active");
   if (activeFilterBtn) {
     const activeCategory = activeFilterBtn.getAttribute("data-filter");
@@ -344,11 +339,11 @@ function recalculateTeacherFilterCounts() {
 }
 
 /* ==========================================================================
-   4. ПЕРЕКЛЮЧАТЕЛЬ ДНЕЙ НЕДЕЛИ (ПН–ПТ) ДЛЯ РАСПИСАНИЯ И ПИТАНИЯ
+   4. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–4, 5–7, 8–9)
    ========================================================================== */
-function initWeekdaySwitchers() {
+function initWeekdayAndClassSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill");
-  if (allDayPills.length === 0) return;
+  const allClassPills = document.querySelectorAll(".class-pill");
 
   allDayPills.forEach((pill) => {
     pill.addEventListener("click", () => {
@@ -356,7 +351,20 @@ function initWeekdaySwitchers() {
       currentSelectedWeekday = dayNum;
       syncDayPillsUI(dayNum);
       if (latestParsedSheetData) {
-        renderDaySpecificScheduleAndMenu(latestParsedSheetData, dayNum);
+        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedClassCol);
+      }
+    });
+  });
+
+  allClassPills.forEach((cPill) => {
+    cPill.addEventListener("click", () => {
+      const colIdx = parseInt(cPill.getAttribute("data-class-col") || "0", 10);
+      currentSelectedClassCol = colIdx;
+      allClassPills.forEach((btn) => {
+        btn.classList.toggle("active", btn === cPill);
+      });
+      if (latestParsedSheetData) {
+        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedClassCol);
       }
     });
   });
@@ -381,38 +389,77 @@ function syncDayPillsUI(dayNum) {
   if (menuDayLabel) menuDayLabel.textContent = labelSuffix;
 }
 
-function renderDaySpecificScheduleAndMenu(dataObj, dayNum) {
+function syncClassGroupButtonsFromSheet(classHeadersArray, hasMultiClassSchedule) {
+  const classPillsWrap = document.getElementById("schedule-class-pills");
+  if (!classPillsWrap) return;
+
+  if (!hasMultiClassSchedule) {
+    // Если в таблице заполнена только 1 общая колонка расписания — скрываем переключатель классов
+    classPillsWrap.classList.add("hidden");
+    return;
+  }
+
+  classPillsWrap.classList.remove("hidden");
+  const defaultNames = ["1–4 классы", "5–7 классы", "8–9 классы"];
+
+  for (let i = 0; i < 3; i++) {
+    const btn = document.getElementById(`class-btn-${i}`);
+    if (!btn) continue;
+    const customHeader = (classHeadersArray && classHeadersArray[i]) ? classHeadersArray[i] : "";
+    if (customHeader) {
+      btn.textContent = customHeader;
+      btn.classList.remove("hidden");
+    } else if (i < 2) {
+      btn.textContent = defaultNames[i];
+      btn.classList.remove("hidden");
+    } else {
+      // Если 3-я колонка класса (D4) не озаглавлена и пуста — скрываем 3-ю кнопку
+      btn.classList.add("hidden");
+    }
+  }
+}
+
+function renderDaySpecificScheduleAndMenu(dataObj, dayNum, classColIdx = 0) {
   const scheduleEl = document.getElementById("col-schedule");
   const menuBreakfastEl = document.getElementById("menu-breakfast");
   const menuLunchEl = document.getElementById("menu-lunch");
   const menuNoteEl = document.getElementById("menu-note");
 
-  const dayRecord = (dataObj.weeklyByDay && dataObj.weeklyByDay[dayNum]) ? dataObj.weeklyByDay[dayNum] : {};
+  const dayScheduleArr =
+    (dataObj.scheduleByDayAndClass && dataObj.scheduleByDayAndClass[dayNum])
+      ? dataObj.scheduleByDayAndClass[dayNum]
+      : [];
 
-  // 1. Расписание на выбранный день недели (если пусто — берем общее расписание из B2)
+  const dayMenuObj =
+    (dataObj.menuByDay && dataObj.menuByDay[dayNum])
+      ? dataObj.menuByDay[dayNum]
+      : {};
+
+  // 1. Отрисовка расписания для выбранного дня недели и выбранной группы классов
   if (scheduleEl) {
     scheduleEl.classList.remove("flash-updated");
     void scheduleEl.offsetWidth;
     scheduleEl.classList.add("flash-updated");
 
-    const scheduleText = dayRecord.schedule || dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
-    scheduleEl.textContent = scheduleText;
+    const selectedClassSchedule = dayScheduleArr[classColIdx] || dayScheduleArr[0] || "";
+    const fallbackSchedule = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
+    scheduleEl.textContent = selectedClassSchedule || fallbackSchedule;
   }
 
-  // 2. Меню столовой на выбранный день недели (если пусто — берем строку 3 или безопасный норматив СанПиН)
+  // 2. Отрисовка меню столовой для выбранного дня недели
   if (menuBreakfastEl) {
-    menuBreakfastEl.textContent = dayRecord.breakfast || dataObj.menuBreakfast || DEFAULT_SANPIN_BREAKFAST;
+    menuBreakfastEl.textContent = dayMenuObj.breakfast || dataObj.menuBreakfast || DEFAULT_SANPIN_BREAKFAST;
   }
   if (menuLunchEl) {
-    menuLunchEl.textContent = dayRecord.lunch || dataObj.menuLunch || DEFAULT_SANPIN_LUNCH;
+    menuLunchEl.textContent = dayMenuObj.lunch || dataObj.menuLunch || DEFAULT_SANPIN_LUNCH;
   }
   if (menuNoteEl) {
-    menuNoteEl.textContent = dataObj.menuNote || DEFAULT_SANPIN_NOTE;
+    menuNoteEl.textContent = dayMenuObj.note || dataObj.menuNote || DEFAULT_SANPIN_NOTE;
   }
 }
 
 /* ==========================================================================
-   5. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (ТАБЛО + 5 ДНЕЙ НЕДЕЛИ + ДИНАМИЧЕСКИЕ УЧИТЕЛЯ)
+   5. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (БЛОКИ 1, 2, 3, 4 НА ЛИСТЕ 1)
    ========================================================================== */
 function detectWeekdayIndexFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
@@ -488,11 +535,10 @@ function initLiveSheetWidgetAndMenu() {
       customSheetSchoolStatus = dataObj.col4Status;
     }
 
-    // Отрисовываем расписание и меню на выбранный (или сегодняшний) день недели
+    syncClassGroupButtonsFromSheet(dataObj.classHeaders, dataObj.hasMultiClassSchedule);
     syncDayPillsUI(currentSelectedWeekday);
-    renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday);
+    renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday, currentSelectedClassCol);
 
-    // Обновляем и достраиваем карточки учителей (включая 13-ю, 14-ю и последующие)
     if (Array.isArray(dataObj.teachers) && dataObj.teachers.some(Boolean)) {
       updateTeachersFromSheetRows(dataObj.teachers);
     }
@@ -521,28 +567,71 @@ function initLiveSheetWidgetAndMenu() {
       const csvText = await response.text();
       const rows = parseCSVPreserveRowIndex(csvText);
 
-      // СТРОКА 2 (индекс 1): Новости дня (A2), Общее расписание (B2), Важные новости (C2), Статус (D2)
+      // БЛОК 1 (Строка 2, индекс 1): Новости дня (A2), Общее расписание (B2), Важные новости (C2), Статус (D2)
       const secondRow = rows.length > 1 ? rows[1] : [];
-      // СТРОКА 3 (индекс 2): Резервная строка меню (если не используется недельная таблица)
       const thirdRow = rows.length > 2 ? rows[2] : [];
       const isThirdRowHint = (thirdRow[3] || "").includes("Завтрак") || (thirdRow[0] || "").includes("Завтрак");
 
-      // Сканируем строки с 4-й и ниже на наличие дней недели (Понедельник..Пятница) в столбце A
-      const weeklyByDay = {};
+      // БЛОК 2 и БЛОК 3: Сканируем таблицы Расписания (A4:D9) и Питания (A11:D16)
+      const scheduleByDayAndClass = {};
+      const menuByDay = {};
+      let classHeaders = ["1–4 классы", "5–7 классы", "8–9 классы"];
+      let hasMultiClassSchedule = true;
+      let currentSectionMode = "schedule"; // "schedule" или "menu"
+
       for (let rIdx = 2; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
+        const colA = (r[0] || "").trim().toLowerCase();
+        const colB = (r[1] || "").trim();
+        const colC = (r[2] || "").trim();
+        const colD = (r[3] || "").trim();
+
+        // Определяем строку-оглавление (например, A4 = "День недели", A11 = "День питания")
+        if (colA.includes("день")) {
+          if (colA.includes("питан") || colB.toLowerCase().includes("завтрак")) {
+            currentSectionMode = "menu";
+          } else if (colC.toLowerCase().includes("завтрак")) {
+            // Совместимость с форматом: День недели | Расписание | Завтрак | Обед
+            currentSectionMode = "combined";
+            hasMultiClassSchedule = false;
+          } else {
+            currentSectionMode = "schedule";
+            classHeaders = [
+              sanitizeInput(colB || "1–4 классы", 40),
+              sanitizeInput(colC || "5–7 классы", 40),
+              sanitizeInput(colD || "", 40)
+            ];
+            hasMultiClassSchedule = Boolean(colC || colD);
+          }
+          continue;
+        }
+
         const dayIndex = detectWeekdayIndexFromCell(r[0]);
         if (dayIndex >= 1 && dayIndex <= 5) {
-          weeklyByDay[dayIndex] = {
-            schedule: sanitizeInput(r[1] || "", 600),
-            breakfast: sanitizeInput(r[2] || "", 400),
-            lunch: sanitizeInput(r[3] || "", 400)
-          };
+          if (currentSectionMode === "schedule") {
+            scheduleByDayAndClass[dayIndex] = [
+              sanitizeInput(colB, 600),
+              sanitizeInput(colC, 600),
+              sanitizeInput(colD, 600)
+            ];
+          } else if (currentSectionMode === "menu") {
+            menuByDay[dayIndex] = {
+              breakfast: sanitizeInput(colB, 400),
+              lunch: sanitizeInput(colC, 400),
+              note: sanitizeInput(colD, 400)
+            };
+          } else if (currentSectionMode === "combined") {
+            scheduleByDayAndClass[dayIndex] = [sanitizeInput(colB, 600), "", ""];
+            menuByDay[dayIndex] = {
+              breakfast: sanitizeInput(colC, 400),
+              lunch: sanitizeInput(colD, 400),
+              note: ""
+            };
+          }
         }
       }
 
-      // Сканируем ВСЕ строки начиная со 2-й (rIdx >= 1) по столбцам F, G, H, I, J (индексы 5..9)
-      // Поддерживает любое количество учителей: 12, 13, 14, 20+
+      // БЛОК 4: Учителя в столбцах F, G, H, I, J (индексы 5..9), начиная со 2-й строки
       const teachersList = [];
       for (let rIdx = 1; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
@@ -552,7 +641,6 @@ function initLiveSheetWidgetAndMenu() {
         const role = sanitizeInput(r[8] || "", 160);
         const desc = sanitizeInput(r[9] || "", 450);
 
-        // Пропускаем случайно продублированную шапку
         if (fio.toLowerCase() === "фио учителя" || fio.toLowerCase() === "фио") continue;
 
         if (fio || role || desc || badge) {
@@ -570,7 +658,10 @@ function initLiveSheetWidgetAndMenu() {
         menuBreakfast: !isThirdRowHint ? sanitizeInput(thirdRow[0] || "", 350) : "",
         menuLunch: !isThirdRowHint ? sanitizeInput(thirdRow[1] || "", 350) : "",
         menuNote: !isThirdRowHint ? sanitizeInput(thirdRow[2] || "", 350) : "",
-        weeklyByDay,
+        classHeaders,
+        hasMultiClassSchedule,
+        scheduleByDayAndClass,
+        menuByDay,
         teachers: teachersList,
         timeLabel: nowLabel
       };
