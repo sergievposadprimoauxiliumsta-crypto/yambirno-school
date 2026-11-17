@@ -6,13 +6,28 @@
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v3";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v4";
 
-// Если в ячейке D2 Google Таблицы задан пользовательский статус школы, он имеет приоритет
+// Цветовые палитры для автоматических круглых SVG-аватаров учителей
+const AVATAR_PALETTES = [
+  { bg: "#dbeafe", fg: "#1e40af" },
+  { bg: "#fef3c7", fg: "#b45309" },
+  { bg: "#dcfce7", fg: "#15803d" },
+  { bg: "#e0e7ff", fg: "#3730a3" },
+  { bg: "#ccfbf1", fg: "#0f766e" },
+  { bg: "#fce7f3", fg: "#9d174d" },
+  { bg: "#e0f2fe", fg: "#0369a1" },
+  { bg: "#ecfccb", fg: "#3f6212" },
+  { bg: "#f3e8ff", fg: "#6b21a8" },
+  { bg: "#ffedd5", fg: "#9a3412" },
+  { bg: "#fae8ff", fg: "#86198f" },
+  { bg: "#f1f5f9", fg: "#334155" }
+];
+
 let customSheetSchoolStatus = "";
 
 /**
- * Санитизация пользовательского ввода (Защита от XSS и формульных инъекций в Google Таблицах)
+ * Санитизация пользовательского ввода (Защита от XSS и формульных инъекций)
  */
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
@@ -23,6 +38,79 @@ function sanitizeInput(rawString, maxLength = 1000) {
     .replace(/^[=+\-@]+/, "")
     .trim()
     .slice(0, maxLength);
+}
+
+/**
+ * Генерация круглого SVG-аватара (Data URI) с инициалами учителя
+ */
+function buildInitialsSvgDataUri(initials, index = 0) {
+  const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
+  const safeChars = sanitizeInput(initials, 3).toUpperCase() || "УЧ";
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><circle cx='60' cy='60' r='60' fill='${palette.bg}'/><text x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='${palette.fg}' text-anchor='middle'>${safeChars}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+/**
+ * Извлечение инициалов (Имя + Отчество или первые 2 слова) из полного ФИО
+ */
+function extractInitialsFromFio(fioString) {
+  const parts = sanitizeInput(fioString, 120)
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length >= 3) {
+    return (parts[1][0] + parts[2][0]).toUpperCase();
+  }
+  if (parts.length === 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  if (parts.length === 1 && parts[0].length >= 2) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return "УЧ";
+}
+
+/**
+ * Умный разбор ячейки Фото (Столбец F):
+ * - Конвертирует ссылки Google Диска в прямые изображения
+ * - Пропускает https://, http:// и относительные пути с GitHub (например, img/ivanova.jpg)
+ * - Если в ячейке 1–3 буквы или пусто — возвращает SVG-заглушку с инициалами
+ */
+function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
+  const cleaned = (rawPhotoCell || "").trim();
+  const fallbackSvg = buildInitialsSvgDataUri(extractInitialsFromFio(teacherFio), cardIndex);
+
+  if (!cleaned) {
+    return { src: fallbackSvg, fallback: fallbackSvg };
+  }
+
+  // Если в ячейке просто написаны инициалы (например: "ЕА" или "ММ")
+  if (/^[А-Яа-яЁёA-Za-z]{1,3}$/.test(cleaned)) {
+    const customSvg = buildInitialsSvgDataUri(cleaned, cardIndex);
+    return { src: customSvg, fallback: customSvg };
+  }
+
+  // Проверка на ссылку с Google Диска: https://drive.google.com/file/d/FILE_ID/view...
+  const driveMatch =
+    cleaned.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+    cleaned.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (cleaned.includes("drive.google.com") && driveMatch && driveMatch[1]) {
+    const fileId = driveMatch[1];
+    return {
+      src: `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`,
+      fallback: fallbackSvg
+    };
+  }
+
+  // Прямая веб-ссылка (https://...) или локальный файл в репозитории GitHub (например: photos/popikhina.jpg)
+  const isSafeUrlOrPath =
+    /^https?:\/\/[^\s"'<>]+$/i.test(cleaned) ||
+    /^[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(cleaned);
+
+  if (isSafeUrlOrPath) {
+    return { src: cleaned, fallback: fallbackSvg };
+  }
+
+  return { src: fallbackSvg, fallback: fallbackSvg };
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -70,14 +158,11 @@ function initLiveDateTimeClock() {
       widgetTodayPill.textContent = `📅 Сегодня, ${shortDate}`;
     }
 
-    // Честный статус работы школы:
-    // 1) Если администрация вписала статус в ячейку D2 таблицы — показываем его.
-    // 2) Иначе показываем общий режим работы школы без выдуманного времени окончания уроков.
     if (statusEl) {
       if (customSheetSchoolStatus) {
         statusEl.textContent = `🟢 ${customSheetSchoolStatus}`;
       } else {
-        const day = now.getDay(); // 0 - Вс, 6 - Сб
+        const day = now.getDay();
         const hour = now.getHours();
 
         if (day === 0 || day === 6) {
@@ -109,7 +194,6 @@ function initAccessibilityMode() {
 
     const textSpan = toggleBtn.querySelector(".a11y-btn-text");
     if (textSpan) {
-      // Короткий, понятный текст, чтобы кнопка не расширялась и не прыгала на новую строку
       textSpan.textContent = isEnabled ? "✕ Обычный вид сайта" : "Версия для слабовидящих";
     }
   };
@@ -131,9 +215,102 @@ function initAccessibilityMode() {
 }
 
 /* ==========================================================================
-   3. ИНТЕГРАЦИЯ С GOOGLE SHEETS:
-      - СТРОКА 2 (rows[1]) -> Виджет "Живая информация" (A2, B2, C2) + Статус (D2)
-      - СТРОКА 3 (rows[2]) -> Меню столовой (если пусто — остаётся обобщённый СанПиН)
+   3. ОБНОВЛЕНИЕ КАРТОЧЕК ПЕДАГОГОВ ИЗ СТОЛБЦОВ F, G, H, I, J (СТРОКИ 2–13)
+   ========================================================================== */
+function updateTeachersFromSheetRows(teachersDataArray) {
+  if (!Array.isArray(teachersDataArray) || teachersDataArray.length === 0) return;
+
+  const teacherCards = document.querySelectorAll("#teachers-grid .teacher-card");
+  if (teacherCards.length === 0) return;
+
+  teacherCards.forEach((card, idx) => {
+    const rowData = teachersDataArray[idx];
+    if (!rowData) return;
+
+    const photoEl = card.querySelector(".teacher-photo");
+    const badgeEl = card.querySelector(".teacher-badge");
+    const nameEl = card.querySelector(".teacher-name");
+    const roleEl = card.querySelector(".teacher-role");
+    const metaEl = card.querySelector(".teacher-meta");
+
+    const newFio = rowData.fio || (nameEl ? nameEl.textContent : "");
+    const newBadge = rowData.badge || "";
+    const newRole = rowData.role || "";
+    const newDesc = rowData.desc || "";
+    const newPhotoRaw = rowData.photo || "";
+
+    // 1. ФИО (Столбец H)
+    if (nameEl && rowData.fio) {
+      nameEl.textContent = rowData.fio;
+    }
+
+    // 2. Бейдж / Статус (Столбец G) + автоматическая категория для фильтра
+    if (badgeEl && newBadge) {
+      badgeEl.textContent = newBadge;
+      const badgeLower = newBadge.toLowerCase();
+
+      badgeEl.classList.remove("badge-gold", "badge-outline");
+      if (badgeLower.includes("совместител")) {
+        card.setAttribute("data-category", "part-time");
+        badgeEl.classList.add("badge-outline");
+      } else {
+        card.setAttribute("data-category", "main");
+        if (
+          badgeLower.includes("отличник") ||
+          badgeLower.includes("почетн") ||
+          badgeLower.includes("почётн") ||
+          badgeLower.includes("заслужен")
+        ) {
+          badgeEl.classList.add("badge-gold");
+        }
+      }
+    }
+
+    // 3. Должность и предмет (Столбец I)
+    if (roleEl && newRole) {
+      roleEl.textContent = newRole;
+    }
+
+    // 4. Описание / Стаж и заслуги (Столбец J)
+    if (metaEl && newDesc) {
+      metaEl.textContent = newDesc;
+    }
+
+    // 5. Фото / Аватар (Столбец F) — только если задано новое фото или изменилось ФИО
+    if (photoEl && (newPhotoRaw || rowData.fio)) {
+      const resolved = resolveTeacherPhotoSource(newPhotoRaw, newFio, idx);
+      photoEl.onerror = () => {
+        photoEl.onerror = null;
+        photoEl.src = resolved.fallback;
+      };
+      photoEl.src = resolved.src;
+      photoEl.alt = `Фото педагога: ${newFio}`;
+    }
+  });
+
+  // Автоматический пересчет количества учителей на кнопках фильтра
+  recalculateTeacherFilterCounts();
+}
+
+function recalculateTeacherFilterCounts() {
+  const allCards = document.querySelectorAll("#teachers-grid .teacher-card");
+  const mainCards = document.querySelectorAll('#teachers-grid .teacher-card[data-category="main"]');
+  const partTimeCards = document.querySelectorAll('#teachers-grid .teacher-card[data-category="part-time"]');
+
+  const btnAll = document.querySelector('.filter-btn[data-filter="all"]');
+  const btnMain = document.querySelector('.filter-btn[data-filter="main"]');
+  const btnPart = document.querySelector('.filter-btn[data-filter="part-time"]');
+
+  if (btnAll) btnAll.textContent = `Все педагоги (${allCards.length})`;
+  if (btnMain) btnMain.textContent = `Основной состав (${mainCards.length})`;
+  if (btnPart) btnPart.textContent = `Совместители (${partTimeCards.length})`;
+}
+
+/* ==========================================================================
+   4. ИНТЕГРАЦИЯ С GOOGLE SHEETS:
+      - СТРОКА 2 (A2:D2) -> Виджет "Живая информация" и статус
+      - СТРОКА 3 (A3:C3) -> Меню столовой
+      - СТРОКИ 2–13 (F2:J13) -> 12 карточек учителей
    ========================================================================== */
 function initLiveSheetWidgetAndMenu() {
   const newsEl = document.getElementById("col-news");
@@ -201,7 +378,6 @@ function initLiveSheetWidgetAndMenu() {
       customSheetSchoolStatus = dataObj.col4Status;
     }
 
-    // Меню столовой (Строка 3): подменяем обобщённый текст ТОЛЬКО если ячейки A3/B3/C3 реально заполнены в таблице
     if (menuBreakfastEl && dataObj.menuBreakfast) {
       menuBreakfastEl.textContent = dataObj.menuBreakfast;
     }
@@ -210,6 +386,11 @@ function initLiveSheetWidgetAndMenu() {
     }
     if (menuNoteEl && dataObj.menuNote) {
       menuNoteEl.textContent = dataObj.menuNote;
+    }
+
+    // Обновляем карточки учителей из столбцов F–J (если они заполнены в таблице)
+    if (Array.isArray(dataObj.teachers) && dataObj.teachers.length > 0) {
+      updateTeachersFromSheetRows(dataObj.teachers);
     }
 
     if (statusEl) {
@@ -240,10 +421,33 @@ function initLiveSheetWidgetAndMenu() {
       const csvText = await response.text();
       const rows = parseCSVPreserveRowIndex(csvText);
 
-      // СТРОКА 2 (индекс 1 в массиве rows) — строго Живая информация
+      // СТРОКА 2 (индекс 1): Живая информация (A2:D2)
       const secondRow = rows.length > 1 ? rows[1] : [];
-      // СТРОКА 3 (индекс 2 в массиве rows) — опциональное меню дня
+      // СТРОКА 3 (индекс 2): Меню столовой (A3:C3)
       const thirdRow = rows.length > 2 ? rows[2] : [];
+
+      // СТРОКИ 2–13 (индексы 1..12), СТОЛБЦЫ F, G, H, I, J (индексы 5, 6, 7, 8, 9): 12 карточек учителей
+      const teachersList = [];
+      for (let rIdx = 1; rIdx <= 12; rIdx++) {
+        const r = rows[rIdx] || [];
+        const rawPhoto = (r[5] || "").trim(); // Столбец F
+        const badge = sanitizeInput(r[6] || "", 100); // Столбец G
+        const fio = sanitizeInput(r[7] || "", 120); // Столбец H
+        const role = sanitizeInput(r[8] || "", 160); // Столбец I
+        const desc = sanitizeInput(r[9] || "", 450); // Столбец J
+
+        if (rawPhoto || badge || fio || role || desc) {
+          teachersList[rIdx - 1] = {
+            photo: rawPhoto,
+            badge,
+            fio,
+            role,
+            desc
+          };
+        } else {
+          teachersList[rIdx - 1] = null;
+        }
+      }
 
       const nowLabel = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 
@@ -255,6 +459,7 @@ function initLiveSheetWidgetAndMenu() {
         menuBreakfast: sanitizeInput(thirdRow[0] || "", 350),
         menuLunch: sanitizeInput(thirdRow[1] || "", 350),
         menuNote: sanitizeInput(thirdRow[2] || "", 350),
+        teachers: teachersList,
         timeLabel: nowLabel
       };
 
@@ -295,7 +500,7 @@ function initLiveSheetWidgetAndMenu() {
 }
 
 /* ==========================================================================
-   4. ПЕРЕКЛЮЧАТЕЛЬ 4 ВКЛАДОК ЦИФРОВОГО НАВИГАТОРА (ГОСУСЛУГИ, ДНЕВНИК, УЧИ.РУ)
+   5. ПЕРЕКЛЮЧАТЕЛЬ 4 ВКЛАДОК ЦИФРОВОГО НАВИГАТОРА (ГОСУСЛУГИ, ДНЕВНИК, УЧИ.РУ)
    ========================================================================== */
 function initDigitalNavigatorTabs() {
   const tabBtns = document.querySelectorAll(".digital-tab-btn");
@@ -322,7 +527,7 @@ function initDigitalNavigatorTabs() {
 }
 
 /* ==========================================================================
-   5. ФОРМА ОБРАТНОЙ СВЯЗИ С ВЫБОРОМ ТЕМЫ (БЛАГОДАРНОСТЬ / ИДЕЯ / ВОПРОС)
+   6. ФОРМА ОБРАТНОЙ СВЯЗИ С ВЫБОРОМ ТЕМЫ (БЛАГОДАРНОСТЬ / ИДЕЯ / ВОПРОС)
    ========================================================================== */
 function initFeedbackForm() {
   const consentStep = document.getElementById("consent-step");
@@ -355,7 +560,6 @@ function initFeedbackForm() {
   formFieldset.disabled = true;
   submitBtn.disabled = true;
 
-  // Переключение повода обращения (Вопрос / Благодарность / Идея)
   const setTopicByPrefix = (prefix, placeholderText) => {
     selectedTopicPrefix = prefix;
     if (commentInput && placeholderText) {
@@ -379,7 +583,6 @@ function initFeedbackForm() {
     });
   });
 
-  // Автоматический выбор темы, если родитель перешёл по карточке с главной страницы (?topic=thanks|idea|question)
   try {
     const params = new URLSearchParams(window.location.search);
     const topicParam = params.get("topic");
@@ -550,7 +753,7 @@ function initFeedbackForm() {
 }
 
 /* ==========================================================================
-   6. ПЛАВНОЕ ПОЯВЛЕНИЕ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
+   7. ПЛАВНОЕ ПОЯВЛЕНИЕ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
    ========================================================================== */
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
@@ -615,9 +818,8 @@ function initScrollRevealAndCounters() {
 
 function initTeacherFilter() {
   const filterBtns = document.querySelectorAll(".filter-btn");
-  const teacherCards = document.querySelectorAll(".teacher-card");
 
-  if (filterBtns.length === 0 || teacherCards.length === 0) return;
+  if (filterBtns.length === 0) return;
 
   filterBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -625,6 +827,7 @@ function initTeacherFilter() {
       btn.classList.add("active");
 
       const category = btn.getAttribute("data-filter");
+      const teacherCards = document.querySelectorAll("#teachers-grid .teacher-card");
 
       teacherCards.forEach((card) => {
         const cardCat = card.getAttribute("data-category");
