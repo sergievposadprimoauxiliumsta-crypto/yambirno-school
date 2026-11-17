@@ -1812,8 +1812,102 @@ body.visually-impaired .day-pill.active {
 }
 
 /* ==========================================================================
-   11. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–4, 5–7, 8–9)
+   11. ПОГОДА В С. ЯМБИРНО, ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ (ПН–ПТ) И КЛАССОВ (1–9 КЛ)
    ========================================================================== */
+.top-weather-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.16);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* Виджет погоды внутри "Живой информации" */
+.widget-weather-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weather-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.weather-loc-label {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+}
+
+.weather-now-main,
+.weather-morning-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.weather-emoji {
+  font-size: 1.3rem;
+}
+
+.weather-temp-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.weather-tomorrow-val {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.weather-desc-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.weather-advice-banner {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+  border-left: 3px solid #0284c7;
+}
+
+.weather-advice-banner.advice-rain {
+  background: #fef3c7;
+  color: #92400e;
+  border-left-color: #d97706;
+}
+
+.weather-advice-banner.advice-cold {
+  background: #e0e7ff;
+  color: #1e3a8a;
+  border-left-color: #2563eb;
+}
+
+/* Переключатель дней недели (Пн–Пт) */
 .widget-schedule-head,
 .live-menu-head {
   display: flex;
@@ -1866,48 +1960,59 @@ body.visually-impaired .day-pill.active {
   color: #ffffff;
 }
 
-/* Переключатель классов внутри блока расписания */
-.class-group-pills {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+/* Компактная панель выбора класса с 1 по 9 (9 мини-кнопок в 1 ряд) */
+.grade-selector-bar {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
   margin-bottom: 10px;
 }
 
-.class-pill {
-  flex: 1 1 auto;
+.grade-pill {
   border: 1px solid #cbd5e1;
   background: #ffffff;
   color: var(--text-main);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  padding: 5px 10px;
-  border-radius: 7px;
+  padding: 5px 2px;
+  border-radius: 6px;
   cursor: pointer;
   text-align: center;
-  transition: all 0.2s ease;
+  white-space: nowrap;
+  transition: all 0.18s ease;
 }
 
-.class-pill:hover {
+.grade-pill:hover {
   border-color: var(--primary);
   color: var(--primary);
 }
 
-.class-pill.active {
-  background: #dbeafe;
+.grade-pill.active {
+  background: var(--primary);
   border-color: var(--primary);
-  color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.22);
+}
+
+@media (max-width: 520px) {
+  .weather-top-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .grade-selector-bar {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 body.visually-impaired .day-pill,
-body.visually-impaired .class-pill {
+body.visually-impaired .grade-pill {
   border: 1px solid #ffff00 !important;
-  font-size: 0.88rem !important;
+  font-size: 0.85rem !important;
 }
 
 body.visually-impaired .day-pill.active,
-body.visually-impaired .class-pill.active {
+body.visually-impaired .grade-pill.active {
   outline: 2px solid #ffff00 !important;
   text-decoration: underline;
 }
