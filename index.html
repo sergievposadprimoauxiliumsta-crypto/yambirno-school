@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Официальный сайт</title>
-  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Расписание по классам и дням недели, меню питания, инструкции к Госуслугам, электронному дневнику Моя школа и Учи.ру.">
+  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Поурочное расписание с 1 по 9 класс, погода в с. Ямбирно, инструкции к Госуслугам, электронному дневнику и Учи.ру.">
 
   <!-- Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
-  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Живая информация, расписание по классам, инструкции для родителей по Дневнику и Учи.ру.">
+  <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Расписание 1–9 классов, погода в с. Ямбирно, навигатор по Дневнику и Учи.ру.">
   <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Ямбирнский+филиал+МОУ+Лесно-Конобеевская+СШ">
 
   <link rel="stylesheet" href="styles.css">
@@ -22,13 +22,14 @@
 
   <!-- 1. ИННОВАЦИОННАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА -->
   <header class="site-header" id="top">
-    <div class="top-utility-bar" role="region" aria-label="Панель текущего времени и специальных возможностей">
+    <div class="top-utility-bar" role="region" aria-label="Панель текущего времени, погоды и специальных возможностей">
       <div class="container utility-inner">
         <div class="utility-datetime">
           <span class="utility-icon" aria-hidden="true">🗓️</span>
           <span id="live-date-display" class="utility-date-text">Загрузка даты...</span>
           <span class="utility-sep" aria-hidden="true">|</span>
           <span id="live-time-display" class="live-clock-digits" aria-label="Текущее время">--:--:--</span>
+          <span id="top-weather-pill" class="top-weather-pill" title="Текущая погода в с. Ямбирно">🌡️ с. Ямбирно: ...</span>
           <span id="school-day-status" class="school-status-pill">Режим работы: Пн–Пт</span>
         </div>
 
@@ -79,7 +80,7 @@
   </header>
 
   <main id="main-content">
-    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO) + ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" С ВЫБОРОМ ДНЯ И КЛАССА -->
+    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO) + ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" (РАСПИСАНИЕ 1–9 КЛ. + ПОГОДА В ЯМБИРНО) -->
     <section class="hero-section">
       <div class="container hero-grid">
         
@@ -102,7 +103,7 @@
           </div>
         </div>
 
-        <!-- Правая колонка: Виджет "Живая информация" с переключателем Дней (Пн–Пт) и Классов (1–4, 5–7, 8–9) -->
+        <!-- Правая колонка: Виджет "Живая информация" -->
         <aside class="live-widget surface-card reveal" id="live-widget-card" aria-labelledby="live-widget-title">
           <div class="widget-header">
             <div class="live-badge-capsule">
@@ -130,6 +131,32 @@
           </div>
 
           <div class="widget-body" id="widget-content">
+            
+            <!-- БЛОК ПОГОДЫ В СЕЛЕ ЯМБИРНО (СЕЙЧАС + ЗАВТРА УТРОМ В ШКОЛУ) -->
+            <div class="widget-weather-card" id="yambirno-weather-box" aria-live="polite">
+              <div class="weather-top-row">
+                <div class="weather-now-col">
+                  <span class="weather-loc-label">📍 Погода в с. Ямбирно сейчас:</span>
+                  <div class="weather-now-main">
+                    <span id="weather-now-icon" class="weather-emoji" aria-hidden="true">🌤️</span>
+                    <strong id="weather-now-temp" class="weather-temp-val">...</strong>
+                    <span id="weather-now-desc" class="weather-desc-text">Загрузка метеоданных...</span>
+                  </div>
+                </div>
+                <div class="weather-morning-col">
+                  <span class="weather-loc-label">🌅 Завтра к 1-му уроку (08:00):</span>
+                  <div class="weather-morning-main">
+                    <strong id="weather-tomorrow-temp" class="weather-tomorrow-val">...</strong>
+                    <span id="weather-tomorrow-desc" class="weather-desc-text">...</span>
+                  </div>
+                </div>
+              </div>
+              <div id="weather-parent-advice" class="weather-advice-banner">
+                Загружаем прогноз для родителей на утро...
+              </div>
+            </div>
+
+            <!-- Блок Новостей дня -->
             <div class="widget-block">
               <div class="widget-block-head">
                 <span class="widget-block-icon" aria-hidden="true">📰</span>
@@ -138,12 +165,12 @@
               <div id="col-news" class="widget-value is-loading-shimmer">Загрузка данных...</div>
             </div>
 
-            <!-- Блок расписания с двойным переключателем: День недели (Пн–Пт) + Классы (B4, C4, D4) -->
+            <!-- Блок Расписания: выбор Дня недели (Пн–Пт) и индивидуального Класса (1–9 класс) -->
             <div class="widget-block">
               <div class="widget-block-head widget-schedule-head">
                 <div class="schedule-title-line">
                   <span class="widget-block-icon" aria-hidden="true">🕒</span>
-                  <h3>Расписание: <span id="schedule-day-label" class="day-accent-label">Сегодня</span></h3>
+                  <h3>Уроки: <span id="schedule-day-label" class="day-accent-label">Сегодня</span></h3>
                 </div>
                 <div class="weekday-pills" id="schedule-weekday-pills" role="group" aria-label="Выбор дня недели для расписания">
                   <button type="button" class="day-pill" data-day="1" title="Понедельник">Пн</button>
@@ -154,16 +181,23 @@
                 </div>
               </div>
 
-              <!-- Переключатель классов (названия подтягиваются из ячеек B4, C4, D4 таблицы) -->
-              <div class="class-group-pills" id="schedule-class-pills" role="group" aria-label="Выбор класса">
-                <button type="button" class="class-pill active" data-class-col="0" id="class-btn-0">1–4 классы</button>
-                <button type="button" class="class-pill" data-class-col="1" id="class-btn-1">5–7 классы</button>
-                <button type="button" class="class-pill" data-class-col="2" id="class-btn-2">8–9 классы</button>
+              <!-- Компактная сетка выбора класса с 1 по 9 (без перегрузки интерфейса) -->
+              <div class="grade-selector-bar" id="schedule-grade-pills" role="group" aria-label="Выберите класс (с 1 по 9)">
+                <button type="button" class="grade-pill active" data-grade="1">1 кл</button>
+                <button type="button" class="grade-pill" data-grade="2">2 кл</button>
+                <button type="button" class="grade-pill" data-grade="3">3 кл</button>
+                <button type="button" class="grade-pill" data-grade="4">4 кл</button>
+                <button type="button" class="grade-pill" data-grade="5">5 кл</button>
+                <button type="button" class="grade-pill" data-grade="6">6 кл</button>
+                <button type="button" class="grade-pill" data-grade="7">7 кл</button>
+                <button type="button" class="grade-pill" data-grade="8">8 кл</button>
+                <button type="button" class="grade-pill" data-grade="9">9 кл</button>
               </div>
 
               <div id="col-schedule" class="widget-value is-loading-shimmer">Загрузка данных...</div>
             </div>
 
+            <!-- Блок Важных объявлений -->
             <div class="widget-block widget-block-highlight">
               <div class="widget-block-head">
                 <span class="widget-block-icon" aria-hidden="true">⚡</span>
@@ -513,7 +547,7 @@
           <!-- 1 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e40af' text-anchor='middle'%3EЕА%3C/text%3E%3C/svg%3E" alt="Аватар: Попихина Елена Александровна, заведующий филиалом" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e40af' text-anchor='middle'%3EЕА%3C/text%3E%3C/svg%3E" alt="Аватар: Попихина Елена Александровна, заведующий филиалом" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Руководитель филиала</span>
             <h3 class="teacher-name">Попихина Елена Александровна</h3>
@@ -524,7 +558,7 @@
           <!-- 2 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fef3c7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%23b45309' text-anchor='middle'%3EММ%3C/text%3E%3C/svg%3E" alt="Аватар: Колупаева Мария Михайловна, учитель начальных классов" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fef3c7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%23b45309' text-anchor='middle'%3EММ%3C/text%3E%3C/svg%3E" alt="Аватар: Колупаева Мария Михайловна, учитель начальных классов" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge badge-gold">Отличник народного просвещения</span>
             <h3 class="teacher-name">Колупаева Мария Михайловна</h3>
@@ -535,7 +569,7 @@
           <!-- 3 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dcfce7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2315803d' text-anchor='middle'%3EЕП%3C/text%3E%3C/svg%3E" alt="Аватар: Грошева Елена Петровна, учитель русского языка и литературы" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dcfce7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2315803d' text-anchor='middle'%3EЕП%3C/text%3E%3C/svg%3E" alt="Аватар: Грошева Елена Петровна, учитель русского языка и литературы" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Благодарность Минпросвещения РФ</span>
             <h3 class="teacher-name">Грошева Елена Петровна</h3>
@@ -546,7 +580,7 @@
           <!-- 4 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0e7ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233730a3' text-anchor='middle'%3EВА%3C/text%3E%3C/svg%3E" alt="Аватар: Матыкина Валентина Александровна, учитель английского языка" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0e7ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233730a3' text-anchor='middle'%3EВА%3C/text%3E%3C/svg%3E" alt="Аватар: Матыкина Валентина Александровна, учитель английского языка" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Матыкина Валентина Александровна</h3>
@@ -557,7 +591,7 @@
           <!-- 5 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0f2fe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230369a1' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Корягина Нина Алексеевна, учитель математики" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0f2fe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230369a1' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Корягина Нина Алексеевна, учитель математики" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Корягина Нина Алексеевна</h3>
@@ -568,7 +602,7 @@
           <!-- 6 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ecfccb'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233f6212' text-anchor='middle'%3EСН%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёва Светлана Николаевна, учитель биологии" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ecfccb'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233f6212' text-anchor='middle'%3EСН%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёва Светлана Николаевна, учитель биологии" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Киселёва Светлана Николаевна</h3>
@@ -579,7 +613,7 @@
           <!-- 7 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f3e8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%236b21a8' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" alt="Аватар: Пителина Анна Александровна, учитель физики и информатики" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f3e8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%236b21a8' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" alt="Аватар: Пителина Анна Александровна, учитель физики и информатики" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Пителина Анна Александровна</h3>
@@ -590,7 +624,7 @@
           <!-- 8 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ffedd5'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239a3412' text-anchor='middle'%3EЛЮ%3C/text%3E%3C/svg%3E" alt="Аватар: Оглу Лариса Юрьевна, учитель начальных классов" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ffedd5'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239a3412' text-anchor='middle'%3EЛЮ%3C/text%3E%3C/svg%3E" alt="Аватар: Оглу Лариса Юрьевна, учитель начальных классов" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Оглу Лариса Юрьевна</h3>
@@ -601,7 +635,7 @@
           <!-- 9 -->
           <article class="teacher-card surface-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fae8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2386198f' text-anchor='middle'%3EТЛ%3C/text%3E%3C/svg%3E" alt="Аватар: Сидорова Татьяна Ласловна, учитель начальных классов" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fae8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2386198f' text-anchor='middle'%3EТЛ%3C/text%3E%3C/svg%3E" alt="Аватар: Сидорова Татьяна Ласловна, учитель начальных классов" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge">Основной состав</span>
             <h3 class="teacher-name">Сидорова Татьяна Ласловна</h3>
@@ -612,7 +646,7 @@
           <!-- 10 -->
           <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ccfbf1'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230f766e' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёв Николай Александрович, учитель географии" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ccfbf1'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230f766e' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёв Николай Александрович, учитель географии" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">Киселёв Николай Александрович</h3>
@@ -623,7 +657,7 @@
           <!-- 11 -->
           <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EСС%3C/text%3E%3C/svg%3E" alt="Аватар: Малышев Сергей Сергеевич, учитель физической культуры" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EСС%3C/text%3E%3C/svg%3E" alt="Аватар: Малышев Сергей Сергеевич, учитель физической культуры" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">Малышев Сергей Сергеевич</h3>
@@ -634,7 +668,7 @@
           <!-- 12 -->
           <article class="teacher-card surface-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
-              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fce7f3'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239d174d' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" alt="Аватар: Коконова Алла Александровна, учитель химии" class="teacher-photo" width="96" height="96">
+              <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fce7f3'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239d174d' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" alt="Аватар: Коконова Алла Александровна, учитель химии" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
             </div>
             <span class="teacher-badge badge-outline">Совместитель</span>
             <h3 class="teacher-name">Коконова Алла Александровна</h3>
@@ -695,7 +729,7 @@
       </div>
     </section>
 
-    <!-- 7. ОРГАНИЗАЦИЯ ПИТАНИЯ (С НЕДЕЛЬНЫМ МЕНЮ ПН–ПТ ИЗ ТАБЛИЦЫ) И БЕЗОПАСНОСТЬ -->
+    <!-- 7. ОРГАНИЗАЦИЯ ПИТАНИЯ И БЕЗОПАСНОСТЬ -->
     <section id="school-life" class="section">
       <div class="container">
         <div class="info-blocks-grid">
