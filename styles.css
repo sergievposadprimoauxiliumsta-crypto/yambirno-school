@@ -1,10 +1,11 @@
 /* ==========================================================================
-   1. ПЕРЕМЕННЫЕ И БАЗОВЫЙ СБРОС (АДАПТАЦИЯ ОТ 320PX ДО ШИРОКИХ ЭКРАНОВ)
+   1. ПЕРЕМЕННЫЕ, ТЕКСТУРЫ И БАЗОВЫЙ СБРОС (ОТ 320PX ДО ШИРОКИХ МОНИТОРОВ)
    ========================================================================== */
 :root {
   --bg-main: #f8fafc;
   --bg-card: #ffffff;
   --bg-alt: #f1f5f9;
+  --bg-warm: #fdfbf7;
   --text-main: #0f172a;
   --text-muted: #475569;
   --primary: #1e40af;
@@ -21,6 +22,7 @@
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-xl: 24px;
+  --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -56,6 +58,25 @@ body {
   word-wrap: break-word;
 }
 
+/* Микро-текстуры на чистом CSS (0 КБ сетевой нагрузки) */
+body.paper-texture {
+  background-color: #f8fafc;
+  background-image: radial-gradient(rgba(30, 64, 175, 0.045) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.school-grid-texture {
+  background-color: #f1f5f9;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.warm-paper-card {
+  background: linear-gradient(180deg, #ffffff 0%, var(--bg-warm) 100%) !important;
+}
+
 a {
   color: var(--primary);
   text-decoration: none;
@@ -87,6 +108,18 @@ img {
   min-width: 0;
 }
 
+/* Эффект живого подъема и светового блика (Subtle 3D Elevation) */
+.elevate-card {
+  transition: transform 0.32s var(--spring-ease), box-shadow 0.32s var(--spring-ease), border-color 0.32s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), var(--shadow-sm);
+}
+
+.elevate-card:hover {
+  transform: translateY(-5px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
 .skip-link {
   position: absolute;
   top: -100px;
@@ -103,17 +136,63 @@ img {
 }
 
 /* ==========================================================================
-   2. ИННОВАЦИОННАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА (HEADER)
+   2. ВСПЛЫВАЮЩАЯ КАПСУЛА DYNAMIC ISLAND TOAST
+   ========================================================================== */
+.dynamic-island {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translate(-50%, -140%) scale(0.9);
+  background: rgba(15, 23, 42, 0.94);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  z-index: 2000;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.42s var(--spring-ease), opacity 0.3s ease;
+  max-width: calc(100vw - 24px);
+  white-space: nowrap;
+}
+
+.dynamic-island.show {
+  transform: translate(-50%, 0) scale(1);
+  opacity: 1;
+}
+
+.island-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+  flex-shrink: 0;
+}
+
+.island-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   3. ОПТИЧЕСКАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА (OPTICAL GLASS HEADER)
    ========================================================================== */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), var(--shadow-sm);
 }
 
 .top-utility-bar {
@@ -231,7 +310,7 @@ img {
 }
 
 .brand:hover .logo-img {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
 .brand-text {
@@ -264,7 +343,7 @@ img {
 .main-nav {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -272,15 +351,17 @@ img {
   color: var(--text-main);
   font-weight: 600;
   font-size: 0.92rem;
-  padding: 6px 4px;
+  padding: 6px 8px;
+  border-radius: 8px;
   border-bottom: 2px solid transparent;
-  transition: color var(--transition), border-color var(--transition);
+  transition: all var(--transition);
 }
 
 .nav-link:hover,
-.nav-link:focus {
+.nav-link:focus,
+.nav-link.spy-active {
   color: var(--primary);
-  border-bottom-color: var(--primary);
+  background: var(--primary-soft);
 }
 
 .nav-link-accent {
@@ -288,7 +369,7 @@ img {
   background: var(--primary-soft);
   padding: 6px 12px;
   border-radius: 999px;
-  border-bottom: none;
+  font-weight: 700;
 }
 
 .nav-link-accent:hover {
@@ -318,7 +399,7 @@ img {
 }
 
 /* ==========================================================================
-   3. КНОПКИ И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
+   4. КНОПКИ И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
    ========================================================================== */
 .btn {
   display: inline-flex;
@@ -371,20 +452,35 @@ img {
 }
 
 /* ==========================================================================
-   4. ГЛАВНЫЙ ЭКРАН (HERO) И ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ"
+   5. ГЛАВНЫЙ ЭКРАН (AMBIENT TIME-OF-DAY UI) И ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ"
    ========================================================================== */
 .hero-section {
   padding: 52px 0;
   background:
-    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.09) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(245, 158, 11, 0.13) 0%, transparent 45%),
     linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #fef3c7 100%);
   border-bottom: 1px solid var(--border);
+  transition: background 0.6s ease;
+}
+
+/* Утренняя атмосфера (06:00–11:00) */
+.hero-section.ambient-morning {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(251, 191, 36, 0.18) 0%, transparent 50%),
+    linear-gradient(135deg, #fffbeb 0%, #eff6ff 60%, #fef3c7 100%);
+}
+
+/* Вечерняя атмосфера (17:00–05:59) */
+.hero-section.ambient-evening {
+  background:
+    radial-gradient(circle at 20% 25%, rgba(99, 102, 241, 0.14) 0%, transparent 50%),
+    linear-gradient(135deg, #eef2ff 0%, #f8fafc 65%, #ffedd5 100%);
 }
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.28fr 1fr;
+  grid-template-columns: 1.25fr 1fr;
   gap: 36px;
   align-items: start;
 }
@@ -464,6 +560,7 @@ img {
   color: var(--text-muted);
 }
 
+/* ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ" */
 .live-widget {
   padding: 24px 22px;
   box-shadow: var(--shadow-lg);
@@ -532,14 +629,8 @@ img {
 }
 
 @keyframes radarPulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  75%, 100% {
-    transform: scale(2.5);
-    opacity: 0;
-  }
+  0% { transform: scale(1); opacity: 0.8; }
+  75%, 100% { transform: scale(2.5); opacity: 0; }
 }
 
 .live-badge-tag {
@@ -621,11 +712,10 @@ img {
   background: var(--bg-alt);
   border-radius: var(--radius-md);
   border-left: 4px solid #94a3b8;
-  transition: transform 0.25s ease, border-color 0.25s ease;
+  transition: border-color 0.25s ease;
 }
 
-.widget-block:hover {
-  transform: translateX(3px);
+.widget-block-diary {
   border-left-color: var(--primary);
 }
 
@@ -644,14 +734,15 @@ img {
 }
 
 .widget-value {
-  font-size: 0.96rem;
+  font-size: 0.95rem;
   font-weight: 600;
   white-space: pre-line;
   overflow-wrap: anywhere;
   transition: opacity 0.25s ease;
 }
 
-.widget-value.is-loading-shimmer {
+.widget-value.is-loading-shimmer,
+.diary-lessons-list.is-loading-shimmer {
   opacity: 0.5;
 }
 
@@ -670,8 +761,325 @@ img {
 }
 
 /* ==========================================================================
-   5. ПОДРОБНЫЙ ЦИФРОВОЙ НАВИГАТОР (ГОСУСЛУГИ, ДНЕВНИК, УЧИ.РУ)
+   6. КАРТОЧКИ-СТРОКИ ШКОЛЬНОГО ДНЕВНИКА (АВТОМАТИЧЕСКИЙ ПАРСИНГ УРОКОВ)
    ========================================================================== */
+.diary-lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.diary-lesson-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--primary);
+  border-radius: 10px;
+  padding: 8px 11px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  opacity: 0;
+  transform: translateY(8px);
+  animation: springCascadeIn 0.42s var(--spring-ease) forwards;
+  animation-delay: calc(var(--step, 0) * 40ms);
+}
+
+@keyframes springCascadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Цветовое кодирование предметов */
+.diary-lesson-row.subj-math { border-left-color: #2563eb; }
+.diary-lesson-row.subj-lang { border-left-color: #16a34a; }
+.diary-lesson-row.subj-sci  { border-left-color: #0d9488; }
+.diary-lesson-row.subj-hist { border-left-color: #dc2626; }
+.diary-lesson-row.subj-art  { border-left-color: #d97706; }
+
+.diary-lesson-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.diary-lesson-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.diary-lesson-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.diary-lesson-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.diary-lesson-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.diary-lesson-time {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  background: #f1f5f9;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+.lesson-live-pill {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  animation: softPulse 1.6s infinite;
+}
+
+.lesson-done-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+/* ==========================================================================
+   7. ПОГОДА В С. ЯМБИРНО, ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ (ПН–ПТ) И КЛАССОВ (1–9 КЛ)
+   ========================================================================== */
+.top-weather-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.16);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.widget-weather-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weather-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.weather-loc-label {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+}
+
+.weather-now-main,
+.weather-morning-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.weather-emoji {
+  font-size: 1.3rem;
+}
+
+.weather-temp-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.weather-tomorrow-val {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.weather-desc-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.weather-advice-banner {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #0f172a;
+  border-left: 3px solid #0284c7;
+}
+
+.weather-advice-banner.advice-rain {
+  background: #fef3c7;
+  color: #92400e;
+  border-left-color: #d97706;
+}
+
+.weather-advice-banner.advice-cold {
+  background: #e0e7ff;
+  color: #1e3a8a;
+  border-left-color: #2563eb;
+}
+
+.widget-schedule-head,
+.live-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.schedule-title-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-accent-label {
+  color: var(--primary);
+  font-weight: 800;
+  text-transform: none;
+}
+
+.weekday-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #e2e8f0;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.day-pill {
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.day-pill:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.day-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.grade-selector-bar {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.grade-pill {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: var(--text-main);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 2px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.grade-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.grade-pill.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.22);
+}
+
+/* ==========================================================================
+   8. ЦИФРОВОЙ НАВИГАТОР, ФАКТЫ, ПЕДАГОГИ И BENTO-ДОСТИЖЕНИЯ
+   ========================================================================== */
+.section {
+  padding: 64px 0;
+}
+
+.section-alt {
+  background-color: var(--bg-alt);
+}
+
+.section-header {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 38px;
+}
+
+.section-title {
+  font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+  margin-bottom: 10px;
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+  font-size: 1.04rem;
+}
+
 .digital-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -798,33 +1206,6 @@ img {
   color: var(--primary);
 }
 
-/* ==========================================================================
-   6. СЕКЦИИ, ФАКТЫ, ПЕДАГОГИ, ДОСТИЖЕНИЯ И МЕНЮ СТОЛОВОЙ
-   ========================================================================== */
-.section {
-  padding: 64px 0;
-}
-
-.section-alt {
-  background-color: var(--bg-alt);
-}
-
-.section-header {
-  text-align: center;
-  max-width: 760px;
-  margin: 0 auto 38px;
-}
-
-.section-title {
-  font-size: clamp(1.5rem, 2.5vw, 2.1rem);
-  margin-bottom: 10px;
-}
-
-.section-subtitle {
-  color: var(--text-muted);
-  font-size: 1.04rem;
-}
-
 .facts-grid,
 .teachers-grid,
 .success-grid,
@@ -930,12 +1311,6 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform var(--transition), box-shadow var(--transition);
-}
-
-.teacher-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
 }
 
 .teacher-photo-wrap {
@@ -992,6 +1367,7 @@ img {
   color: var(--text-muted);
 }
 
+/* Bento-шкалы достижений */
 .stats-banner {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1005,6 +1381,16 @@ img {
   box-shadow: var(--shadow-md);
 }
 
+.stat-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-md);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .stat-val {
   display: block;
   font-size: 2.4rem;
@@ -1015,8 +1401,23 @@ img {
 }
 
 .stat-label {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   opacity: 0.95;
+  margin-bottom: 12px;
+}
+
+.stat-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stat-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #34d399);
+  border-radius: 999px;
 }
 
 .subsection-title {
@@ -1051,6 +1452,9 @@ img {
   font-size: 0.94rem;
 }
 
+/* ==========================================================================
+   9. ПИТАНИЕ, ИНТЕРАКТИВНАЯ ФОТОГАЛЕРЕЯ С LIGHTBOX И КОНТАКТЫ
+   ========================================================================== */
 .info-blocks-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1126,6 +1530,7 @@ img {
   color: var(--text-muted);
 }
 
+/* Фотогалерея с эффектом увеличения */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1135,38 +1540,213 @@ img {
 .gallery-item {
   border-radius: var(--radius-md);
   overflow: hidden;
-  transition: transform var(--transition);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
-.gallery-item:hover {
-  transform: translateY(-3px);
+.gallery-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #e2e8f0;
 }
 
 .gallery-img {
   width: 100%;
-  aspect-ratio: 3 / 2;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.45s var(--spring-ease);
 }
 
-.gallery-item figcaption {
-  padding: 12px;
-  font-size: 0.87rem;
-  font-weight: 600;
+.gallery-item:hover .gallery-img {
+  transform: scale(1.06);
+}
+
+.gallery-zoom-badge {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: all 0.25s ease;
+}
+
+.gallery-item:hover .gallery-zoom-badge,
+.gallery-item:focus .gallery-zoom-badge {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gallery-caption {
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
   text-align: center;
+  color: var(--text-main);
 }
 
+/* Модальное окно Fluid Lightbox */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.lightbox-dialog {
+  width: 100%;
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #ffffff;
+}
+
+.lightbox-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lightbox-counter {
+  font-weight: 700;
+  font-size: 0.92rem;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.lightbox-close-btn {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lightbox-close-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.lightbox-stage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lightbox-img-container {
+  flex: 1;
+  max-height: 68vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.lightbox-main-img {
+  max-height: 68vh;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.lightbox-nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.lightbox-meta {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+}
+
+.lightbox-caption-title {
+  font-size: 1.15rem;
+  margin-bottom: 4px;
+  color: #fbbf24;
+}
+
+.lightbox-caption-desc {
+  font-size: 0.92rem;
+  opacity: 0.9;
+}
+
+/* Контакты с кнопкой быстрого копирования */
 .contact-card {
   border-radius: var(--radius-md);
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+}
+
+.contact-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .contact-label {
   font-size: 0.86rem;
   color: var(--text-muted);
   font-weight: 600;
+}
+
+.btn-copy-mini {
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-mini:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
 }
 
 .contact-value {
@@ -1182,8 +1762,59 @@ img {
   overflow-wrap: anywhere;
 }
 
+/* Плавающая кнопка "Наверх" с кольцом прогресса чтения */
+.scroll-top-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: var(--primary);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s var(--spring-ease);
+}
+
+.scroll-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.progress-ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+  stroke: #e2e8f0;
+}
+
+.progress-ring-fill {
+  stroke: var(--primary);
+  transition: stroke-dashoffset 0.15s linear;
+}
+
+.scroll-top-arrow {
+  font-size: 1.1rem;
+  font-weight: 800;
+  position: relative;
+  z-index: 2;
+}
+
 /* ==========================================================================
-   7. БЛОК "ОТКРЫТЫЙ ДИАЛОГ СО ШКОЛОЙ" (CTA)
+   10. БЛОК ОБРАТНОЙ СВЯЗИ (CTA) И СТРАНИЦА FEEDBACK.HTML С КВИТАНЦИЕЙ
    ========================================================================== */
 .cta-section {
   padding: 56px 0 72px;
@@ -1313,9 +1944,7 @@ img {
   color: #fbbf24;
 }
 
-/* ==========================================================================
-   8. СТРАНИЦА ОБРАТНОЙ СВЯЗИ (FEEDBACK.HTML) И ВЫБОР ТЕМЫ
-   ========================================================================== */
+/* Страница обратной связи (feedback.html) */
 .feedback-main {
   padding: 40px 0 56px;
   flex: 1;
@@ -1328,7 +1957,39 @@ img {
 .page-main-title {
   text-align: center;
   font-size: clamp(1.45rem, 2.8vw, 2rem);
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+}
+
+.recipient-ticket {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  border-left: 4px solid var(--primary);
+}
+
+.recipient-ticket-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.recipient-ticket-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+}
+
+.recipient-ticket-info strong {
+  font-size: 1rem;
+}
+
+.recipient-ticket-info span {
+  font-size: 0.84rem;
+  color: var(--text-muted);
 }
 
 .steps-indicator {
@@ -1340,6 +2001,21 @@ img {
   flex-wrap: wrap;
 }
 
+.steps-progress-track {
+  width: 48px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.steps-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.45s var(--spring-ease);
+}
+
 .step-pill {
   padding: 6px 14px;
   border-radius: 999px;
@@ -1347,6 +2023,7 @@ img {
   color: var(--text-muted);
   font-size: 0.85rem;
   font-weight: 700;
+  transition: all 0.3s ease;
 }
 
 .step-pill.active {
@@ -1357,6 +2034,16 @@ img {
 .feedback-card {
   padding: 32px 28px;
   box-shadow: var(--shadow-md);
+  border-top: 5px solid var(--primary);
+  transition: border-color 0.3s ease, transform 0.35s var(--spring-ease), opacity 0.3s ease;
+}
+
+.feedback-card.topic-theme-thanks {
+  border-top-color: #16a34a;
+}
+
+.feedback-card.topic-theme-idea {
+  border-top-color: #d97706;
 }
 
 .form-fieldset {
@@ -1427,10 +2114,29 @@ img {
   margin-bottom: 18px;
 }
 
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
 .form-label {
   display: block;
   font-weight: 700;
   margin-bottom: 6px;
+}
+
+.form-label-row .form-label {
+  margin-bottom: 0;
+}
+
+.char-counter {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .req {
@@ -1514,8 +2220,73 @@ img {
   border: 1px solid #fca5a5;
 }
 
+/* Электронная квитанция-подтверждение */
+.receipt-box {
+  margin-top: 22px;
+  background: #f0fdf4;
+  border: 2px dashed #16a34a;
+  border-radius: var(--radius-md);
+  padding: 22px;
+}
+
+.receipt-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #bbf7d0;
+  margin-bottom: 14px;
+}
+
+.receipt-check-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #ffffff;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.receipt-meta {
+  font-size: 0.82rem;
+  color: #166534;
+  font-weight: 600;
+}
+
+.receipt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-size: 0.92rem;
+}
+
+.receipt-row span {
+  color: var(--text-muted);
+  margin-right: 6px;
+}
+
+.receipt-comment-text {
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #dcfce7;
+  white-space: pre-line;
+}
+
+.receipt-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* ==========================================================================
-   9. INTERSECTION OBSERVER И РЕЖИМ ДЛЯ СЛАБОВИДЯЩИХ (.visually-impaired)
+   11. INTERSECTION OBSERVER И РЕЖИМ ДЛЯ СЛАБОВИДЯЩИХ (.visually-impaired)
    ========================================================================== */
 .reveal {
   opacity: 0;
@@ -1530,6 +2301,7 @@ img {
 
 body.visually-impaired {
   background-color: #000000 !important;
+  background-image: none !important;
   color: #ffff00 !important;
   font-size: 1.2rem !important;
   line-height: 1.7 !important;
@@ -1588,7 +2360,8 @@ body.visually-impaired img:not(.logo-img) {
 }
 
 body.visually-impaired .teacher-photo-wrap,
-body.visually-impaired .radar-dot-wrap {
+body.visually-impaired .radar-dot-wrap,
+body.visually-impaired .gallery-img-wrap {
   display: none !important;
 }
 
@@ -1596,14 +2369,22 @@ body.visually-impaired .btn,
 body.visually-impaired .btn-refresh,
 body.visually-impaired .filter-btn,
 body.visually-impaired .digital-tab-btn,
-body.visually-impaired .topic-chip {
+body.visually-impaired .topic-chip,
+body.visually-impaired .day-pill,
+body.visually-impaired .grade-pill,
+body.visually-impaired .diary-lesson-row {
   border: 2px solid #ffff00 !important;
   font-size: 1.05rem !important;
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
 }
 
 body.visually-impaired .filter-btn.active,
 body.visually-impaired .digital-tab-btn.active,
-body.visually-impaired .topic-chip.active {
+body.visually-impaired .topic-chip.active,
+body.visually-impaired .day-pill.active,
+body.visually-impaired .grade-pill.active {
   outline: 3px solid #ffff00 !important;
   text-decoration: underline;
 }
@@ -1615,199 +2396,7 @@ body.visually-impaired .reveal {
 }
 
 /* ==========================================================================
-   10. ПОГОДА В С. ЯМБИРНО, ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ (ПН–ПТ) И КЛАССОВ (1–9 КЛ)
-   ========================================================================== */
-.top-weather-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(56, 189, 248, 0.16);
-  color: #bae6fd;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-}
-
-.widget-weather-card {
-  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
-  border: 1px solid #bae6fd;
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.weather-top-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.weather-loc-label {
-  display: block;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: #0369a1;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  margin-bottom: 2px;
-}
-
-.weather-now-main,
-.weather-morning-main {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.weather-emoji {
-  font-size: 1.3rem;
-}
-
-.weather-temp-val {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.weather-tomorrow-val {
-  font-size: 1.08rem;
-  font-weight: 800;
-  color: var(--primary);
-}
-
-.weather-desc-text {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.weather-advice-banner {
-  font-size: 0.82rem;
-  font-weight: 700;
-  padding: 7px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.85);
-  color: #0f172a;
-  border-left: 3px solid #0284c7;
-}
-
-.weather-advice-banner.advice-rain {
-  background: #fef3c7;
-  color: #92400e;
-  border-left-color: #d97706;
-}
-
-.weather-advice-banner.advice-cold {
-  background: #e0e7ff;
-  color: #1e3a8a;
-  border-left-color: #2563eb;
-}
-
-.widget-schedule-head,
-.live-menu-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-
-.schedule-title-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.day-accent-label {
-  color: var(--primary);
-  font-weight: 800;
-  text-transform: none;
-}
-
-.weekday-pills {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: #e2e8f0;
-  padding: 3px;
-  border-radius: 8px;
-}
-
-.day-pill {
-  border: none;
-  background: transparent;
-  color: var(--text-main);
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 3px 7px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.day-pill:hover {
-  background: rgba(255, 255, 255, 0.75);
-}
-
-.day-pill.active {
-  background: var(--primary);
-  color: #ffffff;
-}
-
-.grade-selector-bar {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap: 4px;
-  margin-bottom: 10px;
-}
-
-.grade-pill {
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: var(--text-main);
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 5px 2px;
-  border-radius: 6px;
-  cursor: pointer;
-  text-align: center;
-  white-space: nowrap;
-  transition: all 0.18s ease;
-}
-
-.grade-pill:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.grade-pill.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.22);
-}
-
-body.visually-impaired .day-pill,
-body.visually-impaired .grade-pill {
-  border: 1px solid #ffff00 !important;
-  font-size: 0.85rem !important;
-}
-
-body.visually-impaired .day-pill.active,
-body.visually-impaired .grade-pill.active {
-  outline: 2px solid #ffff00 !important;
-  text-decoration: underline;
-}
-
-/* ==========================================================================
-   11. АДАПТИВНОСТЬ (ПЛАНШЕТЫ, МОБИЛЬНЫЕ И ЭКРАНЫ 320PX)
+   12. АДАПТИВНОСТЬ (ПЛАНШЕТЫ, МОБИЛЬНЫЕ И ЭКРАНЫ 320PX)
    ========================================================================== */
 @media (max-width: 992px) {
   .hero-grid,
@@ -1869,12 +2458,13 @@ body.visually-impaired .grade-pill.active {
 
   .main-nav {
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   .header-actions,
   .hero-actions,
-  .digital-quick-links {
+  .digital-quick-links,
+  .receipt-actions {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
@@ -1882,7 +2472,8 @@ body.visually-impaired .grade-pill.active {
 
   .hero-actions .btn,
   .digital-tab-btn,
-  .digital-quick-links .btn {
+  .digital-quick-links .btn,
+  .receipt-actions .btn {
     width: 100%;
     text-align: center;
   }
@@ -1902,6 +2493,12 @@ body.visually-impaired .grade-pill.active {
 
   .grade-selector-bar {
     grid-template-columns: repeat(5, 1fr);
+  }
+
+  .diary-lesson-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 
