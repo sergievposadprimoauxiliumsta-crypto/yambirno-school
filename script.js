@@ -1,11 +1,11 @@
 /**
  * Основной скрипт сайта Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»
  * Включает:
- * 1) Автоматическое превращение текста уроков в карточки-строки дневника с иконками, цветами и статусом звонка
- * 2) Погоду в с. Ямбирно + совет родителям на завтрашнее утро к 08:00
- * 3) Интерактивную фотогалерею с Lightbox и управлением из Google Таблицы (начиная с ячейки A35)
- * 4) Динамическое обновление и добавление учителей (F2:J13+) с защитой от пересечения с расписанием
- * 5) Всплывающую капсулу Dynamic Island, квитанцию обращения на feedback.html и кольцо прогресса чтения
+ * 1) Интерактивный движок "Живая школьная доска: от 1 до 11 класса" (Human Student Cadence & Wet-Wipe Physics)
+ * 2) Расписание для 1–11 классов с автоконвертацией в карточки дневника и живым прогрессом текущего урока
+ * 3) Динамическое чтение времени звонков из Google Таблицы (A28:B35) с автовозвратом к стандарту
+ * 4) Отправку расписания и утренней погоды в родительский чат в 1 клик ("📤 В чат")
+ * 5) Фотогалерею с Lightbox и управлением из таблицы, капсулу Dynamic Island и квитанцию 152-ФЗ
  */
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
@@ -16,7 +16,7 @@ const YAMBIRNO_LON = 41.9708;
 
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v9";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v10";
 
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
@@ -41,8 +41,8 @@ const DAY_NAMES_FULL = {
   5: "Пятница"
 };
 
-// Сетка звонков для подсветки текущего урока ("Идёт сейчас" / "Прошёл")
-const LESSON_BELL_TIMES = {
+// Стандартное время звонков (используется по умолчанию, если в таблице ячейка пустая)
+const DEFAULT_BELL_TIMES = {
   1: { start: "08:30", end: "09:15", startMin: 510, endMin: 555 },
   2: { start: "09:25", end: "10:10", startMin: 565, endMin: 610 },
   3: { start: "10:25", end: "11:10", startMin: 625, endMin: 670 },
@@ -51,6 +51,109 @@ const LESSON_BELL_TIMES = {
   6: { start: "13:15", end: "14:00", startMin: 795, endMin: 840 },
   7: { start: "14:10", end: "14:55", startMin: 850, endMin: 895 }
 };
+
+let activeBellTimes = cloneDefaultBells();
+let isCustomBellScheduleActive = false;
+
+function cloneDefaultBells() {
+  const copy = {};
+  Object.keys(DEFAULT_BELL_TIMES).forEach((k) => {
+    copy[k] = { ...DEFAULT_BELL_TIMES[k] };
+  });
+  return copy;
+}
+
+// Программа примеров для движка "Живая школьная доска" (от 1 до 11 класса)
+const CHALKBOARD_CURRICULUM = [
+  {
+    grade: 1,
+    badge: "1 класс • Арифметика",
+    topic: "Тема урока: Сложение чисел в пределах 10",
+    problem: "3 + 2",
+    steps: " = 3 + 1 + 1",
+    answer: " = 5"
+  },
+  {
+    grade: 2,
+    badge: "2 класс • Математика",
+    topic: "Тема урока: Таблица умножения",
+    problem: "6 × 4",
+    steps: " = 6 + 6 + 6 + 6",
+    answer: " = 24"
+  },
+  {
+    grade: 3,
+    badge: "3 класс • Математика",
+    topic: "Тема урока: Взаимосвязь умножения и деления",
+    problem: "48 : 6",
+    steps: " (так как 6 × 8 = 48)",
+    answer: " = 8"
+  },
+  {
+    grade: 4,
+    badge: "4 класс • Задачи на движение",
+    topic: "Тема урока: Формула пути S = v · t",
+    problem: "S = 12 км/ч × 3 ч",
+    steps: " = 12 · 3",
+    answer: " = 36 км"
+  },
+  {
+    grade: 5,
+    badge: "5 класс • Обыкновенные дроби",
+    topic: "Тема урока: Сложение дробей с одинаковым знаменателем",
+    problem: "2/7 + 3/7",
+    steps: " = (2 + 3) / 7",
+    answer: " = 5/7"
+  },
+  {
+    grade: 6,
+    badge: "6 класс • Введение в алгебру",
+    topic: "Тема урока: Решение линейных уравнений",
+    problem: "3x − 7 = 8",
+    steps: " → 3x = 8 + 7 → 3x = 15",
+    answer: " → x = 5"
+  },
+  {
+    grade: 7,
+    badge: "7 класс • Алгебра",
+    topic: "Тема урока: Формулы сокращённого умножения",
+    problem: "(a + b)²",
+    steps: " = (a + b)(a + b)",
+    answer: " = a² + 2ab + b²"
+  },
+  {
+    grade: 8,
+    badge: "8 класс • Алгебра",
+    topic: "Тема урока: Квадратное уравнение и дискриминант",
+    problem: "x² − 5x + 6 = 0",
+    steps: " → D = 25 − 24 = 1",
+    answer: " → x₁ = 2, x₂ = 3"
+  },
+  {
+    grade: 9,
+    badge: "9 класс • Подготовка к ОГЭ",
+    topic: "Тема урока: Теорема Пифагора",
+    problem: "a = 3, b = 4, c = √(a² + b²)",
+    steps: " = √(9 + 16) = √25",
+    answer: " = 5"
+  },
+  {
+    grade: 10,
+    badge: "10 класс • Тригонометрия",
+    topic: "Тема урока: Основное тригонометрическое тождество",
+    problem: "sin²α + cos²α",
+    steps: " = (a/c)² + (b/c)² = c²/c²",
+    answer: " = 1"
+  },
+  {
+    grade: 11,
+    badge: "11 класс • Математический анализ (ЕГЭ)",
+    topic: "Тема урока: Производная и точки экстремума",
+    problem: "f(x) = x³ − 3x",
+    steps: " → f'(x) = 3x² − 3 = 0",
+    answer: " → x = ±1"
+  }
+];
 
 const DEFAULT_SANPIN_BREAKFAST =
   "Горячее блюдо, витаминизированный горячий напиток, хлебобулочное/молочное изделие согласно утверждённому 10-дневному цикличному меню.";
@@ -112,7 +215,7 @@ const DEFAULT_GRADE_SCHEDULES = {
   8: {
     1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Химия 5. История 6. Биология",
     2: "1. Геометрия 2. Литература 3. Английский язык 4. Физика 5. География 6. Физкультура",
-    3: "1. Алгебра 2. Русский язык 4. Химия 4. Обществознание 5. Информатика 6. ОБЗР",
+    3: "1. Алгебра 2. Русский язык 3. Химия 4. Обществознание 5. Информатика 6. ОБЗР",
     4: "1. Геометрия 2. Русский язык 3. История 4. Физика 5. Английский язык 6. Биология",
     5: "1. Алгебра 2. Литература 3. География 4. Английский язык 5. Профориентация 6. Физкультура"
   },
@@ -122,6 +225,20 @@ const DEFAULT_GRADE_SCHEDULES = {
     3: "1. Алгебра 2. Русский язык 3. Химия 4. География 5. Физика 6. Физкультура",
     4: "1. Геометрия 2. Русский язык 3. История 4. Литература 5. Английский язык 6. ОБЗР",
     5: "1. Алгебра 2. Литература 3. Физика 4. Химия 5. Биология 6. Консультация ОГЭ"
+  },
+  10: {
+    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Физика 5. История 6. Английский язык",
+    2: "1. Геометрия 2. Литература 3. Химия 4. Обществознание 5. Биология 6. Информатика",
+    3: "1. Алгебра 2. Русский язык 3. История 4. География 5. Физика 6. Физкультура",
+    4: "1. Геометрия 2. Литература 3. Обществознание 4. Английский язык 5. ОБЗР 6. Индивидуальный проект",
+    5: "1. Алгебра 2. Литература 3. Физика 4. Химия 5. Биология 6. Физкультура"
+  },
+  11: {
+    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Физика 5. История 6. Химия",
+    2: "1. Геометрия 2. Литература 3. Английский язык 4. Обществознание 5. Биология 6. Информатика",
+    3: "1. Алгебра 2. Русский язык 3. Химия 4. География 5. Физика 6. Физкультура",
+    4: "1. Геометрия 2. Русский язык 3. История 4. Литература 5. Английский язык 6. ОБЗР",
+    5: "1. Алгебра 2. Литература 3. Физика 4. Обществознание 5. Практикум ЕГЭ 6. Физкультура"
   }
 };
 
@@ -139,7 +256,7 @@ function getDefaultSchoolWeekday() {
 function getSavedGradeSelection() {
   try {
     const saved = parseInt(localStorage.getItem(GRADE_STORAGE_KEY) || "1", 10);
-    if (saved >= 1 && saved <= 9) return saved;
+    if (saved >= 1 && saved <= 11) return saved;
   } catch (_) {}
   return 1;
 }
@@ -155,9 +272,6 @@ function sanitizeInput(rawString, maxLength = 1000) {
     .slice(0, maxLength);
 }
 
-/**
- * Показ всплывающей капсулы уведомлений Dynamic Island
- */
 function showDynamicIslandToast(message) {
   const toast = document.getElementById("dynamic-island-toast");
   const textEl = document.getElementById("dynamic-island-text");
@@ -254,10 +368,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initLiveDateTimeClockAndAmbient();
   initYambirnoWeatherWidget();
   initAccessibilityMode();
+  initChalkboardEngine();
   initScrollRevealAndCounters();
-  initTeacherFilter();
   initDigitalNavigatorTabs();
   initWeekdayAndGradeSwitchers();
+  initShareScheduleToChat();
   initCopyButtons();
   initGalleryLightbox();
   initScrollSpyAndProgressRing();
@@ -267,8 +382,226 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ==========================================================================
-   1. АВТОМАТИЧЕСКОЕ ПРЕВРАЩЕНИЕ ТЕКСТА УРОКОВ В КАРТОЧКИ-СТРОКИ ДНЕВНИКА
+   1. ИНТЕРАКТИВНЫЙ ДВИЖОК "ЖИВАЯ ШКОЛЬНАЯ ДОСКА: ПУТЬ ОТ 1 ДО 11 КЛАССА"
    ========================================================================== */
+function initChalkboardEngine() {
+  const widget = document.getElementById("chalkboard-widget");
+  const badgeEl = document.getElementById("chalkboard-grade-badge");
+  const statusEl = document.getElementById("chalkboard-status-pill");
+  const topicEl = document.getElementById("chalkboard-topic");
+  const problemEl = document.getElementById("chalkboard-problem");
+  const stepsEl = document.getElementById("chalkboard-steps");
+  const answerEl = document.getElementById("chalkboard-answer");
+  const cursorEl = document.getElementById("chalkboard-cursor");
+  const contentWrap = document.getElementById("chalkboard-content");
+  const wetWipeEl = document.getElementById("chalkboard-wet-wipe");
+  const counterEl = document.getElementById("chalkboard-step-counter");
+  const quizToggleBtn = document.getElementById("chalkboard-quiz-toggle");
+  const nextBtn = document.getElementById("chalkboard-next-btn");
+  const revealBtn = document.getElementById("chalkboard-reveal-btn");
+
+  if (!widget || !problemEl || !stepsEl || !answerEl) return;
+
+  let currentIdx = 0;
+  let isQuizMode = false;
+  let isViewportVisible = true;
+  let runToken = 0;
+  let revealResolver = null;
+
+  // Экономия ресурсов ПК (Zero-Reflow CPU Saver): ставим на паузу, когда доска вне экрана
+  if ("IntersectionObserver" in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isViewportVisible = entry.isIntersecting;
+        });
+      },
+      { threshold: 0.05 }
+    );
+    obs.observe(widget);
+  }
+
+  const waitMs = (ms, token) =>
+    new Promise((resolve) => {
+      const check = () => {
+        if (token !== runToken) {
+          resolve(false);
+          return;
+        }
+        if (document.hidden || !isViewportVisible) {
+          setTimeout(check, 400);
+          return;
+        }
+        setTimeout(() => resolve(token === runToken), ms);
+      };
+      check();
+    });
+
+  // Посимвольное письмо с естественной скоростью ученика
+  const typeChalkString = async (targetEl, text, token, baseSpeed = 58) => {
+    targetEl.textContent = "";
+    for (let i = 0; i < text.length; i++) {
+      if (token !== runToken) return false;
+      const ch = text[i];
+      targetEl.textContent += ch;
+
+      // Пауза чуть длиннее на математических знаках (=, +, −, →), как у живого ученика
+      let delay = baseSpeed + Math.floor(Math.random() * 42);
+      if (ch === "=" || ch === "→" || ch === "+" || ch === "−") {
+        delay += 110;
+      }
+      const ok = await waitMs(delay, token);
+      if (!ok) return false;
+    }
+    return true;
+  };
+
+  const runStageLoop = async (token) => {
+    while (token === runToken) {
+      const item = CHALKBOARD_CURRICULUM[currentIdx];
+
+      contentWrap.classList.remove("erasing");
+      wetWipeEl.classList.remove("wiping");
+      revealBtn.classList.add("hidden");
+      problemEl.textContent = "";
+      stepsEl.textContent = "";
+      answerEl.textContent = "";
+      if (cursorEl) cursorEl.classList.remove("thinking", "hidden");
+
+      if (badgeEl) badgeEl.textContent = item.badge;
+      if (topicEl) topicEl.textContent = item.topic;
+      if (counterEl) counterEl.textContent = `Ступень ${item.grade} из 11`;
+
+      // Фаза 1: Запись условия примера
+      if (statusEl) statusEl.textContent = "Пишет условие у доски...";
+      const ok1 = await typeChalkString(problemEl, item.problem, token, 62);
+      if (!ok1) return;
+
+      // Фаза 2: Задумчивость ученика ("Считает в уме...")
+      if (cursorEl) cursorEl.classList.add("thinking");
+      if (statusEl) statusEl.textContent = "💭 Считает в уме...";
+      const ok2 = await waitMs(950, token);
+      if (!ok2) return;
+
+      // Если включен режим "💡 Решить самому" — ждём клика пользователя
+      if (isQuizMode) {
+        if (statusEl) statusEl.textContent = "Проверьте себя и нажмите кнопку ниже";
+        revealBtn.classList.remove("hidden");
+        const revealed = await new Promise((res) => {
+          revealResolver = res;
+        });
+        revealResolver = null;
+        revealBtn.classList.add("hidden");
+        if (!revealed || token !== runToken) return;
+      }
+
+      // Фаза 3: Запись промежуточного хода решения
+      if (cursorEl) cursorEl.classList.remove("thinking");
+      if (statusEl) statusEl.textContent = "Расписывает решение...";
+      const ok3 = await typeChalkString(stepsEl, item.steps, token, 52);
+      if (!ok3) return;
+
+      const okPause = await waitMs(480, token);
+      if (!okPause) return;
+
+      // Фаза 4: Запись итогового ответа жёлтым мелком
+      if (statusEl) statusEl.textContent = "Выводит ответ...";
+      const ok4 = await typeChalkString(answerEl, item.answer, token, 68);
+      if (!ok4) return;
+
+      if (statusEl) statusEl.textContent = "✓ Решено верно!";
+      const okHold = await waitMs(2300, token);
+      if (!okHold) return;
+
+      // Фаза 5: Влажное стирание с доски (Wet-Wipe Physics)
+      if (statusEl) statusEl.textContent = "Стирает с доски...";
+      wetWipeEl.classList.add("wiping");
+      contentWrap.classList.add("erasing");
+
+      const okWipe = await waitMs(750, token);
+      if (!okWipe) return;
+
+      currentIdx = (currentIdx + 1) % CHALKBOARD_CURRICULUM.length;
+    }
+  };
+
+  const restartFromCurrent = () => {
+    runToken++;
+    if (revealResolver) {
+      revealResolver(false);
+      revealResolver = null;
+    }
+    runStageLoop(runToken);
+  };
+
+  if (quizToggleBtn) {
+    quizToggleBtn.addEventListener("click", () => {
+      isQuizMode = !isQuizMode;
+      quizToggleBtn.setAttribute("aria-pressed", String(isQuizMode));
+      quizToggleBtn.textContent = isQuizMode ? "💡 Режим: Сам" : "💡 Решить самому";
+      showDynamicIslandToast(
+        isQuizMode
+          ? "Включён режим самопроверки на школьной доске"
+          : "Включён автоматический показ решений на доске"
+      );
+      if (!isQuizMode && revealResolver) {
+        revealResolver(true);
+      }
+    });
+  }
+
+  if (revealBtn) {
+    revealBtn.addEventListener("click", () => {
+      if (revealResolver) revealResolver(true);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      currentIdx = (currentIdx + 1) % CHALKBOARD_CURRICULUM.length;
+      restartFromCurrent();
+    });
+  }
+
+  runStageLoop(runToken);
+}
+
+/* ==========================================================================
+   2. ПАРСИНГ ВРЕМЕНИ ЗВОНКОВ И КАРТОЧКИ ДНЕВНИКА С ЖИВЫМ ЗАПОЛНЕНИЕМ УРОКА
+   ========================================================================== */
+function parseBellTimeRangeString(rawRangeStr, lessonNum) {
+  const fallback = DEFAULT_BELL_TIMES[lessonNum] || { start: "08:30", end: "09:15", startMin: 510, endMin: 555 };
+  const cleaned = sanitizeInput(rawRangeStr || "", 40);
+  if (!cleaned) return { ...fallback, isCustom: false };
+
+  // Распознаем формат "08:30-09:15" или "9.00 – 9.40"
+  const match = cleaned.match(/(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/);
+  if (!match) return { ...fallback, isCustom: false };
+
+  const sh = parseInt(match[1], 10);
+  const sm = parseInt(match[2], 10);
+  const eh = parseInt(match[3], 10);
+  const em = parseInt(match[4], 10);
+
+  if (sh > 23 || sm > 59 || eh > 23 || em > 59) return { ...fallback, isCustom: false };
+
+  const startFormatted = `${String(sh).padStart(2, "0")}:${String(sm).padStart(2, "0")}`;
+  const endFormatted = `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
+  const startMin = sh * 60 + sm;
+  const endMin = eh * 60 + em;
+
+  const isDifferentFromDefault =
+    startFormatted !== fallback.start || endFormatted !== fallback.end;
+
+  return {
+    start: startFormatted,
+    end: endFormatted,
+    startMin,
+    endMin: endMin > startMin ? endMin : startMin + 45,
+    isCustom: isDifferentFromDefault
+  };
+}
+
 function classifyLessonSubject(subjectTitle) {
   const s = (subjectTitle || "").toLowerCase();
   if (s.includes("математ") || s.includes("алгебр") || s.includes("геометр") || s.includes("информат") || s.includes("физик") || s.includes("вероятност")) {
@@ -280,7 +613,7 @@ function classifyLessonSubject(subjectTitle) {
   if (s.includes("биолог") || s.includes("хими") || s.includes("географ") || s.includes("окружающ")) {
     return { cls: "subj-sci", icon: "🌿" };
   }
-  if (s.includes("истори") || s.includes("обществ") || s.includes("важном") || s.includes("орксэ") || s.includes("профориент")) {
+  if (s.includes("истори") || s.includes("обществ") || s.includes("важном") || s.includes("орксэ") || s.includes("профориент") || s.includes("проект")) {
     return { cls: "subj-hist", icon: "🏛️" };
   }
   return { cls: "subj-art", icon: "⚡" };
@@ -290,7 +623,6 @@ function parseRawScheduleIntoLessons(rawText) {
   const cleaned = sanitizeInput(rawText || "", 800);
   if (!cleaned) return [];
 
-  // Разбиваем по паттерну "1. Предмет 2. Предмет" или по переносам строк
   const parts = cleaned
     .replace(/(\d+)\s*[.)]\s*/g, "\n$1. ")
     .split(/\n+/)
@@ -309,6 +641,11 @@ function parseRawScheduleIntoLessons(rawText) {
 function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
   if (!containerEl) return;
   containerEl.innerHTML = "";
+
+  const shiftBanner = document.getElementById("bell-shift-warning");
+  if (shiftBanner) {
+    shiftBanner.classList.toggle("hidden", !isCustomBellScheduleActive);
+  }
 
   const lessons = parseRawScheduleIntoLessons(rawScheduleText);
   if (lessons.length === 0) {
@@ -349,14 +686,22 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
     const right = document.createElement("div");
     right.className = "diary-lesson-right";
 
-    const bell = LESSON_BELL_TIMES[lessonObj.num];
+    const bell = activeBellTimes[lessonObj.num] || DEFAULT_BELL_TIMES[lessonObj.num];
     if (bell) {
       if (isTodaySelected && currentTotalMinutes >= bell.startMin && currentTotalMinutes <= bell.endMin) {
+        const duration = Math.max(bell.endMin - bell.startMin, 1);
+        const elapsed = currentTotalMinutes - bell.startMin;
+        const pct = Math.min(Math.max(Math.round((elapsed / duration) * 100), 5), 98);
+        const leftMin = Math.max(bell.endMin - currentTotalMinutes, 1);
+
+        row.classList.add("lesson-active-now");
+        row.style.setProperty("--lesson-progress", `${pct}%`);
+
         const livePill = document.createElement("span");
         livePill.className = "lesson-live-pill";
-        livePill.textContent = "● Идёт сейчас";
+        livePill.textContent = `● Идёт (ещё ${leftMin} мин)`;
         right.appendChild(livePill);
-      } else if (isTodaySelected && currentTotalMinutes > bell.endMin && currentTotalMinutes < 960) {
+      } else if (isTodaySelected && currentTotalMinutes > bell.endMin && currentTotalMinutes < 980) {
         const donePill = document.createElement("span");
         donePill.className = "lesson-done-pill";
         donePill.textContent = "✓ Прошёл";
@@ -376,7 +721,55 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
 }
 
 /* ==========================================================================
-   2. ЖИВЫЕ ЧАСЫ, ДАТА, СТАТУС ШКОЛЫ И AMBIENT-АТМОСФЕРА ВРЕМЕНИ СУТОК
+   3. КНОПКА "📤 В ЧАТ" (КОПИРОВАНИЕ РАСПИСАНИЯ И УТРЕННЕЙ ПОГОДЫ ДЛЯ МЕССЕНДЖЕРА)
+   ========================================================================== */
+function initShareScheduleToChat() {
+  const shareBtn = document.getElementById("share-schedule-btn");
+  if (!shareBtn) return;
+
+  shareBtn.addEventListener("click", async () => {
+    const dayName = DAY_NAMES_FULL[currentSelectedWeekday] || "Понедельник";
+    let rawSchedule = "";
+    if (
+      latestParsedSheetData &&
+      latestParsedSheetData.scheduleByGradeAndDay &&
+      latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade] &&
+      latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday]
+    ) {
+      rawSchedule = latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday];
+    } else if (DEFAULT_GRADE_SCHEDULES[currentSelectedGrade]) {
+      rawSchedule = DEFAULT_GRADE_SCHEDULES[currentSelectedGrade][currentSelectedWeekday] || "";
+    }
+
+    const lessons = parseRawScheduleIntoLessons(rawSchedule);
+    const formattedLessons = lessons
+      .map((l) => {
+        const bell = activeBellTimes[l.num] || DEFAULT_BELL_TIMES[l.num];
+        const timeStr = bell ? ` (${bell.start}–${bell.end})` : "";
+        return `${l.num}. ${l.title}${timeStr}`;
+      })
+      .join("\n");
+
+    const tomTemp = document.getElementById("weather-tomorrow-temp");
+    const advice = document.getElementById("weather-parent-advice");
+    const weatherLine = tomTemp && advice ? `\n\n🌤 Погода в Ямбирно к 1-му уроку: ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}` : "";
+
+    const textForChat =
+      `📘 Расписание уроков — ${dayName} (${currentSelectedGrade} класс):\n` +
+      (formattedLessons || "По основному расписанию") +
+      weatherLine;
+
+    try {
+      await navigator.clipboard.writeText(textForChat);
+      showDynamicIslandToast(`✓ Расписание ${currentSelectedGrade} класса скопировано для чата!`);
+    } catch (_) {
+      showDynamicIslandToast("✓ Расписание скопировано");
+    }
+  });
+}
+
+/* ==========================================================================
+   4. ЖИВЫЕ ЧАСЫ, ДАТА, СТАТУС ШКОЛЫ И AMBIENT-АТМОСФЕРА
    ========================================================================== */
 function initLiveDateTimeClockAndAmbient() {
   const dateEl = document.getElementById("live-date-display");
@@ -437,23 +830,24 @@ function initLiveDateTimeClockAndAmbient() {
 }
 
 /* ==========================================================================
-   3. ПРОГНОЗ ПОГОДЫ В С. ЯМБИРНО (СЕЙЧАС + ЗАВТРА К 08:00 УТРА)
+   5. ПРОГНОЗ ПОГОДЫ В С. ЯМБИРНО (С МИКРО-АТМОСФЕРОЙ НЕБА)
    ========================================================================== */
 function decodeWmoWeather(code) {
-  if (code === 0) return { icon: "☀️", text: "Ясно", rain: false, snow: false };
-  if (code === 1 || code === 2) return { icon: "🌤️", text: "Переменная облачность", rain: false, snow: false };
-  if (code === 3) return { icon: "☁️", text: "Пасмурно", rain: false, snow: false };
-  if (code === 45 || code === 48) return { icon: "🌫️", text: "Туман", rain: false, snow: false };
-  if (code >= 51 && code <= 57) return { icon: "🌦️", text: "Морось", rain: true, snow: false };
-  if (code >= 61 && code <= 67) return { icon: "🌧️", text: "Дождь", rain: true, snow: false };
-  if (code >= 71 && code <= 77) return { icon: "❄️", text: "Снег", rain: false, snow: true };
-  if (code >= 80 && code <= 82) return { icon: "🌧️", text: "Ливень", rain: true, snow: false };
-  if (code === 85 || code === 86) return { icon: "🌨️", text: "Снегопад", rain: false, snow: true };
-  if (code >= 95) return { icon: "⛈️", text: "Гроза", rain: true, snow: false };
-  return { icon: "🌤️", text: "Без осадков", rain: false, snow: false };
+  if (code === 0) return { icon: "☀️", text: "Ясно", rain: false, snow: false, sky: "clear" };
+  if (code === 1 || code === 2) return { icon: "🌤️", text: "Переменная облачность", rain: false, snow: false, sky: "clear" };
+  if (code === 3) return { icon: "☁️", text: "Пасмурно", rain: false, snow: false, sky: "cloudy" };
+  if (code === 45 || code === 48) return { icon: "🌫️", text: "Туман", rain: false, snow: false, sky: "cloudy" };
+  if (code >= 51 && code <= 57) return { icon: "🌦️", text: "Морось", rain: true, snow: false, sky: "rain" };
+  if (code >= 61 && code <= 67) return { icon: "🌧️", text: "Дождь", rain: true, snow: false, sky: "rain" };
+  if (code >= 71 && code <= 77) return { icon: "❄️", text: "Снег", rain: false, snow: true, sky: "snow" };
+  if (code >= 80 && code <= 82) return { icon: "🌧️", text: "Ливень", rain: true, snow: false, sky: "rain" };
+  if (code === 85 || code === 86) return { icon: "🌨️", text: "Снегопад", rain: false, snow: true, sky: "snow" };
+  if (code >= 95) return { icon: "⛈️", text: "Гроза", rain: true, snow: false, sky: "rain" };
+  return { icon: "🌤️", text: "Без осадков", rain: false, snow: false, sky: "clear" };
 }
 
 async function initYambirnoWeatherWidget() {
+  const weatherBox = document.getElementById("yambirno-weather-box");
   const topPill = document.getElementById("top-weather-pill");
   const nowIconEl = document.getElementById("weather-now-icon");
   const nowTempEl = document.getElementById("weather-now-temp");
@@ -473,6 +867,13 @@ async function initYambirnoWeatherWidget() {
     const curSign = curTemp > 0 ? `+${curTemp}°C` : `${curTemp}°C`;
     const curWmo = decodeWmoWeather(data.current.weather_code);
     const curWind = Math.round(data.current.wind_speed_10m);
+
+    if (weatherBox) {
+      weatherBox.classList.remove("weather-sky-clear", "weather-sky-rain", "weather-sky-snow");
+      if (curWmo.sky === "clear") weatherBox.classList.add("weather-sky-clear");
+      if (curWmo.sky === "rain") weatherBox.classList.add("weather-sky-rain");
+      if (curWmo.sky === "snow") weatherBox.classList.add("weather-sky-snow");
+    }
 
     if (topPill) topPill.textContent = `${curWmo.icon} с. Ямбирно: ${curSign}`;
     if (nowIconEl) nowIconEl.textContent = curWmo.icon;
@@ -524,7 +925,7 @@ async function initYambirnoWeatherWidget() {
 }
 
 /* ==========================================================================
-   4. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
+   6. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
    ========================================================================== */
 function initAccessibilityMode() {
   const toggleBtn = document.getElementById("a11y-toggle");
@@ -561,7 +962,7 @@ function initAccessibilityMode() {
 }
 
 /* ==========================================================================
-   5. ФОТОГАЛЕРЕЯ (УПРАВЛЕНИЕ ИЗ ЯЧЕЙКИ A35 + LIGHTBOX-ПРОСМОТРЩИК)
+   7. ФОТОГАЛЕРЕЯ И МОДАЛЬНЫЙ ПРОСМОТРЩИК LIGHTBOX
    ========================================================================== */
 function updateGalleryFromSheetRows(galleryArray) {
   if (!Array.isArray(galleryArray) || galleryArray.length === 0) return;
@@ -663,8 +1064,7 @@ function initGalleryLightbox() {
   grid.addEventListener("click", (e) => {
     const fig = e.target.closest(".gallery-item");
     if (!fig) return;
-    const figures = getFigures();
-    const idx = figures.indexOf(fig);
+    const idx = getFigures().indexOf(fig);
     if (idx !== -1) openLightboxAt(idx);
   });
 
@@ -673,8 +1073,7 @@ function initGalleryLightbox() {
       const fig = e.target.closest(".gallery-item");
       if (!fig) return;
       e.preventDefault();
-      const figures = getFigures();
-      const idx = figures.indexOf(fig);
+      const idx = getFigures().indexOf(fig);
       if (idx !== -1) openLightboxAt(idx);
     }
   });
@@ -696,7 +1095,7 @@ function initGalleryLightbox() {
 }
 
 /* ==========================================================================
-   6. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ
+   8. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ (БЕЗ КНОПОК ФИЛЬТРАЦИИ)
    ========================================================================== */
 function createNewTeacherCardElement() {
   const article = document.createElement("article");
@@ -799,38 +1198,18 @@ function updateTeachersFromSheetRows(teachersDataArray) {
     populateSingleTeacherCard(card, rowData, idx);
   });
 
-  recalculateTeacherFilterCounts();
-}
-
-function recalculateTeacherFilterCounts() {
   const allCards = document.querySelectorAll("#teachers-grid .teacher-card");
   const mainCards = document.querySelectorAll('#teachers-grid .teacher-card[data-category="main"]');
   const partTimeCards = document.querySelectorAll('#teachers-grid .teacher-card[data-category="part-time"]');
-
-  const btnAll = document.querySelector('.filter-btn[data-filter="all"]');
-  const btnMain = document.querySelector('.filter-btn[data-filter="main"]');
-  const btnPart = document.querySelector('.filter-btn[data-filter="part-time"]');
   const subtitleEl = document.getElementById("teachers-subtitle");
 
-  if (btnAll) btnAll.textContent = `Все педагоги (${allCards.length})`;
-  if (btnMain) btnMain.textContent = `Основной состав (${mainCards.length})`;
-  if (btnPart) btnPart.textContent = `Совместители (${partTimeCards.length})`;
   if (subtitleEl) {
     subtitleEl.textContent = `Главная опора Ямбирнского филиала: ${mainCards.length} основных педагогов и ${partTimeCards.length} совместителя (всего ${allCards.length})`;
-  }
-
-  const activeFilterBtn = document.querySelector(".filter-btn.active");
-  if (activeFilterBtn) {
-    const activeCategory = activeFilterBtn.getAttribute("data-filter");
-    allCards.forEach((card) => {
-      const cardCat = card.getAttribute("data-category");
-      card.classList.toggle("hidden", !(activeCategory === "all" || cardCat === activeCategory));
-    });
   }
 }
 
 /* ==========================================================================
-   7. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–9 КЛАСС)
+   9. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–11 КЛАСС)
    ========================================================================== */
 function initWeekdayAndGradeSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill");
@@ -906,7 +1285,6 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
     scheduleText = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
   }
 
-  // Превращаем текст уроков в карточки-строки дневника с каскадной анимацией
   renderDiaryLessonCards(scheduleEl, scheduleText, dayNum);
 
   const dayMenuObj = (dataObj.menuByDay && dataObj.menuByDay[dayNum]) ? dataObj.menuByDay[dayNum] : {};
@@ -923,7 +1301,7 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
 }
 
 /* ==========================================================================
-   8. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (ВКЛЮЧАЯ ФОТОГАЛЕРЕЮ С ЯЧЕЙКИ A35)
+   10. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (1–11 КЛ., ЗВОНКИ A28:B35, ГАЛЕРЕЯ, УЧИТЕЛЯ)
    ========================================================================== */
 function detectWeekdayIndexFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
@@ -937,7 +1315,14 @@ function detectWeekdayIndexFromCell(cellString) {
 
 function detectGradeNumberFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
-  const match = s.match(/^([1-9])\s*(класс|кл\.?|кл)$/i);
+  const match = s.match(/^([1-9]|10|11)\s*(класс|кл\.?|кл)$/i);
+  if (match && match[1]) return parseInt(match[1], 10);
+  return 0;
+}
+
+function detectBellLessonNumberFromCell(cellString) {
+  const s = (cellString || "").toLowerCase().trim();
+  const match = s.match(/^([1-7])\s*(урок|ур\.?)$/i);
   if (match && match[1]) return parseInt(match[1], 10);
   return 0;
 }
@@ -997,6 +1382,10 @@ function initLiveSheetWidgetAndMenu() {
   const renderWidgetData = (dataObj, isFromCache = false) => {
     latestParsedSheetData = dataObj;
 
+    // Применяем расписание звонков из таблицы (или стандарт)
+    activeBellTimes = dataObj.bellTimes || cloneDefaultBells();
+    isCustomBellScheduleActive = Boolean(dataObj.hasCustomBells);
+
     [newsEl, importantEl].forEach((el) => {
       el.classList.remove("is-loading-shimmer", "flash-updated");
       void el.offsetWidth;
@@ -1047,12 +1436,14 @@ function initLiveSheetWidgetAndMenu() {
       const secondRow = rows.length > 1 ? rows[1] : [];
 
       const scheduleByGradeAndDay = {};
-      for (let g = 1; g <= 9; g++) {
+      for (let g = 1; g <= 11; g++) {
         scheduleByGradeAndDay[g] = { ...(DEFAULT_GRADE_SCHEDULES[g] || {}) };
       }
 
       const menuByDay = {};
       const galleryList = [];
+      const parsedBellTimes = cloneDefaultBells();
+      let hasCustomBells = false;
       let currentMode = "schedule_grouped";
 
       for (let rIdx = 2; rIdx < rows.length; rIdx++) {
@@ -1063,7 +1454,25 @@ function initLiveSheetWidgetAndMenu() {
         const colC = (r[2] || "").trim();
         const colD = (r[3] || "").trim();
 
-        // 1. Строки фотогалереи (начиная с A35: "Фотогалерея" -> "Фото 1", "Фото 2"...)
+        // 1. Проверка заголовка "Расписание звонков" или строк "1 урок".."7 урок"
+        if (colALower.includes("расписание звонков") || colALower === "звонки") {
+          currentMode = "bells";
+          continue;
+        }
+        const bellLessonNum = detectBellLessonNumberFromCell(colA);
+        if (bellLessonNum >= 1 && bellLessonNum <= 7) {
+          const parsedBell = parseBellTimeRangeString(colB, bellLessonNum);
+          parsedBellTimes[bellLessonNum] = {
+            start: parsedBell.start,
+            end: parsedBell.end,
+            startMin: parsedBell.startMin,
+            endMin: parsedBell.endMin
+          };
+          if (parsedBell.isCustom) hasCustomBells = true;
+          continue;
+        }
+
+        // 2. Проверка блока Фотогалереи
         if (colALower.includes("фотогалере")) {
           currentMode = "gallery";
           continue;
@@ -1079,9 +1488,9 @@ function initLiveSheetWidgetAndMenu() {
           }
         }
 
-        // 2. Строки матрицы расписания 1–9 классов (A15:F24)
+        // 3. Строки матрицы расписания 1–11 классов (A15:F26)
         const gradeNum = detectGradeNumberFromCell(colA);
-        if (gradeNum >= 1 && gradeNum <= 9) {
+        if (gradeNum >= 1 && gradeNum <= 11) {
           for (let d = 1; d <= 5; d++) {
             const cellLesson = sanitizeInput(r[d] || "", 600);
             if (cellLesson) {
@@ -1091,7 +1500,7 @@ function initLiveSheetWidgetAndMenu() {
           continue;
         }
 
-        // 3. Заголовки "День недели" / "День питания"
+        // 4. Заголовки "День недели" / "День питания"
         if (colALower.includes("день")) {
           if (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")) {
             currentMode = "menu";
@@ -1115,12 +1524,12 @@ function initLiveSheetWidgetAndMenu() {
             const s89 = sanitizeInput(colD, 600);
             if (s14) [1, 2, 3, 4].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s14; });
             if (s57) [5, 6, 7].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s57; });
-            if (s89) [8, 9].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
+            if (s89) [8, 9, 10, 11].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
           }
         }
       }
 
-      // 4. Блок учителей (столбцы F–J) с защитой от пересечения с расписанием
+      // 5. Блок учителей (столбцы F–J) с защитой от пересечения с колонкой F ("Пятница") расписания
       const teachersList = [];
       for (let rIdx = 1; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
@@ -1146,6 +1555,8 @@ function initLiveSheetWidgetAndMenu() {
         col2Schedule: sanitizeInput(secondRow[1] || "", 600),
         col3Important: sanitizeInput(secondRow[2] || "", 600),
         col4Status: sanitizeInput(secondRow[3] || "", 120),
+        bellTimes: parsedBellTimes,
+        hasCustomBells,
         scheduleByGradeAndDay,
         menuByDay,
         teachers: teachersList,
@@ -1189,7 +1600,7 @@ function initLiveSheetWidgetAndMenu() {
   if (refreshBtn) {
     refreshBtn.addEventListener("click", () => {
       loadSheetData();
-      showDynamicIslandToast("Данные расписания и табло обновлены");
+      showDynamicIslandToast("Данные расписания, звонков и табло обновлены");
     });
   }
 
@@ -1197,7 +1608,7 @@ function initLiveSheetWidgetAndMenu() {
 }
 
 /* ==========================================================================
-   9. КОПИРОВАНИЕ КОНТАКТОВ В 1 КЛИК, SCROLL-SPY И КОЛЬЦО ПРОГРЕССА ЧТЕНИЯ
+   11. КОПИРОВАНИЕ КОНТАКТОВ, SCROLL-SPY И КОЛЬЦО ПРОГРЕССА ЧТЕНИЯ
    ========================================================================== */
 function initCopyButtons() {
   const copyBtns = document.querySelectorAll(".btn-copy-mini");
@@ -1262,7 +1673,7 @@ function initScrollSpyAndProgressRing() {
 }
 
 /* ==========================================================================
-   10. ЦИФРОВОЙ НАВИГАТОР И ФОРМА ОБРАТНОЙ СВЯЗИ С ЭЛЕКТРОННОЙ КВИТАНЦИЕЙ
+   12. ЦИФРОВОЙ НАВИГАТОР, ФОРМА ОБРАТНОЙ СВЯЗИ И SERVICE WORKER
    ========================================================================== */
 function initDigitalNavigatorTabs() {
   const tabBtns = document.querySelectorAll(".digital-tab-btn");
@@ -1506,7 +1917,6 @@ function initFeedbackForm() {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      // Показываем цифровую квитанцию-подтверждение
       const ticketNum = `ЯМБ-${new Date().toLocaleDateString("ru-RU").replace(/\./g, "")}-${Math.floor(100 + Math.random() * 900)}`;
       if (receiptBox && receiptFio && receiptContact && receiptComment && receiptMeta) {
         receiptMeta.textContent = `Талон № ${ticketNum} • ${new Date().toLocaleString("ru-RU")}`;
@@ -1557,9 +1967,6 @@ function initFeedbackForm() {
   }
 }
 
-/* ==========================================================================
-   11. АНИМАЦИЯ ПОЯВЛЕНИЯ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
-   ========================================================================== */
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
   const counters = document.querySelectorAll("[data-target]");
@@ -1619,27 +2026,6 @@ function initScrollRevealAndCounters() {
   );
 
   counters.forEach((counter) => counterObserver.observe(counter));
-}
-
-function initTeacherFilter() {
-  const filterBtns = document.querySelectorAll(".filter-btn");
-  if (filterBtns.length === 0) return;
-
-  filterBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      filterBtns.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      const category = btn.getAttribute("data-filter");
-      const teacherCards = document.querySelectorAll("#teachers-grid .teacher-card");
-
-      teacherCards.forEach((card) => {
-        const cardCat = card.getAttribute("data-category");
-        const shouldShow = category === "all" || cardCat === category;
-        card.classList.toggle("hidden", !shouldShow);
-      });
-    });
-  });
 }
 
 function registerOfflineServiceWorker() {
