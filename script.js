@@ -1,34 +1,59 @@
 /**
  * Основной скрипт сайта Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»
- * Чистый Vanilla JS (ES6+), без внешних библиотек. Подключается с атрибутом defer.
+ * Поддерживает:
+ * 1) Расписание и меню на 5 дней недели (Пн–Пт) с автоопределением сегодняшнего дня
+ * 2) Динамическое создание 13-й, 14-й и последующих карточек учителей из столбцов F–J
+ * 3) Отправку обращений на Лист 2 (gid=834161632)
  */
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v4";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v5";
 
-// Цветовые палитры для автоматических круглых SVG-аватаров учителей
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
   { bg: "#fef3c7", fg: "#b45309" },
   { bg: "#dcfce7", fg: "#15803d" },
   { bg: "#e0e7ff", fg: "#3730a3" },
-  { bg: "#ccfbf1", fg: "#0f766e" },
-  { bg: "#fce7f3", fg: "#9d174d" },
   { bg: "#e0f2fe", fg: "#0369a1" },
   { bg: "#ecfccb", fg: "#3f6212" },
   { bg: "#f3e8ff", fg: "#6b21a8" },
   { bg: "#ffedd5", fg: "#9a3412" },
   { bg: "#fae8ff", fg: "#86198f" },
-  { bg: "#f1f5f9", fg: "#334155" }
+  { bg: "#ccfbf1", fg: "#0f766e" },
+  { bg: "#dbeafe", fg: "#1e3a8a" },
+  { bg: "#fce7f3", fg: "#9d174d" }
 ];
 
+const DAY_NAMES_FULL = {
+  1: "Понедельник",
+  2: "Вторник",
+  3: "Среда",
+  4: "Четверг",
+  5: "Пятница"
+};
+
+const DEFAULT_SANPIN_BREAKFAST =
+  "Горячее блюдо, витаминизированный горячий напиток, хлебобулочное/молочное изделие согласно утверждённому 10-дневному цикличному меню.";
+const DEFAULT_SANPIN_LUNCH =
+  "Первое горячее блюдо, порционное мясное/рыбное блюдо с гарниром, сезонная овощная нарезка/салат, напиток по нормам СанПиН.";
+const DEFAULT_SANPIN_NOTE =
+  "Фактическое ежедневное меню заверяется руководителем и размещается на информационном стенде школьной столовой.";
+
 let customSheetSchoolStatus = "";
+let latestParsedSheetData = null;
+let currentSelectedWeekday = getDefaultSchoolWeekday();
 
 /**
- * Санитизация пользовательского ввода (Защита от XSS и формульных инъекций)
+ * Определяет текущий учебный день (1 = Пн ... 5 = Пт).
+ * В субботу (6) и воскресенье (0) возвращает 1 (Понедельник).
  */
+function getDefaultSchoolWeekday() {
+  const jsDay = new Date().getDay();
+  return jsDay >= 1 && jsDay <= 5 ? jsDay : 1;
+}
+
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
@@ -40,9 +65,6 @@ function sanitizeInput(rawString, maxLength = 1000) {
     .slice(0, maxLength);
 }
 
-/**
- * Генерация круглого SVG-аватара (Data URI) с инициалами учителя
- */
 function buildInitialsSvgDataUri(initials, index = 0) {
   const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
   const safeChars = sanitizeInput(initials, 3).toUpperCase() || "УЧ";
@@ -50,58 +72,35 @@ function buildInitialsSvgDataUri(initials, index = 0) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-/**
- * Извлечение инициалов (Имя + Отчество или первые 2 слова) из полного ФИО
- */
 function extractInitialsFromFio(fioString) {
-  const parts = sanitizeInput(fioString, 120)
-    .split(/\s+/)
-    .filter(Boolean);
-  if (parts.length >= 3) {
-    return (parts[1][0] + parts[2][0]).toUpperCase();
-  }
-  if (parts.length === 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  if (parts.length === 1 && parts[0].length >= 2) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
+  const parts = sanitizeInput(fioString, 120).split(/\s+/).filter(Boolean);
+  if (parts.length >= 3) return (parts[1][0] + parts[2][0]).toUpperCase();
+  if (parts.length === 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  if (parts.length === 1 && parts[0].length >= 2) return parts[0].slice(0, 2).toUpperCase();
   return "УЧ";
 }
 
-/**
- * Умный разбор ячейки Фото (Столбец F):
- * - Конвертирует ссылки Google Диска в прямые изображения
- * - Пропускает https://, http:// и относительные пути с GitHub (например, img/ivanova.jpg)
- * - Если в ячейке 1–3 буквы или пусто — возвращает SVG-заглушку с инициалами
- */
 function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
   const cleaned = (rawPhotoCell || "").trim();
   const fallbackSvg = buildInitialsSvgDataUri(extractInitialsFromFio(teacherFio), cardIndex);
 
-  if (!cleaned) {
-    return { src: fallbackSvg, fallback: fallbackSvg };
-  }
+  if (!cleaned) return { src: fallbackSvg, fallback: fallbackSvg };
 
-  // Если в ячейке просто написаны инициалы (например: "ЕА" или "ММ")
   if (/^[А-Яа-яЁёA-Za-z]{1,3}$/.test(cleaned)) {
     const customSvg = buildInitialsSvgDataUri(cleaned, cardIndex);
     return { src: customSvg, fallback: customSvg };
   }
 
-  // Проверка на ссылку с Google Диска: https://drive.google.com/file/d/FILE_ID/view...
   const driveMatch =
     cleaned.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
     cleaned.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (cleaned.includes("drive.google.com") && driveMatch && driveMatch[1]) {
-    const fileId = driveMatch[1];
     return {
-      src: `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`,
+      src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w400`,
       fallback: fallbackSvg
     };
   }
 
-  // Прямая веб-ссылка (https://...) или локальный файл в репозитории GitHub (например: photos/popikhina.jpg)
   const isSafeUrlOrPath =
     /^https?:\/\/[^\s"'<>]+$/i.test(cleaned) ||
     /^[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(cleaned);
@@ -119,13 +118,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollRevealAndCounters();
   initTeacherFilter();
   initDigitalNavigatorTabs();
+  initWeekdaySwitchers();
   initLiveSheetWidgetAndMenu();
   initFeedbackForm();
   registerOfflineServiceWorker();
 });
 
 /* ==========================================================================
-   1. ЖИВЫЕ ЧАСЫ, СЕГОДНЯШНЯЯ ДАТА И ЧЕСТНЫЙ СТАТУС РАБОТЫ ШКОЛЫ
+   1. ЖИВЫЕ ЧАСЫ, ДАТА И СТАТУС ШКОЛЫ
    ========================================================================== */
 function initLiveDateTimeClock() {
   const dateEl = document.getElementById("live-date-display");
@@ -181,7 +181,7 @@ function initLiveDateTimeClock() {
 }
 
 /* ==========================================================================
-   2. ДОСТУПНОСТЬ (A11Y) И СТАБИЛЬНАЯ КНОПКА "ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ"
+   2. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
    ========================================================================== */
 function initAccessibilityMode() {
   const toggleBtn = document.getElementById("a11y-toggle");
@@ -215,80 +215,103 @@ function initAccessibilityMode() {
 }
 
 /* ==========================================================================
-   3. ОБНОВЛЕНИЕ КАРТОЧЕК ПЕДАГОГОВ ИЗ СТОЛБЦОВ F, G, H, I, J (СТРОКИ 2–13)
+   3. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ И ДОБАВЛЕНИЕ 13-Й, 14-Й+ КАРТОЧЕК УЧИТЕЛЕЙ
    ========================================================================== */
+function createNewTeacherCardElement() {
+  const article = document.createElement("article");
+  article.className = "teacher-card surface-card reveal visible";
+  article.setAttribute("data-category", "main");
+
+  article.innerHTML = `
+    <div class="teacher-photo-wrap">
+      <img src="" alt="" class="teacher-photo" width="96" height="96">
+    </div>
+    <span class="teacher-badge">Основной состав</span>
+    <h3 class="teacher-name"></h3>
+    <p class="teacher-role"></p>
+    <p class="teacher-meta"></p>
+  `;
+  return article;
+}
+
+function populateSingleTeacherCard(card, rowData, idx) {
+  const photoEl = card.querySelector(".teacher-photo");
+  const badgeEl = card.querySelector(".teacher-badge");
+  const nameEl = card.querySelector(".teacher-name");
+  const roleEl = card.querySelector(".teacher-role");
+  const metaEl = card.querySelector(".teacher-meta");
+
+  const newFio = rowData.fio || (nameEl ? nameEl.textContent : "Педагог школы");
+  const newBadge = rowData.badge || "Основной состав";
+  const newRole = rowData.role || "";
+  const newDesc = rowData.desc || "";
+  const newPhotoRaw = rowData.photo || "";
+
+  if (nameEl && rowData.fio) nameEl.textContent = rowData.fio;
+
+  if (badgeEl && newBadge) {
+    badgeEl.textContent = newBadge;
+    const badgeLower = newBadge.toLowerCase();
+
+    badgeEl.classList.remove("badge-gold", "badge-outline");
+    if (badgeLower.includes("совместител")) {
+      card.setAttribute("data-category", "part-time");
+      badgeEl.classList.add("badge-outline");
+    } else {
+      card.setAttribute("data-category", "main");
+      if (
+        badgeLower.includes("отличник") ||
+        badgeLower.includes("почетн") ||
+        badgeLower.includes("почётн") ||
+        badgeLower.includes("заслужен")
+      ) {
+        badgeEl.classList.add("badge-gold");
+      }
+    }
+  }
+
+  if (roleEl && newRole) roleEl.textContent = newRole;
+  if (metaEl && newDesc) metaEl.textContent = newDesc;
+
+  if (photoEl && (newPhotoRaw || rowData.fio)) {
+    const resolved = resolveTeacherPhotoSource(newPhotoRaw, newFio, idx);
+    photoEl.onerror = () => {
+      photoEl.onerror = null;
+      photoEl.src = resolved.fallback;
+    };
+    photoEl.src = resolved.src;
+    photoEl.alt = `Фото педагога: ${newFio}`;
+  }
+}
+
 function updateTeachersFromSheetRows(teachersDataArray) {
   if (!Array.isArray(teachersDataArray) || teachersDataArray.length === 0) return;
 
-  const teacherCards = document.querySelectorAll("#teachers-grid .teacher-card");
-  if (teacherCards.length === 0) return;
+  const grid = document.getElementById("teachers-grid");
+  if (!grid) return;
 
-  teacherCards.forEach((card, idx) => {
-    const rowData = teachersDataArray[idx];
+  const existingCards = Array.from(grid.querySelectorAll(".teacher-card"));
+
+  teachersDataArray.forEach((rowData, idx) => {
     if (!rowData) return;
 
-    const photoEl = card.querySelector(".teacher-photo");
-    const badgeEl = card.querySelector(".teacher-badge");
-    const nameEl = card.querySelector(".teacher-name");
-    const roleEl = card.querySelector(".teacher-role");
-    const metaEl = card.querySelector(".teacher-meta");
-
-    const newFio = rowData.fio || (nameEl ? nameEl.textContent : "");
-    const newBadge = rowData.badge || "";
-    const newRole = rowData.role || "";
-    const newDesc = rowData.desc || "";
-    const newPhotoRaw = rowData.photo || "";
-
-    // 1. ФИО (Столбец H)
-    if (nameEl && rowData.fio) {
-      nameEl.textContent = rowData.fio;
+    let card = existingCards[idx];
+    // Если в таблице добавлен 13-й, 14-й и т.д. учитель — динамически создаём новую карточку!
+    if (!card) {
+      card = createNewTeacherCardElement();
+      grid.appendChild(card);
     }
 
-    // 2. Бейдж / Статус (Столбец G) + автоматическая категория для фильтра
-    if (badgeEl && newBadge) {
-      badgeEl.textContent = newBadge;
-      const badgeLower = newBadge.toLowerCase();
-
-      badgeEl.classList.remove("badge-gold", "badge-outline");
-      if (badgeLower.includes("совместител")) {
-        card.setAttribute("data-category", "part-time");
-        badgeEl.classList.add("badge-outline");
-      } else {
-        card.setAttribute("data-category", "main");
-        if (
-          badgeLower.includes("отличник") ||
-          badgeLower.includes("почетн") ||
-          badgeLower.includes("почётн") ||
-          badgeLower.includes("заслужен")
-        ) {
-          badgeEl.classList.add("badge-gold");
-        }
-      }
+    // Если в ячейке ФИО написано "удалить" или "-" — скрываем карточку
+    const fioLower = (rowData.fio || "").toLowerCase();
+    if (fioLower === "-" || fioLower === "удалить" || fioLower === "скрыть") {
+      card.remove();
+      return;
     }
 
-    // 3. Должность и предмет (Столбец I)
-    if (roleEl && newRole) {
-      roleEl.textContent = newRole;
-    }
-
-    // 4. Описание / Стаж и заслуги (Столбец J)
-    if (metaEl && newDesc) {
-      metaEl.textContent = newDesc;
-    }
-
-    // 5. Фото / Аватар (Столбец F) — только если задано новое фото или изменилось ФИО
-    if (photoEl && (newPhotoRaw || rowData.fio)) {
-      const resolved = resolveTeacherPhotoSource(newPhotoRaw, newFio, idx);
-      photoEl.onerror = () => {
-        photoEl.onerror = null;
-        photoEl.src = resolved.fallback;
-      };
-      photoEl.src = resolved.src;
-      photoEl.alt = `Фото педагога: ${newFio}`;
-    }
+    populateSingleTeacherCard(card, rowData, idx);
   });
 
-  // Автоматический пересчет количества учителей на кнопках фильтра
   recalculateTeacherFilterCounts();
 }
 
@@ -300,28 +323,113 @@ function recalculateTeacherFilterCounts() {
   const btnAll = document.querySelector('.filter-btn[data-filter="all"]');
   const btnMain = document.querySelector('.filter-btn[data-filter="main"]');
   const btnPart = document.querySelector('.filter-btn[data-filter="part-time"]');
+  const subtitleEl = document.getElementById("teachers-subtitle");
 
   if (btnAll) btnAll.textContent = `Все педагоги (${allCards.length})`;
   if (btnMain) btnMain.textContent = `Основной состав (${mainCards.length})`;
   if (btnPart) btnPart.textContent = `Совместители (${partTimeCards.length})`;
+  if (subtitleEl) {
+    subtitleEl.textContent = `Главная опора Ямбирнского филиала: ${mainCards.length} основных педагогов и ${partTimeCards.length} совместителя (всего ${allCards.length})`;
+  }
+
+  // Применяем текущий активный фильтр к новым карточкам
+  const activeFilterBtn = document.querySelector(".filter-btn.active");
+  if (activeFilterBtn) {
+    const activeCategory = activeFilterBtn.getAttribute("data-filter");
+    allCards.forEach((card) => {
+      const cardCat = card.getAttribute("data-category");
+      card.classList.toggle("hidden", !(activeCategory === "all" || cardCat === activeCategory));
+    });
+  }
 }
 
 /* ==========================================================================
-   4. ИНТЕГРАЦИЯ С GOOGLE SHEETS:
-      - СТРОКА 2 (A2:D2) -> Виджет "Живая информация" и статус
-      - СТРОКА 3 (A3:C3) -> Меню столовой
-      - СТРОКИ 2–13 (F2:J13) -> 12 карточек учителей
+   4. ПЕРЕКЛЮЧАТЕЛЬ ДНЕЙ НЕДЕЛИ (ПН–ПТ) ДЛЯ РАСПИСАНИЯ И ПИТАНИЯ
    ========================================================================== */
+function initWeekdaySwitchers() {
+  const allDayPills = document.querySelectorAll(".day-pill");
+  if (allDayPills.length === 0) return;
+
+  allDayPills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const dayNum = parseInt(pill.getAttribute("data-day") || "1", 10);
+      currentSelectedWeekday = dayNum;
+      syncDayPillsUI(dayNum);
+      if (latestParsedSheetData) {
+        renderDaySpecificScheduleAndMenu(latestParsedSheetData, dayNum);
+      }
+    });
+  });
+
+  syncDayPillsUI(currentSelectedWeekday);
+}
+
+function syncDayPillsUI(dayNum) {
+  const allDayPills = document.querySelectorAll(".day-pill");
+  allDayPills.forEach((pill) => {
+    const pDay = parseInt(pill.getAttribute("data-day") || "0", 10);
+    pill.classList.toggle("active", pDay === dayNum);
+  });
+
+  const jsToday = new Date().getDay();
+  const dayName = DAY_NAMES_FULL[dayNum] || "Понедельник";
+  const labelSuffix = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
+
+  const scheduleDayLabel = document.getElementById("schedule-day-label");
+  const menuDayLabel = document.getElementById("menu-day-label");
+  if (scheduleDayLabel) scheduleDayLabel.textContent = labelSuffix;
+  if (menuDayLabel) menuDayLabel.textContent = labelSuffix;
+}
+
+function renderDaySpecificScheduleAndMenu(dataObj, dayNum) {
+  const scheduleEl = document.getElementById("col-schedule");
+  const menuBreakfastEl = document.getElementById("menu-breakfast");
+  const menuLunchEl = document.getElementById("menu-lunch");
+  const menuNoteEl = document.getElementById("menu-note");
+
+  const dayRecord = (dataObj.weeklyByDay && dataObj.weeklyByDay[dayNum]) ? dataObj.weeklyByDay[dayNum] : {};
+
+  // 1. Расписание на выбранный день недели (если пусто — берем общее расписание из B2)
+  if (scheduleEl) {
+    scheduleEl.classList.remove("flash-updated");
+    void scheduleEl.offsetWidth;
+    scheduleEl.classList.add("flash-updated");
+
+    const scheduleText = dayRecord.schedule || dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
+    scheduleEl.textContent = scheduleText;
+  }
+
+  // 2. Меню столовой на выбранный день недели (если пусто — берем строку 3 или безопасный норматив СанПиН)
+  if (menuBreakfastEl) {
+    menuBreakfastEl.textContent = dayRecord.breakfast || dataObj.menuBreakfast || DEFAULT_SANPIN_BREAKFAST;
+  }
+  if (menuLunchEl) {
+    menuLunchEl.textContent = dayRecord.lunch || dataObj.menuLunch || DEFAULT_SANPIN_LUNCH;
+  }
+  if (menuNoteEl) {
+    menuNoteEl.textContent = dataObj.menuNote || DEFAULT_SANPIN_NOTE;
+  }
+}
+
+/* ==========================================================================
+   5. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (ТАБЛО + 5 ДНЕЙ НЕДЕЛИ + ДИНАМИЧЕСКИЕ УЧИТЕЛЯ)
+   ========================================================================== */
+function detectWeekdayIndexFromCell(cellString) {
+  const s = (cellString || "").toLowerCase().trim();
+  if (s.startsWith("понедельник") || s === "пн") return 1;
+  if (s.startsWith("вторник") || s === "вт") return 2;
+  if (s.startsWith("среда") || s === "ср") return 3;
+  if (s.startsWith("четверг") || s === "чт") return 4;
+  if (s.startsWith("пятница") || s === "пт") return 5;
+  return 0;
+}
+
 function initLiveSheetWidgetAndMenu() {
   const newsEl = document.getElementById("col-news");
   const scheduleEl = document.getElementById("col-schedule");
   const importantEl = document.getElementById("col-important");
   const refreshBtn = document.getElementById("refresh-sheet-btn");
   const statusEl = document.getElementById("widget-status");
-
-  const menuBreakfastEl = document.getElementById("menu-breakfast");
-  const menuLunchEl = document.getElementById("menu-lunch");
-  const menuNoteEl = document.getElementById("menu-note");
 
   if (!newsEl || !scheduleEl || !importantEl) return;
 
@@ -364,32 +472,28 @@ function initLiveSheetWidgetAndMenu() {
   };
 
   const renderWidgetData = (dataObj, isFromCache = false) => {
-    [newsEl, scheduleEl, importantEl].forEach((el) => {
+    latestParsedSheetData = dataObj;
+
+    [newsEl, importantEl].forEach((el) => {
       el.classList.remove("is-loading-shimmer", "flash-updated");
       void el.offsetWidth;
       el.classList.add("flash-updated");
     });
+    scheduleEl.classList.remove("is-loading-shimmer");
 
     newsEl.textContent = dataObj.col1News || "На сегодня дополнительных объявлений нет";
-    scheduleEl.textContent = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
     importantEl.textContent = dataObj.col3Important || "Желаем хорошего дня!";
 
     if (dataObj.col4Status) {
       customSheetSchoolStatus = dataObj.col4Status;
     }
 
-    if (menuBreakfastEl && dataObj.menuBreakfast) {
-      menuBreakfastEl.textContent = dataObj.menuBreakfast;
-    }
-    if (menuLunchEl && dataObj.menuLunch) {
-      menuLunchEl.textContent = dataObj.menuLunch;
-    }
-    if (menuNoteEl && dataObj.menuNote) {
-      menuNoteEl.textContent = dataObj.menuNote;
-    }
+    // Отрисовываем расписание и меню на выбранный (или сегодняшний) день недели
+    syncDayPillsUI(currentSelectedWeekday);
+    renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday);
 
-    // Обновляем карточки учителей из столбцов F–J (если они заполнены в таблице)
-    if (Array.isArray(dataObj.teachers) && dataObj.teachers.length > 0) {
+    // Обновляем и достраиваем карточки учителей (включая 13-ю, 14-ю и последующие)
+    if (Array.isArray(dataObj.teachers) && dataObj.teachers.some(Boolean)) {
       updateTeachersFromSheetRows(dataObj.teachers);
     }
 
@@ -406,46 +510,53 @@ function initLiveSheetWidgetAndMenu() {
       refreshBtn.disabled = true;
     }
     [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.add("is-loading-shimmer"));
-    if (statusEl) {
-      statusEl.textContent = "Синхронизация...";
-    }
+    if (statusEl) statusEl.textContent = "Синхронизация...";
 
     try {
       const urlWithNoCache = `${SHEET_CSV_URL}&_t=${Date.now()}`;
       const response = await fetch(urlWithNoCache, { cache: "no-store" });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ошибка: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
 
       const csvText = await response.text();
       const rows = parseCSVPreserveRowIndex(csvText);
 
-      // СТРОКА 2 (индекс 1): Живая информация (A2:D2)
+      // СТРОКА 2 (индекс 1): Новости дня (A2), Общее расписание (B2), Важные новости (C2), Статус (D2)
       const secondRow = rows.length > 1 ? rows[1] : [];
-      // СТРОКА 3 (индекс 2): Меню столовой (A3:C3)
+      // СТРОКА 3 (индекс 2): Резервная строка меню (если не используется недельная таблица)
       const thirdRow = rows.length > 2 ? rows[2] : [];
+      const isThirdRowHint = (thirdRow[3] || "").includes("Завтрак") || (thirdRow[0] || "").includes("Завтрак");
 
-      // СТРОКИ 2–13 (индексы 1..12), СТОЛБЦЫ F, G, H, I, J (индексы 5, 6, 7, 8, 9): 12 карточек учителей
-      const teachersList = [];
-      for (let rIdx = 1; rIdx <= 12; rIdx++) {
+      // Сканируем строки с 4-й и ниже на наличие дней недели (Понедельник..Пятница) в столбце A
+      const weeklyByDay = {};
+      for (let rIdx = 2; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
-        const rawPhoto = (r[5] || "").trim(); // Столбец F
-        const badge = sanitizeInput(r[6] || "", 100); // Столбец G
-        const fio = sanitizeInput(r[7] || "", 120); // Столбец H
-        const role = sanitizeInput(r[8] || "", 160); // Столбец I
-        const desc = sanitizeInput(r[9] || "", 450); // Столбец J
-
-        if (rawPhoto || badge || fio || role || desc) {
-          teachersList[rIdx - 1] = {
-            photo: rawPhoto,
-            badge,
-            fio,
-            role,
-            desc
+        const dayIndex = detectWeekdayIndexFromCell(r[0]);
+        if (dayIndex >= 1 && dayIndex <= 5) {
+          weeklyByDay[dayIndex] = {
+            schedule: sanitizeInput(r[1] || "", 600),
+            breakfast: sanitizeInput(r[2] || "", 400),
+            lunch: sanitizeInput(r[3] || "", 400)
           };
-        } else {
-          teachersList[rIdx - 1] = null;
+        }
+      }
+
+      // Сканируем ВСЕ строки начиная со 2-й (rIdx >= 1) по столбцам F, G, H, I, J (индексы 5..9)
+      // Поддерживает любое количество учителей: 12, 13, 14, 20+
+      const teachersList = [];
+      for (let rIdx = 1; rIdx < rows.length; rIdx++) {
+        const r = rows[rIdx] || [];
+        const rawPhoto = (r[5] || "").trim();
+        const badge = sanitizeInput(r[6] || "", 100);
+        const fio = sanitizeInput(r[7] || "", 120);
+        const role = sanitizeInput(r[8] || "", 160);
+        const desc = sanitizeInput(r[9] || "", 450);
+
+        // Пропускаем случайно продублированную шапку
+        if (fio.toLowerCase() === "фио учителя" || fio.toLowerCase() === "фио") continue;
+
+        if (fio || role || desc || badge) {
+          teachersList.push({ photo: rawPhoto, badge, fio, role, desc });
         }
       }
 
@@ -456,9 +567,10 @@ function initLiveSheetWidgetAndMenu() {
         col2Schedule: sanitizeInput(secondRow[1] || "", 600),
         col3Important: sanitizeInput(secondRow[2] || "", 600),
         col4Status: sanitizeInput(secondRow[3] || "", 120),
-        menuBreakfast: sanitizeInput(thirdRow[0] || "", 350),
-        menuLunch: sanitizeInput(thirdRow[1] || "", 350),
-        menuNote: sanitizeInput(thirdRow[2] || "", 350),
+        menuBreakfast: !isThirdRowHint ? sanitizeInput(thirdRow[0] || "", 350) : "",
+        menuLunch: !isThirdRowHint ? sanitizeInput(thirdRow[1] || "", 350) : "",
+        menuNote: !isThirdRowHint ? sanitizeInput(thirdRow[2] || "", 350) : "",
+        weeklyByDay,
         teachers: teachersList,
         timeLabel: nowLabel
       };
@@ -500,7 +612,7 @@ function initLiveSheetWidgetAndMenu() {
 }
 
 /* ==========================================================================
-   5. ПЕРЕКЛЮЧАТЕЛЬ 4 ВКЛАДОК ЦИФРОВОГО НАВИГАТОРА (ГОСУСЛУГИ, ДНЕВНИК, УЧИ.РУ)
+   6. ВКЛАДКИ ЦИФРОВОГО НАВИГАТОРА И ФОРМА ОБРАТНОЙ СВЯЗИ
    ========================================================================== */
 function initDigitalNavigatorTabs() {
   const tabBtns = document.querySelectorAll(".digital-tab-btn");
@@ -526,9 +638,6 @@ function initDigitalNavigatorTabs() {
   });
 }
 
-/* ==========================================================================
-   6. ФОРМА ОБРАТНОЙ СВЯЗИ С ВЫБОРОМ ТЕМЫ (БЛАГОДАРНОСТЬ / ИДЕЯ / ВОПРОС)
-   ========================================================================== */
 function initFeedbackForm() {
   const consentStep = document.getElementById("consent-step");
   const formStep = document.getElementById("form-step");
@@ -586,13 +695,9 @@ function initFeedbackForm() {
   try {
     const params = new URLSearchParams(window.location.search);
     const topicParam = params.get("topic");
-    if (topicParam === "thanks" && topicChips[1]) {
-      topicChips[1].click();
-    } else if (topicParam === "idea" && topicChips[2]) {
-      topicChips[2].click();
-    } else if (topicParam === "question" && topicChips[0]) {
-      topicChips[0].click();
-    }
+    if (topicParam === "thanks" && topicChips[1]) topicChips[1].click();
+    else if (topicParam === "idea" && topicChips[2]) topicChips[2].click();
+    else if (topicParam === "question" && topicChips[0]) topicChips[0].click();
   } catch (_) {}
 
   acceptBtn.addEventListener("click", () => {
@@ -691,10 +796,7 @@ function initFeedbackForm() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    if (!isConsentConfirmed || formFieldset.disabled) {
-      return;
-    }
+    if (!isConsentConfirmed || formFieldset.disabled) return;
 
     formResponse.classList.add("hidden");
 
@@ -732,7 +834,7 @@ function initFeedbackForm() {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      formResponse.textContent = "Спасибо! Ваше сообщение успешно записано в реестр школы и передано руководителю филиала.";
+      formResponse.textContent = "Спасибо! Ваше сообщение успешно записано на Лист 2 реестра школы и передано руководителю филиала.";
       formResponse.className = "form-response success";
       formResponse.classList.remove("hidden");
 
@@ -753,7 +855,7 @@ function initFeedbackForm() {
 }
 
 /* ==========================================================================
-   7. ПЛАВНОЕ ПОЯВЛЕНИЕ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
+   7. АНИМАЦИЯ ПОЯВЛЕНИЯ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
    ========================================================================== */
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
@@ -818,7 +920,6 @@ function initScrollRevealAndCounters() {
 
 function initTeacherFilter() {
   const filterBtns = document.querySelectorAll(".filter-btn");
-
   if (filterBtns.length === 0) return;
 
   filterBtns.forEach((btn) => {
