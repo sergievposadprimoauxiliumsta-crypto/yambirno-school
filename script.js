@@ -1,16 +1,22 @@
 /**
  * Основной скрипт сайта Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»
- * Поддерживает:
- * 1) Расписание по дням недели (Пн–Пт, строки A5:D9) и по группам классов (B4, C4, D4)
- * 2) Меню школьной столовой по дням недели (Пн–Пт, строки A12:D16)
- * 3) Динамическое обновление и добавление 13-й, 14-й+ карточек учителей из столбцов F–J
- * 4) Отправку обращений на Лист 2 (gid=834161632)
+ * Включает:
+ * 1) Автоматический прогноз погоды в с. Ямбирно (сейчас + завтра утром к 08:00 с советом про зонтик/одежду)
+ * 2) Индивидуальное расписание для каждого класса с 1 по 9 (с сохранением выбранного класса в памяти телефона)
+ * 3) Поддержку ссылок на фото из Скриншотера (skrinshoter.ru), Google Диска и GitHub
+ * 4) Динамическое создание 13-й, 14-й и последующих карточек учителей из столбцов F–J
  */
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
+
+// Координаты с. Ямбирно (Шацкий район, Рязанская область) для метеосервиса Open-Meteo
+const YAMBIRNO_LAT = 54.1286;
+const YAMBIRNO_LON = 41.9708;
+
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v6";
+const GRADE_STORAGE_KEY = "yambirno_selected_grade";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v7";
 
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
@@ -42,14 +48,89 @@ const DEFAULT_SANPIN_LUNCH =
 const DEFAULT_SANPIN_NOTE =
   "Фактическое ежедневное меню заверяется руководителем и размещается на информационном стенде школьной столовой.";
 
+// Базовое резервное расписание по классам 1–9 (если в таблице пока заполнена только старая версия)
+const DEFAULT_GRADE_SCHEDULES = {
+  1: {
+    1: "1. Разговоры о важном\n2. Обучение грамоте\n3. Письмо\n4. Математика",
+    2: "1. Обучение грамоте\n2. Письмо\n3. Математика\n4. Окружающий мир",
+    3: "1. Обучение грамоте\n2. Письмо\n3. Математика\n4. Физкультура",
+    4: "1. Обучение грамоте\n2. Письмо\n3. Музыка\n4. ИЗО",
+    5: "1. Обучение грамоте\n2. Окружающий мир\n3. Труд (технология)\n4. Физкультура"
+  },
+  2: {
+    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. Литературное чтение",
+    2: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Окружающий мир",
+    3: "1. Математика\n2. Русский язык\n3. Литературное чтение\n4. Физкультура",
+    4: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Музыка",
+    5: "1. Русский язык\n2. Литературное чтение\n3. ИЗО\n4. Труд (технология)"
+  },
+  3: {
+    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. Литературное чтение",
+    2: "1. Математика\n2. Русский язык\n3. Английский язык\n4. Окружающий мир",
+    3: "1. Русский язык\n2. Математика\n3. Литературное чтение\n4. Физкультура",
+    4: "1. Математика\n2. Русский язык\n3. Английский язык\n4. Музыка",
+    5: "1. Русский язык\n2. Окружающий мир\n3. ИЗО\n4. Труд (технология)"
+  },
+  4: {
+    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. Литературное чтение",
+    2: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Окружающий мир",
+    3: "1. Математика\n2. Русский язык\n3. ОРКСЭ\n4. Физкультура",
+    4: "1. Русский язык\n2. Математика\n3. Английский язык\n4. Литературное чтение",
+    5: "1. Русский язык\n2. Окружающий мир\n3. ИЗО\n4. Труд (технология)"
+  },
+  5: {
+    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. История\n5. Биология",
+    2: "1. Математика\n2. Русский язык\n3. Английский язык\n4. Литература\n5. Физкультура",
+    3: "1. Русский язык\n2. Математика\n3. География\n4. Литература\n5. Труд (технология)",
+    4: "1. Математика\n2. Русский язык\n3. История\n4. Английский язык\n5. Музыка",
+    5: "1. Русский язык\n2. Математика\n3. Литература\n4. ИЗО\n5. Физкультура"
+  },
+  6: {
+    1: "1. Разговоры о важном\n2. Русский язык\n3. Математика\n4. История\n5. Биология",
+    2: "1. Математика\n2. Русский язык\n3. Английский язык\n4. География\n5. Литература",
+    3: "1. Русский язык\n2. Математика\n3. Обществознание\n4. Литература\n5. Физкультура",
+    4: "1. Математика\n2. Русский язык\n3. История\n4. Английский язык\n5. Труд (технология)",
+    5: "1. Русский язык\n2. Математика\n3. Литература\n4. Музыка / ИЗО\n5. Физкультура"
+  },
+  7: {
+    1: "1. Разговоры о важном\n2. Русский язык\n3. Алгебра\n4. Физика\n5. История",
+    2: "1. Геометрия\n2. Русский язык\n3. Английский язык\n4. География\n5. Биология",
+    3: "1. Алгебра\n2. Русский язык\n3. Литература\n4. Физика\n5. Информатика",
+    4: "1. Геометрия\n2. Русский язык\n3. История\n4. Обществознание\n5. Английский язык",
+    5: "1. Алгебра\n2. Литература\n3. География\n4. Труд (технология)\n5. Физкультура"
+  },
+  8: {
+    1: "1. Разговоры о важном\n2. Алгебра\n3. Русский язык\n4. Химия\n5. История\n6. Биология",
+    2: "1. Геометрия\n2. Литература\n3. Английский язык\n4. Физика\n5. География\n6. Физкультура",
+    3: "1. Алгебра\n2. Русский язык\n3. Химия\n4. Обществознание\n5. Информатика\n6. ОБЗР",
+    4: "1. Геометрия\n2. Русский язык\n3. История\n4. Физика\n5. Английский язык\n6. Биология",
+    5: "1. Алгебра\n2. Литература\n3. География\n4. Английский язык\n5. Профориентация\n6. Физкультура"
+  },
+  9: {
+    1: "1. Разговоры о важном\n2. Алгебра\n3. Русский язык\n4. Физика\n5. История\n6. Химия",
+    2: "1. Геометрия\n2. Литература\n3. Английский язык\n4. Обществознание\n5. Биология\n6. Информатика",
+    3: "1. Алгебра\n2. Русский язык\n3. Химия\n4. География\n5. Физика\n6. Физкультура",
+    4: "1. Геометрия\n2. Русский язык\n3. История\n4. Литература\n5. Английский язык\n6. ОБЗР",
+    5: "1. Алгебра\n2. Литература\n3. Физика\n4. Химия\n5. Биология\n6. Консультация ОГЭ"
+  }
+};
+
 let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
 let currentSelectedWeekday = getDefaultSchoolWeekday();
-let currentSelectedClassCol = 0; // 0 = B4 (1-4 кл.), 1 = C4 (5-7 кл.), 2 = D4 (8-9 кл.)
+let currentSelectedGrade = getSavedGradeSelection();
 
 function getDefaultSchoolWeekday() {
   const jsDay = new Date().getDay();
   return jsDay >= 1 && jsDay <= 5 ? jsDay : 1;
+}
+
+function getSavedGradeSelection() {
+  try {
+    const saved = parseInt(localStorage.getItem(GRADE_STORAGE_KEY) || "1", 10);
+    if (saved >= 1 && saved <= 9) return saved;
+  } catch (_) {}
+  return 1;
 }
 
 function sanitizeInput(rawString, maxLength = 1000) {
@@ -78,23 +159,48 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
+/**
+ * Надежный обработчик фото (Столбец F):
+ * Поддерживает Скриншотер (skrinshoter.ru), Google Диск, прямые URL и локальные файлы GitHub
+ */
 function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
   const cleaned = (rawPhotoCell || "").trim();
   const fallbackSvg = buildInitialsSvgDataUri(extractInitialsFromFio(teacherFio), cardIndex);
 
-  if (!cleaned) return { src: fallbackSvg, fallback: fallbackSvg };
+  if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
 
   if (/^[А-Яа-яЁёA-Za-z]{1,3}$/.test(cleaned)) {
     const customSvg = buildInitialsSvgDataUri(cleaned, cardIndex);
-    return { src: customSvg, fallback: customSvg };
+    return { src: customSvg, altTry: null, fallback: customSvg };
   }
 
+  // Ссылки с Google Диска
   const driveMatch =
     cleaned.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
     cleaned.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (cleaned.includes("drive.google.com") && driveMatch && driveMatch[1]) {
     return {
       src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w400`,
+      altTry: null,
+      fallback: fallbackSvg
+    };
+  }
+
+  // Ссылки со Скриншотера (skrinshoter.ru)
+  if (cleaned.includes("skrinshoter.ru")) {
+    const hasImgExt = /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(cleaned);
+    if (hasImgExt) {
+      return {
+        src: cleaned,
+        altTry: `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=300&h=300&fit=cover`,
+        fallback: fallbackSvg
+      };
+    }
+    // Если вставлена короткая ссылка на страницу просмотра skrinshoter.ru/s/XXXX, пробуем прямое расширение .jpg и прокси
+    const cleanNoSlash = cleaned.replace(/\/+$/, "");
+    return {
+      src: `${cleanNoSlash}.jpg`,
+      altTry: `${cleanNoSlash}.png`,
       fallback: fallbackSvg
     };
   }
@@ -104,26 +210,123 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
     /^[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(cleaned);
 
   if (isSafeUrlOrPath) {
-    return { src: cleaned, fallback: fallbackSvg };
+    return {
+      src: cleaned,
+      altTry: cleaned.startsWith("http") ? `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=300&h=300&fit=cover` : null,
+      fallback: fallbackSvg
+    };
   }
 
-  return { src: fallbackSvg, fallback: fallbackSvg };
+  return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   initLiveDateTimeClock();
+  initYambirnoWeatherWidget();
   initAccessibilityMode();
   initScrollRevealAndCounters();
   initTeacherFilter();
   initDigitalNavigatorTabs();
-  initWeekdayAndClassSwitchers();
+  initWeekdayAndGradeSwitchers();
   initLiveSheetWidgetAndMenu();
   initFeedbackForm();
   registerOfflineServiceWorker();
 });
 
 /* ==========================================================================
-   1. ЖИВЫЕ ЧАСЫ, ДАТА И СТАТУС ШКОЛЫ
+   1. ПРОГНОЗ ПОГОДЫ В С. ЯМБИРНО (СЕЙЧАС + ЗАВТРА К 08:00 УТРА С СОВЕТОМ)
+   ========================================================================== */
+function decodeWmoWeather(code) {
+  if (code === 0) return { icon: "☀️", text: "Ясно", rain: false, snow: false };
+  if (code === 1 || code === 2) return { icon: "🌤️", text: "Переменная облачность", rain: false, snow: false };
+  if (code === 3) return { icon: "☁️", text: "Пасмурно", rain: false, snow: false };
+  if (code === 45 || code === 48) return { icon: "🌫️", text: "Туман", rain: false, snow: false };
+  if (code >= 51 && code <= 57) return { icon: "🌦️", text: "Морось", rain: true, snow: false };
+  if (code >= 61 && code <= 67) return { icon: "🌧️", text: "Дождь", rain: true, snow: false };
+  if (code >= 71 && code <= 77) return { icon: "❄️", text: "Снег", rain: false, snow: true };
+  if (code >= 80 && code <= 82) return { icon: "🌧️", text: "Ливень", rain: true, snow: false };
+  if (code === 85 || code === 86) return { icon: "🌨️", text: "Снегопад", rain: false, snow: true };
+  if (code >= 95) return { icon: "⛈️", text: "Гроза", rain: true, snow: false };
+  return { icon: "🌤️", text: "Без осадков", rain: false, snow: false };
+}
+
+async function initYambirnoWeatherWidget() {
+  const topPill = document.getElementById("top-weather-pill");
+  const nowIconEl = document.getElementById("weather-now-icon");
+  const nowTempEl = document.getElementById("weather-now-temp");
+  const nowDescEl = document.getElementById("weather-now-desc");
+  const tomTempEl = document.getElementById("weather-tomorrow-temp");
+  const tomDescEl = document.getElementById("weather-tomorrow-desc");
+  const adviceEl = document.getElementById("weather-parent-advice");
+
+  const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${YAMBIRNO_LAT}&longitude=${YAMBIRNO_LON}&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&timezone=Europe%2FMoscow&forecast_days=2`;
+
+  try {
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error("Weather HTTP error");
+    const data = await res.json();
+
+    // 1. Текущая погода в с. Ямбирно
+    const curTemp = Math.round(data.current.temperature_2m);
+    const curSign = curTemp > 0 ? `+${curTemp}°C` : `${curTemp}°C`;
+    const curWmo = decodeWmoWeather(data.current.weather_code);
+    const curWind = Math.round(data.current.wind_speed_10m);
+
+    if (topPill) {
+      topPill.textContent = `${curWmo.icon} с. Ямбирно: ${curSign}`;
+    }
+    if (nowIconEl) nowIconEl.textContent = curWmo.icon;
+    if (nowTempEl) nowTempEl.textContent = curSign;
+    if (nowDescEl) nowDescEl.textContent = `${curWmo.text}, ветер ${curWind} м/с`;
+
+    // 2. Погода завтра утром к 08:00 (индекс 24 + 8 = 32 в массиве hourly)
+    const morningIndex = 32;
+    const tomTempRaw =
+      data.hourly && data.hourly.temperature_2m && data.hourly.temperature_2m[morningIndex] !== undefined
+        ? Math.round(data.hourly.temperature_2m[morningIndex])
+        : curTemp;
+    const tomSign = tomTempRaw > 0 ? `+${tomTempRaw}°C` : `${tomTempRaw}°C`;
+    const tomCode =
+      data.hourly && data.hourly.weather_code && data.hourly.weather_code[morningIndex] !== undefined
+        ? data.hourly.weather_code[morningIndex]
+        : data.current.weather_code;
+    const tomPrecipProb =
+      data.hourly && data.hourly.precipitation_probability && data.hourly.precipitation_probability[morningIndex] !== undefined
+        ? data.hourly.precipitation_probability[morningIndex]
+        : 0;
+
+    const tomWmo = decodeWmoWeather(tomCode);
+
+    if (tomTempEl) tomTempEl.textContent = `${tomWmo.icon} ${tomSign}`;
+    if (tomDescEl) tomDescEl.textContent = `${tomWmo.text} (осадки ${tomPrecipProb}%)`;
+
+    // 3. Формируем понятную рекомендацию для родителей на утро
+    if (adviceEl) {
+      adviceEl.classList.remove("advice-rain", "advice-cold");
+      if (tomWmo.rain || (tomPrecipProb >= 40 && tomTempRaw > 0)) {
+        adviceEl.textContent = "☔ Совет на утро: возможен дождь — дайте ребёнку в школу зонт или дождевик!";
+        adviceEl.classList.add("advice-rain");
+      } else if (tomWmo.snow || (tomPrecipProb >= 40 && tomTempRaw <= 0)) {
+        adviceEl.textContent = "❄️ Совет на утро: ожидается снег — оденьте ребёнка потеплее, на улице может быть скользко.";
+        adviceEl.classList.add("advice-cold");
+      } else if (tomTempRaw <= -12) {
+        adviceEl.textContent = "🧣 Совет на утро: морозное утро — не забудьте тёплую шапку, шарф и варежки.";
+        adviceEl.classList.add("advice-cold");
+      } else if (tomTempRaw <= 4) {
+        adviceEl.textContent = "🧥 Совет на утро: прохладно и без осадков — рекомендуем тёплую куртку по сезону.";
+      } else {
+        adviceEl.textContent = "☀️ Совет на утро: осадков к 1-му уроку не ожидается — зонт не нужен!";
+      }
+    }
+  } catch (_) {
+    if (topPill) topPill.textContent = "📍 с. Ямбирно";
+    if (nowDescEl) nowDescEl.textContent = "Метеоданные обновляются";
+    if (adviceEl) adviceEl.textContent = "Удачного учебного дня и хорошей погоды!";
+  }
+}
+
+/* ==========================================================================
+   2. ЖИВЫЕ ЧАСЫ, ДАТА И СТАТУС ШКОЛЫ
    ========================================================================== */
 function initLiveDateTimeClock() {
   const dateEl = document.getElementById("live-date-display");
@@ -164,7 +367,7 @@ function initLiveDateTimeClock() {
         const hour = now.getHours();
 
         if (day === 0 || day === 6) {
-          statusEl.textContent = "🏡 Выходной день • Электронная приёмная открыта";
+          statusEl.textContent = "🏡 Выходной день • Приём обращений открыт";
         } else if (hour >= 8 && hour < 17) {
           statusEl.textContent = "🟢 Учебный день (работа по расписанию)";
         } else {
@@ -179,7 +382,7 @@ function initLiveDateTimeClock() {
 }
 
 /* ==========================================================================
-   2. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
+   3. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
    ========================================================================== */
 function initAccessibilityMode() {
   const toggleBtn = document.getElementById("a11y-toggle");
@@ -213,7 +416,7 @@ function initAccessibilityMode() {
 }
 
 /* ==========================================================================
-   3. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ И ДОБАВЛЕНИЕ 13-Й, 14-Й+ КАРТОЧЕК УЧИТЕЛЕЙ
+   4. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ (С ПОДДЕРЖКОЙ SKRINSHOTER.RU)
    ========================================================================== */
 function createNewTeacherCardElement() {
   const article = document.createElement("article");
@@ -222,7 +425,7 @@ function createNewTeacherCardElement() {
 
   article.innerHTML = `
     <div class="teacher-photo-wrap">
-      <img src="" alt="" class="teacher-photo" width="96" height="96">
+      <img src="" alt="" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
     </div>
     <span class="teacher-badge">Основной состав</span>
     <h3 class="teacher-name"></h3>
@@ -272,10 +475,18 @@ function populateSingleTeacherCard(card, rowData, idx) {
   if (metaEl && newDesc) metaEl.textContent = newDesc;
 
   if (photoEl && (newPhotoRaw || rowData.fio)) {
+    photoEl.setAttribute("referrerpolicy", "no-referrer");
     const resolved = resolveTeacherPhotoSource(newPhotoRaw, newFio, idx);
+    let triedAlt = false;
+
     photoEl.onerror = () => {
-      photoEl.onerror = null;
-      photoEl.src = resolved.fallback;
+      if (!triedAlt && resolved.altTry) {
+        triedAlt = true;
+        photoEl.src = resolved.altTry;
+      } else {
+        photoEl.onerror = null;
+        photoEl.src = resolved.fallback;
+      }
     };
     photoEl.src = resolved.src;
     photoEl.alt = `Фото педагога: ${newFio}`;
@@ -339,114 +550,93 @@ function recalculateTeacherFilterCounts() {
 }
 
 /* ==========================================================================
-   4. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–4, 5–7, 8–9)
+   5. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–9 КЛАСС)
    ========================================================================== */
-function initWeekdayAndClassSwitchers() {
+function initWeekdayAndGradeSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill");
-  const allClassPills = document.querySelectorAll(".class-pill");
+  const allGradePills = document.querySelectorAll(".grade-pill");
 
   allDayPills.forEach((pill) => {
     pill.addEventListener("click", () => {
       const dayNum = parseInt(pill.getAttribute("data-day") || "1", 10);
       currentSelectedWeekday = dayNum;
-      syncDayPillsUI(dayNum);
+      syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
       if (latestParsedSheetData) {
-        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedClassCol);
+        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade);
       }
     });
   });
 
-  allClassPills.forEach((cPill) => {
-    cPill.addEventListener("click", () => {
-      const colIdx = parseInt(cPill.getAttribute("data-class-col") || "0", 10);
-      currentSelectedClassCol = colIdx;
-      allClassPills.forEach((btn) => {
-        btn.classList.toggle("active", btn === cPill);
-      });
+  allGradePills.forEach((gPill) => {
+    gPill.addEventListener("click", () => {
+      const gradeNum = parseInt(gPill.getAttribute("data-grade") || "1", 10);
+      currentSelectedGrade = gradeNum;
+      try {
+        localStorage.setItem(GRADE_STORAGE_KEY, String(gradeNum));
+      } catch (_) {}
+      syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
       if (latestParsedSheetData) {
-        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedClassCol);
+        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade);
       }
     });
   });
 
-  syncDayPillsUI(currentSelectedWeekday);
+  syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
 }
 
-function syncDayPillsUI(dayNum) {
+function syncDayAndGradeUI(dayNum, gradeNum) {
   const allDayPills = document.querySelectorAll(".day-pill");
   allDayPills.forEach((pill) => {
     const pDay = parseInt(pill.getAttribute("data-day") || "0", 10);
     pill.classList.toggle("active", pDay === dayNum);
   });
 
+  const allGradePills = document.querySelectorAll(".grade-pill");
+  allGradePills.forEach((gPill) => {
+    const pGrade = parseInt(gPill.getAttribute("data-grade") || "0", 10);
+    gPill.classList.toggle("active", pGrade === gradeNum);
+  });
+
   const jsToday = new Date().getDay();
   const dayName = DAY_NAMES_FULL[dayNum] || "Понедельник";
-  const labelSuffix = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
+  const dayLabelText = jsToday === dayNum ? `${dayName}, ${gradeNum} класс` : `${dayName} (${gradeNum} класс)`;
 
   const scheduleDayLabel = document.getElementById("schedule-day-label");
   const menuDayLabel = document.getElementById("menu-day-label");
-  if (scheduleDayLabel) scheduleDayLabel.textContent = labelSuffix;
-  if (menuDayLabel) menuDayLabel.textContent = labelSuffix;
+  if (scheduleDayLabel) scheduleDayLabel.textContent = dayLabelText;
+  if (menuDayLabel) menuDayLabel.textContent = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
 }
 
-function syncClassGroupButtonsFromSheet(classHeadersArray, hasMultiClassSchedule) {
-  const classPillsWrap = document.getElementById("schedule-class-pills");
-  if (!classPillsWrap) return;
-
-  if (!hasMultiClassSchedule) {
-    // Если в таблице заполнена только 1 общая колонка расписания — скрываем переключатель классов
-    classPillsWrap.classList.add("hidden");
-    return;
-  }
-
-  classPillsWrap.classList.remove("hidden");
-  const defaultNames = ["1–4 классы", "5–7 классы", "8–9 классы"];
-
-  for (let i = 0; i < 3; i++) {
-    const btn = document.getElementById(`class-btn-${i}`);
-    if (!btn) continue;
-    const customHeader = (classHeadersArray && classHeadersArray[i]) ? classHeadersArray[i] : "";
-    if (customHeader) {
-      btn.textContent = customHeader;
-      btn.classList.remove("hidden");
-    } else if (i < 2) {
-      btn.textContent = defaultNames[i];
-      btn.classList.remove("hidden");
-    } else {
-      // Если 3-я колонка класса (D4) не озаглавлена и пуста — скрываем 3-ю кнопку
-      btn.classList.add("hidden");
-    }
-  }
-}
-
-function renderDaySpecificScheduleAndMenu(dataObj, dayNum, classColIdx = 0) {
+function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
   const scheduleEl = document.getElementById("col-schedule");
   const menuBreakfastEl = document.getElementById("menu-breakfast");
   const menuLunchEl = document.getElementById("menu-lunch");
   const menuNoteEl = document.getElementById("menu-note");
 
-  const dayScheduleArr =
-    (dataObj.scheduleByDayAndClass && dataObj.scheduleByDayAndClass[dayNum])
-      ? dataObj.scheduleByDayAndClass[dayNum]
-      : [];
+  // 1. Ищем расписание для конкретного класса (1..9) и дня недели (1..5)
+  let scheduleText = "";
+  if (
+    dataObj.scheduleByGradeAndDay &&
+    dataObj.scheduleByGradeAndDay[gradeNum] &&
+    dataObj.scheduleByGradeAndDay[gradeNum][dayNum]
+  ) {
+    scheduleText = dataObj.scheduleByGradeAndDay[gradeNum][dayNum];
+  } else if (DEFAULT_GRADE_SCHEDULES[gradeNum] && DEFAULT_GRADE_SCHEDULES[gradeNum][dayNum]) {
+    scheduleText = DEFAULT_GRADE_SCHEDULES[gradeNum][dayNum];
+  } else {
+    scheduleText = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
+  }
 
-  const dayMenuObj =
-    (dataObj.menuByDay && dataObj.menuByDay[dayNum])
-      ? dataObj.menuByDay[dayNum]
-      : {};
-
-  // 1. Отрисовка расписания для выбранного дня недели и выбранной группы классов
   if (scheduleEl) {
     scheduleEl.classList.remove("flash-updated");
     void scheduleEl.offsetWidth;
     scheduleEl.classList.add("flash-updated");
-
-    const selectedClassSchedule = dayScheduleArr[classColIdx] || dayScheduleArr[0] || "";
-    const fallbackSchedule = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
-    scheduleEl.textContent = selectedClassSchedule || fallbackSchedule;
+    scheduleEl.textContent = scheduleText;
   }
 
   // 2. Отрисовка меню столовой для выбранного дня недели
+  const dayMenuObj = (dataObj.menuByDay && dataObj.menuByDay[dayNum]) ? dataObj.menuByDay[dayNum] : {};
+
   if (menuBreakfastEl) {
     menuBreakfastEl.textContent = dayMenuObj.breakfast || dataObj.menuBreakfast || DEFAULT_SANPIN_BREAKFAST;
   }
@@ -459,7 +649,7 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, classColIdx = 0) {
 }
 
 /* ==========================================================================
-   5. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (БЛОКИ 1, 2, 3, 4 НА ЛИСТЕ 1)
+   6. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (БЕЗ ОШИБОЧНЫХ ПАРАМЕТРОВ URL + ПОДДЕРЖКА 1–9 КЛ)
    ========================================================================== */
 function detectWeekdayIndexFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
@@ -468,6 +658,15 @@ function detectWeekdayIndexFromCell(cellString) {
   if (s.startsWith("среда") || s === "ср") return 3;
   if (s.startsWith("четверг") || s === "чт") return 4;
   if (s.startsWith("пятница") || s === "пт") return 5;
+  return 0;
+}
+
+function detectGradeNumberFromCell(cellString) {
+  const s = (cellString || "").toLowerCase().trim();
+  const match = s.match(/^([1-9])\s*(класс|кл\.?|кл)$/i);
+  if (match && match[1]) {
+    return parseInt(match[1], 10);
+  }
   return 0;
 }
 
@@ -535,9 +734,8 @@ function initLiveSheetWidgetAndMenu() {
       customSheetSchoolStatus = dataObj.col4Status;
     }
 
-    syncClassGroupButtonsFromSheet(dataObj.classHeaders, dataObj.hasMultiClassSchedule);
-    syncDayPillsUI(currentSelectedWeekday);
-    renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday, currentSelectedClassCol);
+    syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
+    renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday, currentSelectedGrade);
 
     if (Array.isArray(dataObj.teachers) && dataObj.teachers.some(Boolean)) {
       updateTeachersFromSheetRows(dataObj.teachers);
@@ -559,79 +757,83 @@ function initLiveSheetWidgetAndMenu() {
     if (statusEl) statusEl.textContent = "Синхронизация...";
 
     try {
-      const urlWithNoCache = `${SHEET_CSV_URL}&_t=${Date.now()}`;
-      const response = await fetch(urlWithNoCache, { cache: "no-store" });
-
+      // Чистый запрос к опубликованному CSV без лишних query-параметров, чтобы Google не блокировал ответ
+      const response = await fetch(SHEET_CSV_URL, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
 
       const csvText = await response.text();
       const rows = parseCSVPreserveRowIndex(csvText);
 
-      // БЛОК 1 (Строка 2, индекс 1): Новости дня (A2), Общее расписание (B2), Важные новости (C2), Статус (D2)
+      // БЛОК 1 (Строка 2): A2 = Новости дня, B2 = Общее расписание, C2 = Важные новости, D2 = Статус
       const secondRow = rows.length > 1 ? rows[1] : [];
-      const thirdRow = rows.length > 2 ? rows[2] : [];
-      const isThirdRowHint = (thirdRow[3] || "").includes("Завтрак") || (thirdRow[0] || "").includes("Завтрак");
 
-      // БЛОК 2 и БЛОК 3: Сканируем таблицы Расписания (A4:D9) и Питания (A11:D16)
-      const scheduleByDayAndClass = {};
+      // Структура расписания по каждому классу (1..9) и дню (1..5)
+      const scheduleByGradeAndDay = {};
+      for (let g = 1; g <= 9; g++) {
+        scheduleByGradeAndDay[g] = { ...(DEFAULT_GRADE_SCHEDULES[g] || {}) };
+      }
+
       const menuByDay = {};
-      let classHeaders = ["1–4 классы", "5–7 классы", "8–9 классы"];
-      let hasMultiClassSchedule = true;
-      let currentSectionMode = "schedule"; // "schedule" или "menu"
+      let currentMode = "schedule_grouped";
 
       for (let rIdx = 2; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
-        const colA = (r[0] || "").trim().toLowerCase();
+        const colA = (r[0] || "").trim();
+        const colALower = colA.toLowerCase();
         const colB = (r[1] || "").trim();
         const colC = (r[2] || "").trim();
         const colD = (r[3] || "").trim();
 
-        // Определяем строку-оглавление (например, A4 = "День недели", A11 = "День питания")
-        if (colA.includes("день")) {
-          if (colA.includes("питан") || colB.toLowerCase().includes("завтрак")) {
-            currentSectionMode = "menu";
-          } else if (colC.toLowerCase().includes("завтрак")) {
-            // Совместимость с форматом: День недели | Расписание | Завтрак | Обед
-            currentSectionMode = "combined";
-            hasMultiClassSchedule = false;
-          } else {
-            currentSectionMode = "schedule";
-            classHeaders = [
-              sanitizeInput(colB || "1–4 классы", 40),
-              sanitizeInput(colC || "5–7 классы", 40),
-              sanitizeInput(colD || "", 40)
-            ];
-            hasMultiClassSchedule = Boolean(colC || colD);
+        // 1. Проверяем, если строка начинается с "1 класс" ... "9 класс" (Матрица Завуча A15:F24)
+        const gradeNum = detectGradeNumberFromCell(colA);
+        if (gradeNum >= 1 && gradeNum <= 9) {
+          for (let d = 1; d <= 5; d++) {
+            const cellLesson = sanitizeInput(r[d] || "", 600);
+            if (cellLesson) {
+              scheduleByGradeAndDay[gradeNum][d] = cellLesson;
+            }
           }
           continue;
         }
 
-        const dayIndex = detectWeekdayIndexFromCell(r[0]);
+        // 2. Проверяем заголовки таблиц ("День недели", "День питания")
+        if (colALower.includes("день")) {
+          if (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")) {
+            currentMode = "menu";
+          } else {
+            currentMode = "schedule_grouped";
+          }
+          continue;
+        }
+
+        // 3. Если строка начинается с дня недели ("Понедельник" .. "Пятница")
+        const dayIndex = detectWeekdayIndexFromCell(colA);
         if (dayIndex >= 1 && dayIndex <= 5) {
-          if (currentSectionMode === "schedule") {
-            scheduleByDayAndClass[dayIndex] = [
-              sanitizeInput(colB, 600),
-              sanitizeInput(colC, 600),
-              sanitizeInput(colD, 600)
-            ];
-          } else if (currentSectionMode === "menu") {
+          if (currentMode === "menu") {
             menuByDay[dayIndex] = {
               breakfast: sanitizeInput(colB, 400),
               lunch: sanitizeInput(colC, 400),
               note: sanitizeInput(colD, 400)
             };
-          } else if (currentSectionMode === "combined") {
-            scheduleByDayAndClass[dayIndex] = [sanitizeInput(colB, 600), "", ""];
-            menuByDay[dayIndex] = {
-              breakfast: sanitizeInput(colC, 400),
-              lunch: sanitizeInput(colD, 400),
-              note: ""
-            };
+          } else if (currentMode === "schedule_grouped") {
+            // Совместимость с таблицей A4:D9 (1–4 классы | 5–7 классы | 8–9 классы)
+            const s14 = sanitizeInput(colB, 600);
+            const s57 = sanitizeInput(colC, 600);
+            const s89 = sanitizeInput(colD, 600);
+            if (s14) {
+              [1, 2, 3, 4].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s14; });
+            }
+            if (s57) {
+              [5, 6, 7].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s57; });
+            }
+            if (s89) {
+              [8, 9].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
+            }
           }
         }
       }
 
-      // БЛОК 4: Учителя в столбцах F, G, H, I, J (индексы 5..9), начиная со 2-й строки
+      // БЛОК УЧИТЕЛЕЙ: читаем столбцы F, G, H, I, J (индексы 5..9), пока в столбце H есть ФИО учителя
       const teachersList = [];
       for (let rIdx = 1; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
@@ -641,11 +843,12 @@ function initLiveSheetWidgetAndMenu() {
         const role = sanitizeInput(r[8] || "", 160);
         const desc = sanitizeInput(r[9] || "", 450);
 
-        if (fio.toLowerCase() === "фио учителя" || fio.toLowerCase() === "фио") continue;
+        if (!fio && !role) continue;
+        if (fio.toLowerCase().includes("фио учителя") || fio.toLowerCase() === "фио") continue;
+        // Чтобы строка 15 (где в F15 написано "Пятница" для расписания) не считалась учителем, проверяем, что заполнен столбец H (ФИО)
+        if (!fio) continue;
 
-        if (fio || role || desc || badge) {
-          teachersList.push({ photo: rawPhoto, badge, fio, role, desc });
-        }
+        teachersList.push({ photo: rawPhoto, badge, fio, role, desc });
       }
 
       const nowLabel = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
@@ -655,12 +858,7 @@ function initLiveSheetWidgetAndMenu() {
         col2Schedule: sanitizeInput(secondRow[1] || "", 600),
         col3Important: sanitizeInput(secondRow[2] || "", 600),
         col4Status: sanitizeInput(secondRow[3] || "", 120),
-        menuBreakfast: !isThirdRowHint ? sanitizeInput(thirdRow[0] || "", 350) : "",
-        menuLunch: !isThirdRowHint ? sanitizeInput(thirdRow[1] || "", 350) : "",
-        menuNote: !isThirdRowHint ? sanitizeInput(thirdRow[2] || "", 350) : "",
-        classHeaders,
-        hasMultiClassSchedule,
-        scheduleByDayAndClass,
+        scheduleByGradeAndDay,
         menuByDay,
         teachers: teachersList,
         timeLabel: nowLabel
@@ -683,9 +881,9 @@ function initLiveSheetWidgetAndMenu() {
       } else {
         [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
         newsEl.textContent = "Информация обновляется";
-        scheduleEl.textContent = "Информация обновляется";
-        importantEl.textContent = "Информация обновляется";
-        if (statusEl) statusEl.textContent = "Информация обновляется";
+        scheduleEl.textContent = DEFAULT_GRADE_SCHEDULES[currentSelectedGrade][currentSelectedWeekday];
+        importantEl.textContent = "Желаем хорошего дня!";
+        if (statusEl) statusEl.textContent = "Автономный режим";
       }
     } finally {
       if (refreshBtn) {
@@ -703,7 +901,7 @@ function initLiveSheetWidgetAndMenu() {
 }
 
 /* ==========================================================================
-   6. ВКЛАДКИ ЦИФРОВОГО НАВИГАТОРА И ФОРМА ОБРАТНОЙ СВЯЗИ
+   7. ВКЛАДКИ ЦИФРОВОГО НАВИГАТОРА И ФОРМА ОБРАТНОЙ СВЯЗИ
    ========================================================================== */
 function initDigitalNavigatorTabs() {
   const tabBtns = document.querySelectorAll(".digital-tab-btn");
@@ -925,7 +1123,7 @@ function initFeedbackForm() {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      formResponse.textContent = "Спасибо! Ваше сообщение успешно записано на Лист 2 реестра школы и передано руководителю филиала.";
+      formResponse.textContent = "Спасибо! Ваше сообщение успешно записано в реестр школы и передано руководителю филиала.";
       formResponse.className = "form-response success";
       formResponse.classList.remove("hidden");
 
@@ -946,7 +1144,7 @@ function initFeedbackForm() {
 }
 
 /* ==========================================================================
-   7. АНИМАЦИЯ ПОЯВЛЕНИЯ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
+   8. АНИМАЦИЯ ПОЯВЛЕНИЯ, СЧЕТЧИКИ, ФИЛЬТР ПЕДАГОГОВ И SERVICE WORKER
    ========================================================================== */
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
