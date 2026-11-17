@@ -1810,3 +1810,104 @@ body.visually-impaired .day-pill.active {
   outline: 2px solid #ffff00 !important;
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   11. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–4, 5–7, 8–9)
+   ========================================================================== */
+.widget-schedule-head,
+.live-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.schedule-title-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-accent-label {
+  color: var(--primary);
+  font-weight: 800;
+  text-transform: none;
+}
+
+.weekday-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #e2e8f0;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.day-pill {
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.day-pill:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.day-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* Переключатель классов внутри блока расписания */
+.class-group-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.class-pill {
+  flex: 1 1 auto;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.class-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.class-pill.active {
+  background: #dbeafe;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+body.visually-impaired .day-pill,
+body.visually-impaired .class-pill {
+  border: 1px solid #ffff00 !important;
+  font-size: 0.88rem !important;
+}
+
+body.visually-impaired .day-pill.active,
+body.visually-impaired .class-pill.active {
+  outline: 2px solid #ffff00 !important;
+  text-decoration: underline;
+}
