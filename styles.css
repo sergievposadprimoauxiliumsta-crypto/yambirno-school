@@ -1747,3 +1747,66 @@ body.visually-impaired .reveal {
     font-size: 1.08rem !important;
   }
 }
+
+/* ДОПОЛНЕНИЕ В КОНЕЦ ФАЙЛА styles.css ДЛЯ КНОПОК ДНЕЙ НЕДЕЛИ (ПН–ПТ) */
+.widget-schedule-head,
+.live-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.schedule-title-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-accent-label {
+  color: var(--primary);
+  font-weight: 800;
+  text-transform: none;
+}
+
+.weekday-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #e2e8f0;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.day-pill {
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.day-pill:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.day-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+body.visually-impaired .day-pill {
+  border: 1px solid #ffff00 !important;
+  font-size: 0.85rem !important;
+}
+
+body.visually-impaired .day-pill.active {
+  outline: 2px solid #ffff00 !important;
+  text-decoration: underline;
+}
