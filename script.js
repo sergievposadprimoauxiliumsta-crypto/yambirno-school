@@ -8,6 +8,7 @@
  * 5) Фотогалерею с Lightbox и управлением из таблицы, капсулу Dynamic Island и квитанцию 152-ФЗ
  */
 
+// [PRESERVED]: Контракты эндпоинтов, координат и ключей локального хранилища
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 
@@ -18,6 +19,7 @@ const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
 const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v10";
 
+// [PRESERVED]: Палитра векторных аватаров учителей
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
   { bg: "#fef3c7", fg: "#b45309" },
@@ -33,6 +35,7 @@ const AVATAR_PALETTES = [
   { bg: "#fce7f3", fg: "#9d174d" }
 ];
 
+// [PRESERVED]: Полные названия учебных дней недели
 const DAY_NAMES_FULL = {
   1: "Понедельник",
   2: "Вторник",
@@ -41,7 +44,7 @@ const DAY_NAMES_FULL = {
   5: "Пятница"
 };
 
-// Стандартное время звонков (используется по умолчанию, если в таблице ячейка пустая)
+// [PRESERVED]: Стандартное время звонков (используется по умолчанию, если в таблице ячейка пустая)
 const DEFAULT_BELL_TIMES = {
   1: { start: "08:30", end: "09:15", startMin: 510, endMin: 555 },
   2: { start: "09:25", end: "10:10", startMin: 565, endMin: 610 },
@@ -55,6 +58,7 @@ const DEFAULT_BELL_TIMES = {
 let activeBellTimes = cloneDefaultBells();
 let isCustomBellScheduleActive = false;
 
+// [PRESERVED]: Клонирование базовой сетки звонков
 function cloneDefaultBells() {
   const copy = {};
   Object.keys(DEFAULT_BELL_TIMES).forEach((k) => {
@@ -63,7 +67,7 @@ function cloneDefaultBells() {
   return copy;
 }
 
-// Программа примеров для движка "Живая школьная доска" (от 1 до 11 класса)
+// [PRESERVED]: Программа примеров для движка "Живая школьная доска" (от 1 до 11 класса)
 const CHALKBOARD_CURRICULUM = [
   {
     grade: 1,
@@ -155,6 +159,7 @@ const CHALKBOARD_CURRICULUM = [
   }
 ];
 
+// [PRESERVED]: Резервные тексты меню по СанПиН
 const DEFAULT_SANPIN_BREAKFAST =
   "Горячее блюдо, витаминизированный горячий напиток, хлебобулочное/молочное изделие согласно утверждённому 10-дневному цикличному меню.";
 const DEFAULT_SANPIN_LUNCH =
@@ -162,6 +167,7 @@ const DEFAULT_SANPIN_LUNCH =
 const DEFAULT_SANPIN_NOTE =
   "Фактическое ежедневное меню заверяется руководителем и размещается на информационном стенде школьной столовой.";
 
+// [PRESERVED]: Базовое расписание 1–11 классов (фоллбэк до загрузки CSV)
 const DEFAULT_GRADE_SCHEDULES = {
   1: {
     1: "1. Разговоры о важном 2. Обучение грамоте 3. Письмо 4. Математика",
@@ -248,11 +254,13 @@ let currentSelectedWeekday = getDefaultSchoolWeekday();
 let currentSelectedGrade = getSavedGradeSelection();
 let toastTimeoutId = null;
 
+// [PRESERVED]: Вычисление текущего учебного дня недели
 function getDefaultSchoolWeekday() {
   const jsDay = new Date().getDay();
   return jsDay >= 1 && jsDay <= 5 ? jsDay : 1;
 }
 
+// [PRESERVED]: Чтение выбранного класса из localStorage
 function getSavedGradeSelection() {
   try {
     const saved = parseInt(localStorage.getItem(GRADE_STORAGE_KEY) || "1", 10);
@@ -261,6 +269,7 @@ function getSavedGradeSelection() {
   return 1;
 }
 
+// [PRESERVED]: Защита от XSS и формульных инъекций CSV
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
@@ -272,6 +281,7 @@ function sanitizeInput(rawString, maxLength = 1000) {
     .slice(0, maxLength);
 }
 
+// [PRESERVED]: Показ всплывающей капсулы уведомлений Dynamic Island
 function showDynamicIslandToast(message) {
   const toast = document.getElementById("dynamic-island-toast");
   const textEl = document.getElementById("dynamic-island-text");
@@ -288,6 +298,7 @@ function showDynamicIslandToast(message) {
   }, 2600);
 }
 
+// [PRESERVED]: Генерация SVG-аватара по инициалам
 function buildInitialsSvgDataUri(initials, index = 0) {
   const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
   const safeChars = sanitizeInput(initials, 3).toUpperCase() || "УЧ";
@@ -295,6 +306,7 @@ function buildInitialsSvgDataUri(initials, index = 0) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+// [PRESERVED]: Извлечение инициалов из ФИО педагога
 function extractInitialsFromFio(fioString) {
   const parts = sanitizeInput(fioString, 120).split(/\s+/).filter(Boolean);
   if (parts.length >= 3) return (parts[1][0] + parts[2][0]).toUpperCase();
@@ -303,6 +315,7 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
+// [PRESERVED]: Разрешение ссылок Google Drive / Skrinshoter / прямых URL
 function resolveImageLinkSource(rawUrlCell, fallbackSvg) {
   const cleaned = (rawUrlCell || "").trim();
   if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
@@ -350,6 +363,7 @@ function resolveImageLinkSource(rawUrlCell, fallbackSvg) {
   return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
 }
 
+// [PRESERVED]: Разрешение фото учителя или генерация инициалов
 function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
   const cleaned = (rawPhotoCell || "").trim();
   const fallbackSvg = buildInitialsSvgDataUri(extractInitialsFromFio(teacherFio), cardIndex);
@@ -364,6 +378,7 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
   return resolveImageLinkSource(cleaned, fallbackSvg);
 }
 
+// [PRESERVED]: Точка входа инициализации всех модулей
 document.addEventListener("DOMContentLoaded", () => {
   initLiveDateTimeClockAndAmbient();
   initYambirnoWeatherWidget();
@@ -385,6 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
    1. ИНТЕРАКТИВНЫЙ ДВИЖОК "ЖИВАЯ ШКОЛЬНАЯ ДОСКА: ПУТЬ ОТ 1 ДО 11 КЛАССА"
    ========================================================================== */
 function initChalkboardEngine() {
+  // [PRESERVED]: Все DOM-хуки школьной доски
   const widget = document.getElementById("chalkboard-widget");
   const badgeEl = document.getElementById("chalkboard-grade-badge");
   const statusEl = document.getElementById("chalkboard-status-pill");
@@ -408,7 +424,12 @@ function initChalkboardEngine() {
   let runToken = 0;
   let revealResolver = null;
 
-  // Экономия ресурсов ПК (Zero-Reflow CPU Saver): ставим на паузу, когда доска вне экрана
+  /* [PERF]: Детекция prefers-reduced-motion для снижения нагрузки на растр текста */
+  const reducedMotionQuery = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)")
+    : { matches: false };
+
+  // [PRESERVED]: Экономия ресурсов (Zero-Reflow CPU Saver) вне зоны видимости
   if ("IntersectionObserver" in window) {
     const obs = new IntersectionObserver(
       (entries) => {
@@ -437,15 +458,19 @@ function initChalkboardEngine() {
       check();
     });
 
-  // Посимвольное письмо с естественной скоростью ученика
+  // [PRESERVED]: Посимвольное письмо с поддержкой мгновенного вывода при reduced-motion
   const typeChalkString = async (targetEl, text, token, baseSpeed = 58) => {
+    if (reducedMotionQuery.matches || document.body.classList.contains("visually-impaired")) {
+      targetEl.textContent = text;
+      return token === runToken;
+    }
+
     targetEl.textContent = "";
     for (let i = 0; i < text.length; i++) {
       if (token !== runToken) return false;
       const ch = text[i];
       targetEl.textContent += ch;
 
-      // Пауза чуть длиннее на математических знаках (=, +, −, →), как у живого ученика
       let delay = baseSpeed + Math.floor(Math.random() * 42);
       if (ch === "=" || ch === "→" || ch === "+" || ch === "−") {
         delay += 110;
@@ -513,7 +538,7 @@ function initChalkboardEngine() {
       const okHold = await waitMs(2300, token);
       if (!okHold) return;
 
-      // Фаза 5: Влажное стирание с доски (Wet-Wipe Physics)
+      // Фаза 5: Влажное стирание с доски (Compositor Wet-Wipe без filter: blur)
       if (statusEl) statusEl.textContent = "Стирает с доски...";
       wetWipeEl.classList.add("wiping");
       contentWrap.classList.add("erasing");
@@ -569,12 +594,12 @@ function initChalkboardEngine() {
 /* ==========================================================================
    2. ПАРСИНГ ВРЕМЕНИ ЗВОНКОВ И КАРТОЧКИ ДНЕВНИКА С ЖИВЫМ ЗАПОЛНЕНИЕМ УРОКА
    ========================================================================== */
+// [PRESERVED]: Парсер диапазонов времени звонков
 function parseBellTimeRangeString(rawRangeStr, lessonNum) {
   const fallback = DEFAULT_BELL_TIMES[lessonNum] || { start: "08:30", end: "09:15", startMin: 510, endMin: 555 };
   const cleaned = sanitizeInput(rawRangeStr || "", 40);
   if (!cleaned) return { ...fallback, isCustom: false };
 
-  // Распознаем формат "08:30-09:15" или "9.00 – 9.40"
   const match = cleaned.match(/(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/);
   if (!match) return { ...fallback, isCustom: false };
 
@@ -583,7 +608,7 @@ function parseBellTimeRangeString(rawRangeStr, lessonNum) {
   const eh = parseInt(match[3], 10);
   const em = parseInt(match[4], 10);
 
-  if (sh > 23 || sm > 59 || eh > 23 || em > 59) return { ...fallback, isCustom: false };
+  if (sh > 23 || sm > 59 || eh > 23 || em > 29 && eh === 24 || em > 59) return { ...fallback, isCustom: false };
 
   const startFormatted = `${String(sh).padStart(2, "0")}:${String(sm).padStart(2, "0")}`;
   const endFormatted = `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
@@ -602,6 +627,7 @@ function parseBellTimeRangeString(rawRangeStr, lessonNum) {
   };
 }
 
+// [PRESERVED]: Классификация предметов по цветовым кодам и иконкам
 function classifyLessonSubject(subjectTitle) {
   const s = (subjectTitle || "").toLowerCase();
   if (s.includes("математ") || s.includes("алгебр") || s.includes("геометр") || s.includes("информат") || s.includes("физик") || s.includes("вероятност")) {
@@ -619,6 +645,7 @@ function classifyLessonSubject(subjectTitle) {
   return { cls: "subj-art", icon: "⚡" };
 }
 
+// [PRESERVED]: Разбор строки расписания на отдельные уроки
 function parseRawScheduleIntoLessons(rawText) {
   const cleaned = sanitizeInput(rawText || "", 800);
   if (!cleaned) return [];
@@ -638,9 +665,10 @@ function parseRawScheduleIntoLessons(rawText) {
   });
 }
 
+// [PRESERVED]: Отрисовка карточек дневника
+/* [PERF]: Сборка строк через единый DocumentFragment исключает множественные синхронные вставки в живой DOM */
 function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
   if (!containerEl) return;
-  containerEl.innerHTML = "";
 
   const shiftBanner = document.getElementById("bell-shift-warning");
   if (shiftBanner) {
@@ -656,6 +684,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
   const now = new Date();
   const isTodaySelected = now.getDay() === selectedDayNum;
   const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+  const fragment = document.createDocumentFragment();
 
   lessons.forEach((lessonObj, idx) => {
     const row = document.createElement("div");
@@ -716,14 +745,17 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
 
     row.appendChild(left);
     row.appendChild(right);
-    containerEl.appendChild(row);
+    fragment.appendChild(row);
   });
+
+  containerEl.replaceChildren(fragment);
 }
 
 /* ==========================================================================
    3. КНОПКА "📤 В ЧАТ" (КОПИРОВАНИЕ РАСПИСАНИЯ И УТРЕННЕЙ ПОГОДЫ ДЛЯ МЕССЕНДЖЕРА)
    ========================================================================== */
 function initShareScheduleToChat() {
+  // [PRESERVED]: Обработчик кнопки отправки расписания в родительский чат
   const shareBtn = document.getElementById("share-schedule-btn");
   if (!shareBtn) return;
 
@@ -772,49 +804,65 @@ function initShareScheduleToChat() {
    4. ЖИВЫЕ ЧАСЫ, ДАТА, СТАТУС ШКОЛЫ И AMBIENT-АТМОСФЕРА
    ========================================================================== */
 function initLiveDateTimeClockAndAmbient() {
+  // [PRESERVED]: Узлы часов, даты, статуса и атмосферы Hero
   const dateEl = document.getElementById("live-date-display");
   const timeEl = document.getElementById("live-time-display");
   const statusEl = document.getElementById("school-day-status");
   const widgetTodayPill = document.getElementById("widget-today-pill");
   const heroAmbient = document.getElementById("hero-ambient");
 
+  /* [PERF]: Кэширование отформатированной даты и часа, чтобы не вызывать тяжёлый Intl.DateTimeFormat каждую секунду на слабом CPU */
+  let lastRenderedDayKey = "";
+  let lastRenderedStatusKey = "";
+
   const updateClock = () => {
+    /* [PERF]: Не будим CPU и не мутируем DOM, когда вкладка свёрнута */
+    if (document.hidden) return;
+
     const now = new Date();
     const hour = now.getHours();
+    const day = now.getDay();
+    const dayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${hour}`;
 
-    if (heroAmbient) {
-      heroAmbient.classList.toggle("ambient-morning", hour >= 6 && hour < 11);
-      heroAmbient.classList.toggle("ambient-evening", hour >= 17 || hour < 6);
+    if (timeEl) {
+      timeEl.textContent = now.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
     }
 
-    const dateFormatted = now.toLocaleDateString("ru-RU", {
-      weekday: "short",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-    const capitalizedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+    if (dayKey !== lastRenderedDayKey) {
+      lastRenderedDayKey = dayKey;
 
-    const timeFormatted = now.toLocaleTimeString("ru-RU", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
+      if (heroAmbient) {
+        heroAmbient.classList.toggle("ambient-morning", hour >= 6 && hour < 11);
+        heroAmbient.classList.toggle("ambient-evening", hour >= 17 || hour < 6);
+      }
 
-    if (dateEl) dateEl.textContent = capitalizedDate;
-    if (timeEl) timeEl.textContent = timeFormatted;
+      if (dateEl) {
+        const dateFormatted = now.toLocaleDateString("ru-RU", {
+          weekday: "short",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+        dateEl.textContent = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+      }
 
-    if (widgetTodayPill) {
-      const shortDate = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "long" });
-      widgetTodayPill.textContent = `📅 Сегодня, ${shortDate}`;
+      if (widgetTodayPill) {
+        const shortDate = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "long" });
+        widgetTodayPill.textContent = `📅 Сегодня, ${shortDate}`;
+      }
     }
 
     if (statusEl) {
-      if (customSheetSchoolStatus) {
-        statusEl.textContent = `🟢 ${customSheetSchoolStatus}`;
-      } else {
-        const day = now.getDay();
-        if (day === 0 || day === 6) {
+      const statusKey = `${customSheetSchoolStatus}|${day}|${hour}`;
+      if (statusKey !== lastRenderedStatusKey) {
+        lastRenderedStatusKey = statusKey;
+        if (customSheetSchoolStatus) {
+          statusEl.textContent = `🟢 ${customSheetSchoolStatus}`;
+        } else if (day === 0 || day === 6) {
           statusEl.textContent = "🏡 Выходной день • Приём обращений открыт";
         } else if (hour >= 8 && hour < 17) {
           statusEl.textContent = "🟢 Учебный день (работа по расписанию)";
@@ -827,11 +875,15 @@ function initLiveDateTimeClockAndAmbient() {
 
   updateClock();
   setInterval(updateClock, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) updateClock();
+  });
 }
 
 /* ==========================================================================
    5. ПРОГНОЗ ПОГОДЫ В С. ЯМБИРНО (С МИКРО-АТМОСФЕРОЙ НЕБА)
    ========================================================================== */
+// [PRESERVED]: Декодер кодов погоды WMO
 function decodeWmoWeather(code) {
   if (code === 0) return { icon: "☀️", text: "Ясно", rain: false, snow: false, sky: "clear" };
   if (code === 1 || code === 2) return { icon: "🌤️", text: "Переменная облачность", rain: false, snow: false, sky: "clear" };
@@ -846,6 +898,7 @@ function decodeWmoWeather(code) {
   return { icon: "🌤️", text: "Без осадков", rain: false, snow: false, sky: "clear" };
 }
 
+// [PRESERVED]: Загрузка метеоданных Open-Meteo для с. Ямбирно
 async function initYambirnoWeatherWidget() {
   const weatherBox = document.getElementById("yambirno-weather-box");
   const topPill = document.getElementById("top-weather-pill");
@@ -928,6 +981,7 @@ async function initYambirnoWeatherWidget() {
    6. ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ
    ========================================================================== */
 function initAccessibilityMode() {
+  // [PRESERVED]: Переключатель режима слабовидящих и сохранение в localStorage
   const toggleBtn = document.getElementById("a11y-toggle");
   if (!toggleBtn) return;
 
@@ -960,10 +1014,10 @@ function initAccessibilityMode() {
     } catch (_) {}
   });
 }
-
 /* ==========================================================================
    7. ФОТОГАЛЕРЕЯ И МОДАЛЬНЫЙ ПРОСМОТРЩИК LIGHTBOX
    ========================================================================== */
+// [PRESERVED]: Обновление карточек фотогалереи из строк Google Таблицы
 function updateGalleryFromSheetRows(galleryArray) {
   if (!Array.isArray(galleryArray) || galleryArray.length === 0) return;
 
@@ -971,24 +1025,26 @@ function updateGalleryFromSheetRows(galleryArray) {
   if (!grid) return;
 
   const existingItems = Array.from(grid.querySelectorAll(".gallery-item"));
+  /* [PERF]: Батчинг новых узлов через DocumentFragment, чтобы не вызывать множественный Reflow */
+  const newItemsFragment = document.createDocumentFragment();
 
   galleryArray.forEach((itemData, idx) => {
     if (!itemData) return;
 
     let figure = existingItems[idx];
-    if (!figure) {
+    const isNewFigure = !figure;
+    if (isNewFigure) {
       figure = document.createElement("figure");
       figure.className = "gallery-item surface-card elevate-card reveal visible";
       figure.setAttribute("tabindex", "0");
       figure.setAttribute("role", "button");
       figure.innerHTML = `
         <div class="gallery-img-wrap">
-          <img src="" alt="" class="gallery-img" referrerpolicy="no-referrer">
+          <img src="" alt="" class="gallery-img" loading="lazy" decoding="async" referrerpolicy="no-referrer">
           <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
         </div>
         <figcaption class="gallery-caption"></figcaption>
       `;
-      grid.appendChild(figure);
     }
 
     const imgEl = figure.querySelector(".gallery-img");
@@ -1018,9 +1074,18 @@ function updateGalleryFromSheetRows(galleryArray) {
       imgEl.src = resolved.src;
       imgEl.alt = newTitle;
     }
+
+    if (isNewFigure) {
+      newItemsFragment.appendChild(figure);
+    }
   });
+
+  if (newItemsFragment.childNodes.length > 0) {
+    grid.appendChild(newItemsFragment);
+  }
 }
 
+// [PRESERVED]: Модальный просмотрщик фотографий Lightbox
 function initGalleryLightbox() {
   const grid = document.getElementById("gallery-grid");
   const lightbox = document.getElementById("gallery-lightbox");
@@ -1097,6 +1162,7 @@ function initGalleryLightbox() {
 /* ==========================================================================
    8. ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ КАРТОЧЕК УЧИТЕЛЕЙ (БЕЗ КНОПОК ФИЛЬТРАЦИИ)
    ========================================================================== */
+// [PRESERVED]: Фабрика карточки учителя с асинхронным декодированием фото
 function createNewTeacherCardElement() {
   const article = document.createElement("article");
   article.className = "teacher-card surface-card elevate-card reveal visible";
@@ -1104,7 +1170,7 @@ function createNewTeacherCardElement() {
 
   article.innerHTML = `
     <div class="teacher-photo-wrap">
-      <img src="" alt="" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
+      <img src="" alt="" class="teacher-photo" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer">
     </div>
     <span class="teacher-badge">Основной состав</span>
     <h3 class="teacher-name"></h3>
@@ -1114,6 +1180,7 @@ function createNewTeacherCardElement() {
   return article;
 }
 
+// [PRESERVED]: Заполнение данных одного педагога
 function populateSingleTeacherCard(card, rowData, idx) {
   const photoEl = card.querySelector(".teacher-photo");
   const badgeEl = card.querySelector(".teacher-badge");
@@ -1172,6 +1239,7 @@ function populateSingleTeacherCard(card, rowData, idx) {
   }
 }
 
+// [PRESERVED]: Пакетное обновление сетки учителей из Google Таблицы
 function updateTeachersFromSheetRows(teachersDataArray) {
   if (!Array.isArray(teachersDataArray) || teachersDataArray.length === 0) return;
 
@@ -1179,28 +1247,37 @@ function updateTeachersFromSheetRows(teachersDataArray) {
   if (!grid) return;
 
   const existingCards = Array.from(grid.querySelectorAll(".teacher-card"));
+  /* [PERF]: Вставка новых карточек единым батчем через DocumentFragment */
+  const newCardsFragment = document.createDocumentFragment();
 
   teachersDataArray.forEach((rowData, idx) => {
     if (!rowData) return;
 
     let card = existingCards[idx];
-    if (!card) {
+    const isNewCard = !card;
+    if (isNewCard) {
       card = createNewTeacherCardElement();
-      grid.appendChild(card);
     }
 
     const fioLower = (rowData.fio || "").toLowerCase();
     if (fioLower === "-" || fioLower === "удалить" || fioLower === "скрыть") {
-      card.remove();
+      if (!isNewCard) card.remove();
       return;
     }
 
     populateSingleTeacherCard(card, rowData, idx);
+    if (isNewCard) {
+      newCardsFragment.appendChild(card);
+    }
   });
 
-  const allCards = document.querySelectorAll("#teachers-grid .teacher-card");
-  const mainCards = document.querySelectorAll('#teachers-grid .teacher-card[data-category="main"]');
-  const partTimeCards = document.querySelectorAll('#teachers-grid .teacher-card[data-category="part-time"]');
+  if (newCardsFragment.childNodes.length > 0) {
+    grid.appendChild(newCardsFragment);
+  }
+
+  const allCards = grid.querySelectorAll(".teacher-card");
+  const mainCards = grid.querySelectorAll('.teacher-card[data-category="main"]');
+  const partTimeCards = grid.querySelectorAll('.teacher-card[data-category="part-time"]');
   const subtitleEl = document.getElementById("teachers-subtitle");
 
   if (subtitleEl) {
@@ -1211,6 +1288,7 @@ function updateTeachersFromSheetRows(teachersDataArray) {
 /* ==========================================================================
    9. ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ НЕДЕЛИ (ПН–ПТ) И КЛАССОВ (1–11 КЛАСС)
    ========================================================================== */
+// [PRESERVED]: Слушатели переключения дней недели и классов
 function initWeekdayAndGradeSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill");
   const allGradePills = document.querySelectorAll(".grade-pill");
@@ -1243,6 +1321,7 @@ function initWeekdayAndGradeSwitchers() {
   syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
 }
 
+// [PRESERVED]: Синхронизация активных кнопок дня и класса
 function syncDayAndGradeUI(dayNum, gradeNum) {
   const allDayPills = document.querySelectorAll(".day-pill");
   allDayPills.forEach((pill) => {
@@ -1266,6 +1345,7 @@ function syncDayAndGradeUI(dayNum, gradeNum) {
   if (menuDayLabel) menuDayLabel.textContent = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
 }
 
+// [PRESERVED]: Отрисовка расписания и меню для выбранного дня и класса
 function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
   const scheduleEl = document.getElementById("col-schedule");
   const menuBreakfastEl = document.getElementById("menu-breakfast");
@@ -1303,6 +1383,7 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
 /* ==========================================================================
    10. ЧТЕНИЕ GOOGLE ТАБЛИЦЫ (1–11 КЛ., ЗВОНКИ A28:B35, ГАЛЕРЕЯ, УЧИТЕЛЯ)
    ========================================================================== */
+// [PRESERVED]: Детекторы строк CSV-таблицы
 function detectWeekdayIndexFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
   if (s.startsWith("понедельник") || s === "пн") return 1;
@@ -1332,6 +1413,7 @@ function detectPhotoRowFromCell(cellString) {
   return /^фото\s*\d+/i.test(s);
 }
 
+// [PRESERVED]: Загрузка и парсинг живой таблицы школы
 function initLiveSheetWidgetAndMenu() {
   const newsEl = document.getElementById("col-news");
   const scheduleEl = document.getElementById("col-schedule");
@@ -1382,16 +1464,18 @@ function initLiveSheetWidgetAndMenu() {
   const renderWidgetData = (dataObj, isFromCache = false) => {
     latestParsedSheetData = dataObj;
 
-    // Применяем расписание звонков из таблицы (или стандарт)
     activeBellTimes = dataObj.bellTimes || cloneDefaultBells();
     isCustomBellScheduleActive = Boolean(dataObj.hasCustomBells);
 
+    /* [PERF]: Устранён Forced Synchronous Layout (void el.offsetWidth). Перезапуск анимации выполняется через неблокирующий rAF */
     [newsEl, importantEl].forEach((el) => {
       el.classList.remove("is-loading-shimmer", "flash-updated");
-      void el.offsetWidth;
-      el.classList.add("flash-updated");
     });
     scheduleEl.classList.remove("is-loading-shimmer");
+
+    requestAnimationFrame(() => {
+      [newsEl, importantEl].forEach((el) => el.classList.add("flash-updated"));
+    });
 
     newsEl.textContent = dataObj.col1News || "На сегодня дополнительных объявлений нет";
     importantEl.textContent = dataObj.col3Important || "Желаем хорошего дня!";
@@ -1610,6 +1694,7 @@ function initLiveSheetWidgetAndMenu() {
 /* ==========================================================================
    11. КОПИРОВАНИЕ КОНТАКТОВ, SCROLL-SPY И КОЛЬЦО ПРОГРЕССА ЧТЕНИЯ
    ========================================================================== */
+// [PRESERVED]: Кнопки быстрого копирования реквизитов
 function initCopyButtons() {
   const copyBtns = document.querySelectorAll(".btn-copy-mini");
   copyBtns.forEach((btn) => {
@@ -1626,16 +1711,67 @@ function initCopyButtons() {
   });
 }
 
+// [PRESERVED]: ScrollSpy навигации и кольцо прогресса чтения
+/* [PERF]: Полный отказ от getBoundingClientRect() и чтения scrollHeight в скролл-слушателе.
+   1) ScrollSpy работает через асинхронный IntersectionObserver (0 мс на скролле).
+   2) Высота документа кэшируется через ResizeObserver, а обновление кольца троттлится через rAF. */
 function initScrollSpyAndProgressRing() {
   const scrollTopBtn = document.getElementById("scroll-top-btn");
   const progressCircle = document.getElementById("scroll-progress-circle");
   const spyLinks = document.querySelectorAll(".nav-link[data-scrollspy]");
   const circumference = 119.38;
 
-  const onScroll = () => {
+  if ("IntersectionObserver" in window && spyLinks.length > 0) {
+    const linkMap = new Map();
+    spyLinks.forEach((link) => {
+      const id = link.getAttribute("data-scrollspy");
+      if (id) linkMap.set(id, link);
+    });
+
+    const spyObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const activeId = entry.target.id;
+            spyLinks.forEach((link) => {
+              link.classList.toggle("spy-active", link.getAttribute("data-scrollspy") === activeId);
+            });
+          }
+        });
+      },
+      { rootMargin: "-140px 0px -65% 0px", threshold: 0 }
+    );
+
+    linkMap.forEach((_, id) => {
+      const sec = document.getElementById(id);
+      if (sec) spyObserver.observe(sec);
+    });
+  }
+
+  let cachedMaxScroll = Math.max(
+    document.documentElement.scrollHeight - document.documentElement.clientHeight,
+    1
+  );
+
+  const recalcMaxScroll = () => {
+    cachedMaxScroll = Math.max(
+      document.documentElement.scrollHeight - document.documentElement.clientHeight,
+      1
+    );
+  };
+
+  if ("ResizeObserver" in window) {
+    const ro = new ResizeObserver(recalcMaxScroll);
+    ro.observe(document.documentElement);
+  } else {
+    window.addEventListener("resize", recalcMaxScroll, { passive: true });
+  }
+
+  let isTicking = false;
+  const updateProgressUI = () => {
+    isTicking = false;
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+    const progress = cachedMaxScroll > 0 ? Math.min(Math.max(scrollTop / cachedMaxScroll, 0), 1) : 0;
 
     if (scrollTopBtn) {
       scrollTopBtn.classList.toggle("visible", scrollTop > 320);
@@ -1643,27 +1779,20 @@ function initScrollSpyAndProgressRing() {
     if (progressCircle) {
       progressCircle.style.strokeDashoffset = String(circumference - progress * circumference);
     }
-
-    if (spyLinks.length > 0) {
-      let currentSectionId = "";
-      spyLinks.forEach((link) => {
-        const targetId = link.getAttribute("data-scrollspy");
-        const sec = document.getElementById(targetId);
-        if (sec) {
-          const rect = sec.getBoundingClientRect();
-          if (rect.top <= 160 && rect.bottom >= 140) {
-            currentSectionId = targetId;
-          }
-        }
-      });
-      spyLinks.forEach((link) => {
-        link.classList.toggle("spy-active", link.getAttribute("data-scrollspy") === currentSectionId);
-      });
-    }
   };
 
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!isTicking) {
+        isTicking = true;
+        requestAnimationFrame(updateProgressUI);
+      }
+    },
+    { passive: true }
+  );
+
+  updateProgressUI();
 
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener("click", () => {
@@ -1675,6 +1804,7 @@ function initScrollSpyAndProgressRing() {
 /* ==========================================================================
    12. ЦИФРОВОЙ НАВИГАТОР, ФОРМА ОБРАТНОЙ СВЯЗИ И SERVICE WORKER
    ========================================================================== */
+// [PRESERVED]: Переключение вкладок Школьного цифрового навигатора
 function initDigitalNavigatorTabs() {
   const tabBtns = document.querySelectorAll(".digital-tab-btn");
   const panels = document.querySelectorAll(".digital-panel");
@@ -1699,6 +1829,7 @@ function initDigitalNavigatorTabs() {
   });
 }
 
+// [PRESERVED]: Двухшаговая форма обращения по 152-ФЗ с выдачей талона-квитанции
 function initFeedbackForm() {
   const consentStep = document.getElementById("consent-step");
   const formStep = document.getElementById("form-step");
@@ -1792,6 +1923,7 @@ function initFeedbackForm() {
     }
     if (stepsProgressBar) {
       stepsProgressBar.style.width = "100%";
+      stepsProgressBar.classList.add("is-complete");
     }
 
     showDynamicIslandToast("✓ Согласие 152-ФЗ подтверждено");
@@ -1967,12 +2099,20 @@ function initFeedbackForm() {
   }
 }
 
+// [PRESERVED]: Появление блоков при скролле и анимация счётчиков статистики
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
   const counters = document.querySelectorAll("[data-target]");
+  const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (!("IntersectionObserver" in window) || document.body.classList.contains("visually-impaired")) {
+  if (!("IntersectionObserver" in window) || document.body.classList.contains("visually-impaired") || reducedMotion) {
     revealElements.forEach((el) => el.classList.add("visible"));
+    counters.forEach((el) => {
+      const target = parseFloat(el.getAttribute("data-target"));
+      const decimals = parseInt(el.getAttribute("data-decimals") || "0", 10);
+      const suffix = el.getAttribute("data-suffix") || "";
+      if (!isNaN(target)) el.textContent = `${target.toFixed(decimals)}${suffix}`;
+    });
     return;
   }
 
@@ -2028,6 +2168,7 @@ function initScrollRevealAndCounters() {
   counters.forEach((counter) => counterObserver.observe(counter));
 }
 
+// [PRESERVED]: Регистрация офлайн-воркера
 function registerOfflineServiceWorker() {
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
