@@ -1,43 +1,65 @@
 /* ==========================================================================
-   1. ПЕРЦЕПТИВНАЯ ПАЛИТРА OKLCH, ПРУЖИНЫ LINEAR() И БАЗОВЫЙ СБРОС (2026)
+   1. ПЕРЕМЕННЫЕ, PERCEPTUAL COLOR (OKLCH), ПРУЖИНЫ И БАЗОВЫЙ СБРОС
    ========================================================================== */
 :root {
-  /* [PERF]: Перцептивно равномерные цвета oklch() с фоллбэком и генерацией через color-mix */
-  --bg-main: oklch(0.984 0.003 247.86);
-  --bg-card: oklch(1 0 0);
-  --bg-alt: oklch(0.968 0.007 247.9);
-  --bg-warm: oklch(0.991 0.006 85.8);
-  --text-main: oklch(0.208 0.04 265.75);
-  --text-muted: oklch(0.446 0.03 256.8);
-  --primary: oklch(0.424 0.17 264.05);
-  --primary-hover: oklch(0.379 0.146 265.52);
-  --primary-soft: oklch(0.962 0.018 254.13);
-  --accent: oklch(0.666 0.157 58.32);
-  --accent-light: oklch(0.962 0.058 95.62);
-  --success: oklch(0.527 0.137 149.21);
-  --danger: oklch(0.505 0.188 27.52);
-  --border: oklch(0.929 0.013 255.51);
-  --specular-border: color-mix(in oklch, var(--primary) 14%, oklch(1 0 0));
+  /* Базовые фоллбэки (sRGB) */
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-alt: #f1f5f9;
+  --bg-warm: #fdfbf7;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --primary: #1e40af;
+  --primary-hover: #1e3a8a;
+  --primary-soft: #eff6ff;
+  --accent: #d97706;
+  --accent-light: #fef3c7;
+  --success: #15803d;
+  --danger: #b91c1c;
+  --border: #e2e8f0;
 
+  /* Тени и геометрия (статические токены, не анимируются напрямую) */
   --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.05);
   --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.09);
   --shadow-lg: 0 20px 44px rgba(30, 64, 175, 0.14);
-
+  --specular-top: inset 0 1px 0 rgba(255, 255, 255, 0.88);
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-xl: 24px;
 
-  /* [PERF]: Физические пружины linear() — компилируются в LUT на Compositor Thread */
-  --spring-ease: linear(
-    0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
-    1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
-    1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
-    0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1
-  );
-  --spring-snappy: linear(
-    0, 0.45 12%, 0.88 26%, 1.04 42%, 0.99 68%, 1
-  );
-  --transition: 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  /* [PERF]: LUT-пружина для Compositor Thread (фоллбэк + linear() ниже) */
+  --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --tap-scale: 0.96;
+}
+
+/* [PERF]: Перцептивная цветовая архитектура OKLCH + физика пружин linear() */
+@supports (color: oklch(0.5 0.1 250)) {
+  :root {
+    --bg-main: oklch(0.984 0.003 247.8);
+    --bg-card: oklch(1 0 0);
+    --bg-alt: oklch(0.968 0.007 247.9);
+    --bg-warm: oklch(0.99 0.008 85);
+    --text-main: oklch(0.208 0.04 265.7);
+    --text-muted: oklch(0.446 0.03 256.8);
+    --primary: oklch(0.424 0.17 265.6);
+    --primary-hover: oklch(0.379 0.146 265.5);
+    --primary-soft: color-mix(in oklch, var(--primary) 8%, oklch(1 0 0));
+    --accent: oklch(0.666 0.157 58.3);
+    --accent-light: oklch(0.962 0.058 95.6);
+    --success: oklch(0.527 0.137 149.2);
+    --danger: oklch(0.505 0.188 27.5);
+    --border: oklch(0.929 0.013 255.5);
+  }
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --spring-ease: linear(
+      0, 0.38 9%, 0.72 19%, 0.94 29%, 1.03 39%, 1.04 48%,
+      1.01 64%, 1 82%, 1
+    );
+  }
 }
 
 *,
@@ -71,42 +93,32 @@ body {
   flex-direction: column;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  text-rendering: optimizeSpeed;
 }
 
-/* [PERF]: Физическая эргономика — убираем задержку 300 мс и системный блик касания */
+/* [PERF]: Оптическое балансирование заголовков (строго <= 4 строк, без нагрузки на параграфы) */
+h1,
+h2,
+h3,
+.section-title,
+.hero-title,
+.cta-title {
+  text-wrap: balance;
+}
+
+/* [PERF]: Убираем 300ms задержку тапа и синий блик WebView на всех интерактивных узлах */
 a,
 button,
 input,
 textarea,
 select,
 [role="button"],
-[role="tab"] {
+[tabindex="0"] {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* [PERF]: Мгновенный тактильный отклик <= 16 мс исключительно через композитный scale */
-.btn:active:not(:disabled),
-.btn-a11y:active:not(:disabled),
-.btn-refresh:active:not(:disabled),
-.btn-share-chat:active:not(:disabled),
-.btn-copy-mini:active:not(:disabled),
-.day-pill:active:not(:disabled),
-.grade-pill:active:not(:disabled),
-.chalk-btn:active:not(:disabled),
-.chalk-reveal-btn:active:not(:disabled),
-.digital-tab-btn:active:not(:disabled),
-.topic-chip:active:not(:disabled),
-.nav-link:active,
-.nav-cta-btn:active,
-.lightbox-nav-btn:active,
-.lightbox-close-btn:active,
-.scroll-top-btn:active {
-  transform: scale(0.96) !important;
-  transition-duration: 32ms !important;
-}
-
-/* [PRESERVED]: Микро-текстуры на чистом CSS */
+/* [PRESERVED]: Микро-текстуры на чистом CSS (0 КБ сетевой нагрузки) */
 body.paper-texture {
   background-color: var(--bg-main);
   background-image: radial-gradient(rgba(30, 64, 175, 0.045) 1px, transparent 0);
@@ -125,26 +137,10 @@ body.paper-texture {
   background: linear-gradient(180deg, #ffffff 0%, var(--bg-warm) 100%) !important;
 }
 
-/* [PERF]: Оптический баланс заголовков (до 4 строк) без перегруза растра */
-h1,
-h2,
-h3,
-.hero-title,
-.section-title,
-.cta-title,
-.feedback-title {
-  text-wrap: balance;
-}
-
-p,
-li {
-  text-wrap: pretty;
-}
-
 a {
   color: var(--primary);
   text-decoration: none;
-  transition: color var(--transition), transform var(--transition);
+  transition: opacity var(--transition), color var(--transition);
 }
 
 img {
@@ -160,25 +156,24 @@ img {
   padding: 0 20px;
 }
 
-/* [PRESERVED]: Глобальный хук скрытия */
+/* [PRESERVED]: Контракт скрытия узлов */
 .hidden {
   display: none !important;
 }
 
-/* [PERF]: Световая фаска 1px и локализация перерасчётов внутри карточки */
 .surface-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), var(--shadow-sm);
+  box-shadow: var(--specular-top), var(--shadow-sm);
   min-width: 0;
-  position: relative;
 }
 
-/* [PERF]: Композитная эмуляция подъёма без Paint-анимации box-shadow */
+/* [PERF]: Композитный подъём карточек БЕЗ анимации box-shadow (Zero-Paint Elevation) */
 .elevate-card {
   position: relative;
-  transition: transform 0.34s var(--spring-snappy);
+  transition: transform 0.3s var(--spring-ease);
+  box-shadow: var(--specular-top), var(--shadow-sm);
   contain: layout style;
 }
 
@@ -187,36 +182,41 @@ img {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), var(--shadow-md);
-  border: 1px solid color-mix(in oklch, var(--primary) 22%, var(--border));
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(30, 64, 175, 0.16);
   opacity: 0;
-  transition: opacity 0.28s ease;
   pointer-events: none;
+  transition: opacity 0.26s ease;
 }
 
 @media (hover: hover) {
   .elevate-card:hover {
     transform: translate3d(0, -4px, 0);
   }
-
   .elevate-card:hover::after {
     opacity: 1;
   }
 }
 
+.elevate-card:active {
+  transform: scale3d(0.99, 0.99, 1);
+}
+
 .skip-link {
   position: absolute;
-  top: -100px;
+  top: 12px;
   left: 12px;
   background: var(--primary);
   color: #ffffff;
   padding: 10px 16px;
   border-radius: 8px;
   z-index: 1000;
+  transform: translate3d(0, -150%, 0);
+  transition: transform 0.22s var(--spring-ease);
 }
 
 .skip-link:focus {
-  top: 12px;
+  transform: translate3d(0, 0, 0);
 }
 
 /* ==========================================================================
@@ -226,8 +226,8 @@ img {
   position: fixed;
   top: 14px;
   left: 50%;
-  transform: translate3d(-50%, -140%, 0) scale(0.9);
-  background: oklch(0.208 0.04 265.75 / 0.96);
+  transform: translate3d(-50%, -140%, 0) scale3d(0.9, 0.9, 1);
+  background: #0f172a;
   color: #ffffff;
   padding: 10px 20px;
   border-radius: 999px;
@@ -241,14 +241,15 @@ img {
   z-index: 2000;
   pointer-events: none;
   opacity: 0;
-  transition: transform 0.45s var(--spring-ease), opacity 0.25s ease;
+  transition: transform 0.4s var(--spring-ease), opacity 0.25s ease;
   max-width: calc(100vw - 24px);
   white-space: nowrap;
-  contain: layout style paint;
+  contain: layout style;
 }
 
+/* [PRESERVED]: Хук показа капсулы из script.js */
 .dynamic-island.show {
-  transform: translate3d(-50%, 0, 0) scale(1);
+  transform: translate3d(-50%, 0, 0) scale3d(1, 1, 1);
   opacity: 1;
 }
 
@@ -267,24 +268,23 @@ img {
 }
 
 /* ==========================================================================
-   3. ОПТИЧЕСКАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА (БЕЗ УБИЙСТВЕННОГО BLUR НА МОБИЛЬНЫХ)
+   3. ОПТИЧЕСКАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА (LOW-END GPU SAFE)
    ========================================================================== */
+/* [PERF]: На мобильных GPU убран backdrop-filter со sticky-слоя. Глубина даётся через oklch-поверхность и 1px блик */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  /* [PERF]: На мобильных GPU имитируем стекло плотной oklch-поверхностью и 1px бликом */
-  background: oklch(0.995 0.002 247.86 / 0.97);
+  background: rgba(255, 255, 255, 0.97);
   border-bottom: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), var(--shadow-sm);
+  box-shadow: var(--specular-top), var(--shadow-sm);
   contain: layout style;
 }
 
-/* [PERF]: Прогрессивное улучшение только для мощных десктопов с hover-указателем */
-@supports (backdrop-filter: blur(12px)) {
-  @media (min-width: 1024px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 1024px) and (hover: hover) {
+  @supports (backdrop-filter: blur(12px)) {
     .site-header {
-      background: oklch(0.995 0.002 247.86 / 0.86);
+      background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
@@ -324,6 +324,7 @@ img {
   opacity: 0.4;
 }
 
+/* [PERF]: tabular-nums исключает микродрожание ширины при тике секунд */
 .live-clock-digits {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -333,6 +334,9 @@ img {
   padding: 2px 9px;
   border-radius: 6px;
   letter-spacing: 0.03em;
+  display: inline-block;
+  min-width: 8ch;
+  text-align: center;
 }
 
 .school-status-pill {
@@ -360,7 +364,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 38px;
   background: #fbbf24;
   color: #0f172a;
   border: 2px solid #fbbf24;
@@ -371,13 +375,24 @@ img {
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform var(--transition), opacity var(--transition);
+  transition: transform 0.2s var(--spring-ease), opacity var(--transition);
+}
+
+/* [PERF]: Расширение touch-target до >= 44px по вертикали без смещения вёрстки */
+.btn-a11y::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
 }
 
 .btn-a11y:hover {
   background: #f59e0b;
   border-color: #f59e0b;
   transform: translate3d(0, -1px, 0);
+}
+
+.btn-a11y:active {
+  transform: scale3d(var(--tap-scale), var(--tap-scale), 1);
 }
 
 .header-main-inner {
@@ -402,12 +417,13 @@ img {
 .logo-img {
   width: 58px;
   height: 58px;
+  aspect-ratio: 1 / 1;
   flex-shrink: 0;
-  transition: transform var(--transition);
+  transition: transform 0.28s var(--spring-ease);
 }
 
 .brand:hover .logo-img {
-  transform: scale(1.05);
+  transform: scale3d(1.05, 1.05, 1);
 }
 
 .brand-text {
@@ -427,7 +443,7 @@ img {
 
 .brand-title {
   font-weight: 800;
-  font-size: clamp(0.96rem, 1.2vw, 1.08rem);
+  font-size: clamp(0.96rem, 0.88rem + 0.35vw, 1.1rem);
   line-height: 1.22;
   color: var(--text-main);
 }
@@ -448,13 +464,13 @@ img {
   position: relative;
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 40px;
   color: var(--text-main);
   font-weight: 600;
   font-size: 0.92rem;
   padding: 6px 10px;
   border-radius: 8px;
-  transition: transform var(--transition), background-color var(--transition), color var(--transition);
+  transition: transform 0.18s var(--spring-ease), color var(--transition), background-color var(--transition);
 }
 
 .nav-link:hover,
@@ -462,6 +478,10 @@ img {
 .nav-link.spy-active {
   color: var(--primary);
   background: var(--primary-soft);
+}
+
+.nav-link:active {
+  transform: scale3d(var(--tap-scale), var(--tap-scale), 1);
 }
 
 .nav-link-accent {
@@ -480,20 +500,25 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  min-height: 40px;
   background: var(--primary);
   color: #ffffff;
   font-weight: 700;
   font-size: 0.88rem;
   padding: 8px 16px;
   border-radius: 999px;
-  transition: transform var(--transition), background-color var(--transition);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s var(--spring-ease), background-color var(--transition);
 }
 
 .nav-cta-btn:hover {
   background: var(--primary-hover);
   color: #ffffff;
   transform: translate3d(0, -1px, 0);
+}
+
+.nav-cta-btn:active {
+  transform: scale3d(var(--tap-scale), var(--tap-scale), 1);
 }
 
 .header-actions {
@@ -503,30 +528,35 @@ img {
 }
 
 /* ==========================================================================
-   4. КНОПКИ И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ (TOUCH TARGET >= 44×44 PX)
+   4. КНОПКИ И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ (TOUCH TARGET >= 44PX & <= 16MS RESPONSE)
    ========================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 44px;
+  min-height: 46px;
   padding: 12px 24px;
   border-radius: var(--radius-md);
   font-weight: 700;
   font-size: 0.98rem;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: transform 0.28s var(--spring-snappy), background-color var(--transition);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: transform 0.22s var(--spring-ease), background-color var(--transition);
   text-align: center;
   max-width: 100%;
-  position: relative;
+  user-select: none;
 }
 
 @media (hover: hover) {
   .btn:hover:not(:disabled) {
     transform: translate3d(0, -2px, 0);
   }
+}
+
+.btn:active:not(:disabled) {
+  transform: scale3d(var(--tap-scale), var(--tap-scale), 1);
 }
 
 .btn:disabled {
@@ -537,7 +567,6 @@ img {
 .btn-primary {
   background-color: var(--primary);
   color: #ffffff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--shadow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -569,8 +598,10 @@ img {
     radial-gradient(circle at 85% 80%, rgba(245, 158, 11, 0.13) 0%, transparent 45%),
     linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #fef3c7 100%);
   border-bottom: 1px solid var(--border);
+  contain: layout style;
 }
 
+/* [PRESERVED]: Классы времени суток из initLiveDateTimeClockAndAmbient */
 .hero-section.ambient-morning {
   background:
     radial-gradient(circle at 80% 20%, rgba(251, 191, 36, 0.18) 0%, transparent 50%),
@@ -606,21 +637,22 @@ img {
   border-radius: 999px;
   margin-bottom: 14px;
   align-self: flex-start;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .hero-title {
-  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-size: clamp(1.55rem, 2.8vw, 2.35rem);
   line-height: 1.2;
   margin-bottom: 16px;
   color: var(--text-main);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 .hero-lead {
-  font-size: clamp(0.98rem, 0.92rem + 0.3vw, 1.06rem);
-  max-width: 65ch;
+  font-size: clamp(0.98rem, 0.94rem + 0.25vw, 1.06rem);
   color: var(--text-muted);
   margin-bottom: 22px;
+  max-width: 65ch;
 }
 
 .hero-actions {
@@ -635,11 +667,11 @@ img {
   align-items: center;
   gap: 14px;
   padding: 13px 16px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--border);
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--specular-top), var(--shadow-sm);
   margin-bottom: 20px;
 }
 
@@ -654,6 +686,7 @@ img {
   justify-content: center;
   font-weight: 800;
   flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .director-note-text {
@@ -671,14 +704,15 @@ img {
 }
 
 /* ==========================================================================
-   ДВИЖОК "ЖИВАЯ ШКОЛЬНАЯ ДОСКА" (ZERO-BLUR COMPOSITOR WIPE + CONTAIN)
+   ДВИЖОК "ЖИВАЯ ШКОЛЬНАЯ ДОСКА" (ZERO-REFLOW CONTAINMENT + COMPOSITOR WIPE)
    ========================================================================== */
+/* [PERF]: contain: layout style paint полностью изолирует посимвольный набор текста от остального DOM */
 .chalkboard-card {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 224px;
+  min-height: 230px;
   border-radius: var(--radius-lg);
   background:
     radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
@@ -691,7 +725,6 @@ img {
   color: #f8fafc;
   position: relative;
   overflow: hidden;
-  /* [PERF]: Посимвольная печать изолирована внутри доски, Document Reflow = 0 */
   contain: layout style paint;
 }
 
@@ -726,7 +759,7 @@ img {
 
 .chalkboard-status-pill {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.82);
   font-style: italic;
 }
 
@@ -736,21 +769,21 @@ img {
   gap: 8px;
 }
 
+/* [PERF]: Эргономичная зона нажатия и мгновенный композитный отклик */
 .chalk-btn {
   position: relative;
-  min-height: 36px;
-  background: rgba(255, 255, 255, 0.1);
+  min-height: 34px;
+  background: rgba(255, 255, 255, 0.12);
   color: #f1f5f9;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 8px;
-  padding: 6px 11px;
-  font-size: 0.75rem;
+  padding: 6px 12px;
+  font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.2s ease;
+  transition: transform 0.18s var(--spring-ease), background-color 0.2s ease;
 }
 
-/* [PERF]: Расширение зоны касания до >= 44x44px без поломки верстки */
 .chalk-btn::after {
   content: "";
   position: absolute;
@@ -759,6 +792,10 @@ img {
 
 .chalk-btn:hover {
   background: rgba(255, 255, 255, 0.22);
+}
+
+.chalk-btn:active {
+  transform: scale3d(0.94, 0.94, 1);
 }
 
 .chalk-btn[aria-pressed="true"] {
@@ -775,24 +812,27 @@ img {
   padding: 18px 20px;
   position: relative;
   overflow: hidden;
-  contain: content;
+  contain: layout style paint;
 }
 
+/* [PERF]: HARD BAN FIX — удалён filter: blur(8px), анимация строго на transform и opacity */
 .chalkboard-content {
   width: 100%;
   text-align: center;
-  /* [PERF]: Удалён запрещённый filter: blur() — только композитные opacity и transform */
-  transition: opacity 0.48s cubic-bezier(0.22, 1, 0.36, 1), transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+  opacity: 1;
+  transition: opacity 0.48s ease, transform 0.48s var(--spring-ease);
 }
 
+/* [PRESERVED]: Класс стирания с доски из runStageLoop */
 .chalkboard-content.erasing {
   opacity: 0;
-  transform: translate3d(14px, 0, 0) scale(0.96);
+  transform: translate3d(14px, 0, 0) scale3d(0.96, 0.96, 1);
 }
 
 .chalk-topic-line {
   font-size: 0.84rem;
-  color: rgba(226, 232, 240, 0.72);
+  color: rgba(226, 232, 240, 0.76);
   margin-bottom: 10px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -810,7 +850,9 @@ img {
   flex-wrap: wrap;
   gap: 6px;
   font-variant-numeric: tabular-nums;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.65),
+    1px 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .chalk-problem-text {
@@ -827,6 +869,7 @@ img {
   padding-bottom: 1px;
 }
 
+/* [PRESERVED]: Меловой курсор */
 .chalk-cursor {
   display: inline-block;
   width: 10px;
@@ -835,6 +878,7 @@ img {
   border-radius: 2px;
   vertical-align: middle;
   margin-left: 3px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
   animation: chalkBlink 0.9s infinite;
 }
 
@@ -854,32 +898,35 @@ img {
 }
 
 .chalk-reveal-btn {
-  position: relative;
-  min-height: 44px;
   margin-top: 10px;
+  min-height: 38px;
   background: rgba(253, 224, 71, 0.2);
   color: #fde047;
   border: 1px dashed #fde047;
-  padding: 8px 16px;
+  padding: 6px 16px;
   border-radius: 999px;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.2s ease;
+  transition: transform 0.18s var(--spring-ease), background-color 0.2s ease;
 }
 
 .chalk-reveal-btn:hover {
   background: rgba(253, 224, 71, 0.32);
 }
 
-/* [PERF]: Влажная волна стирания исключительно на translate3d */
+.chalk-reveal-btn:active {
+  transform: scale3d(0.95, 0.95, 1);
+}
+
+/* [PERF]: Влажная волна стирания строго на translate3d */
 .chalkboard-wet-wipe {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     105deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.14) 38%,
+    rgba(255, 255, 255, 0.14) 40%,
     rgba(10, 22, 18, 0.72) 55%,
     transparent 100%
   );
@@ -888,7 +935,6 @@ img {
 }
 
 .chalkboard-wet-wipe.wiping {
-  will-change: transform;
   animation: wetWipeSweep 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
@@ -904,7 +950,7 @@ img {
   padding: 6px 14px;
   background: linear-gradient(180deg, #78350f 0%, #451a03 100%);
   border-top: 2px solid #92400e;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: #fde68a;
 }
 
@@ -937,21 +983,21 @@ img {
 
 .chalkboard-progress-label {
   font-weight: 700;
+  opacity: 0.92;
   font-variant-numeric: tabular-nums;
-  opacity: 0.9;
 }
 
 /* ==========================================================================
    6. ВИДЖЕТ "ЖИВАЯ ИНФОРМАЦИЯ", КАРТОЧКИ ДНЕВНИКА И КНОПКА "В ЧАТ"
    ========================================================================== */
+/* [PERF]: Изоляция геометрии онлайн-табло для предотвращения глобального Reflow */
 .live-widget {
   padding: 24px 22px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--specular-top), var(--shadow-lg);
   border: 2px solid #bfdbfe;
   position: relative;
   overflow: hidden;
-  /* [PERF]: Изоляция динамического расписания от остального DOM */
-  contain: layout style paint;
+  contain: layout style;
 }
 
 .live-widget::before {
@@ -992,7 +1038,6 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  contain: strict;
 }
 
 .radar-core {
@@ -1015,8 +1060,8 @@ img {
 }
 
 @keyframes radarPulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  75%, 100% { transform: scale(2.4); opacity: 0; }
+  0% { transform: scale3d(1, 1, 1); opacity: 0.8; }
+  75%, 100% { transform: scale3d(2.5, 2.5, 1); opacity: 0; }
 }
 
 .live-badge-tag {
@@ -1066,7 +1111,7 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 36px;
   padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -1075,17 +1120,21 @@ img {
   font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color var(--transition);
+  transition: transform 0.18s var(--spring-ease), background-color var(--transition);
 }
 
 .btn-refresh::after {
   content: "";
   position: absolute;
-  inset: -4px;
+  inset: -5px;
 }
 
 .btn-refresh:hover:not(:disabled) {
   background: #e2e8f0;
+}
+
+.btn-refresh:active:not(:disabled) {
+  transform: scale3d(0.95, 0.95, 1);
 }
 
 .btn-refresh.loading .icon-refresh {
@@ -1107,6 +1156,7 @@ img {
   background: var(--bg-alt);
   border-radius: var(--radius-md);
   border-left: 4px solid #94a3b8;
+  contain: layout style;
 }
 
 .widget-block-diary {
@@ -1127,14 +1177,13 @@ img {
   letter-spacing: 0.03em;
 }
 
-/* [PERF]: Жёсткое резервирование min-height для нулевого CLS при загрузке CSV */
 .widget-value {
   font-size: 0.95rem;
   font-weight: 600;
-  min-height: 1.65em;
   white-space: pre-line;
   overflow-wrap: anywhere;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  min-height: 1.65em;
+  transition: opacity 0.25s ease;
 }
 
 .widget-value.is-loading-shimmer,
@@ -1143,7 +1192,7 @@ img {
 }
 
 .widget-value.flash-updated {
-  animation: contentPop 0.36s var(--spring-snappy);
+  animation: contentPop 0.36s var(--spring-ease);
 }
 
 @keyframes contentPop {
@@ -1159,34 +1208,38 @@ img {
 .schedule-head-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .btn-share-chat {
   position: relative;
-  min-height: 36px;
+  min-height: 34px;
   border: 1px solid #bfdbfe;
   background: #ffffff;
   color: var(--primary);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 800;
   padding: 5px 10px;
   border-radius: 7px;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.2s ease, color 0.2s ease;
+  transition: transform 0.18s var(--spring-ease), background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-share-chat::after {
   content: "";
   position: absolute;
-  inset: -6px -4px;
+  inset: -6px -3px;
 }
 
 .btn-share-chat:hover {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
+}
+
+.btn-share-chat:active {
+  transform: scale3d(0.94, 0.94, 1);
 }
 
 .bell-shift-banner {
@@ -1201,7 +1254,7 @@ img {
   margin-bottom: 8px;
 }
 
-/* [PERF]: Резервирование высоты списка уроков для 0.00 CLS */
+/* [PERF]: Резервирование минимальной высоты списка уроков против CLS */
 .diary-lessons-list {
   display: flex;
   flex-direction: column;
@@ -1226,25 +1279,18 @@ img {
   overflow: hidden;
   opacity: 0;
   transform: translate3d(0, 8px, 0);
-  animation: springCascadeIn 0.38s var(--spring-snappy) forwards;
-  animation-delay: calc(var(--step, 0) * 30ms);
-  contain: content;
+  animation: springCascadeIn 0.38s var(--spring-ease) forwards;
+  animation-delay: calc(var(--step, 0) * 32ms);
 }
 
-/* [PERF]: Живая полоса заполнения идущего урока на композитном scaleX вместо перерисовки градиента */
+/* [PERF]: Живая полоса заполнения идущего урока с композитным слоем ::before */
 .diary-lesson-row.lesson-active-now {
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.16) var(--lesson-progress, 50%),
+    #ffffff var(--lesson-progress, 50%)
+  );
   border-color: #86efac;
-}
-
-.diary-lesson-row.lesson-active-now::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(34, 197, 94, 0.16);
-  transform-origin: left center;
-  transform: scaleX(var(--lesson-scale, 0.5));
-  pointer-events: none;
-  z-index: 1;
 }
 
 @keyframes springCascadeIn {
@@ -1277,11 +1323,11 @@ img {
   color: var(--primary);
   font-size: 0.78rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .diary-lesson-icon {
@@ -1318,11 +1364,11 @@ img {
 .lesson-live-pill {
   font-size: 0.69rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   padding: 2px 8px;
   border-radius: 999px;
   background: #16a34a;
   color: #ffffff;
+  font-variant-numeric: tabular-nums;
   animation: softPulse 1.6s infinite;
 }
 
@@ -1338,7 +1384,7 @@ img {
 }
 
 /* ==========================================================================
-   7. ПОГОДА В С. ЯМБИРНО И ПЕРЕКЛЮЧАТЕЛИ 1–11 КЛАССОВ (44×44 PX TARGETS)
+   7. ПОГОДА В С. ЯМБИРНО И ТАКТИЛЬНЫЕ ПЕРЕКЛЮЧАТЕЛИ 1–11 КЛАССОВ
    ========================================================================== */
 .top-weather-pill {
   display: inline-flex;
@@ -1346,12 +1392,12 @@ img {
   gap: 5px;
   font-size: 0.78rem;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
   padding: 3px 10px;
   border-radius: 999px;
   background: rgba(56, 189, 248, 0.16);
   color: #bae6fd;
   border: 1px solid rgba(56, 189, 248, 0.3);
+  font-variant-numeric: tabular-nums;
 }
 
 .widget-weather-card {
@@ -1364,7 +1410,8 @@ img {
   gap: 8px;
   position: relative;
   overflow: hidden;
-  contain: content;
+  box-shadow: var(--specular-top);
+  contain: layout style;
 }
 
 .widget-weather-card.weather-sky-clear {
@@ -1419,15 +1466,15 @@ img {
 .weather-temp-val {
   font-size: 1.2rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   color: var(--text-main);
+  font-variant-numeric: tabular-nums;
 }
 
 .weather-tomorrow-val {
   font-size: 1.08rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   color: var(--primary);
+  font-variant-numeric: tabular-nums;
 }
 
 .weather-desc-text {
@@ -1441,7 +1488,7 @@ img {
   font-weight: 700;
   padding: 7px 10px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.9);
   color: #0f172a;
   border-left: 3px solid #0284c7;
 }
@@ -1485,34 +1532,38 @@ img {
   align-items: center;
   gap: 4px;
   background: #e2e8f0;
-  padding: 4px;
-  border-radius: 10px;
+  padding: 3px;
+  border-radius: 9px;
 }
 
+/* [PERF]: Увеличенный тактильный отклик и зона касания для дней недели */
 .day-pill {
   position: relative;
-  min-width: 34px;
-  min-height: 32px;
+  min-width: 32px;
+  min-height: 30px;
   border: none;
   background: transparent;
   color: var(--text-main);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
   padding: 4px 8px;
-  border-radius: 7px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.2s ease, color 0.2s ease;
+  transition: transform 0.16s var(--spring-ease), background-color 0.18s ease, color 0.18s ease;
 }
 
-/* [PERF]: Невидимое расширение touch-target до >= 44px */
 .day-pill::after {
   content: "";
   position: absolute;
-  inset: -6px -3px;
+  inset: -7px -2px;
 }
 
 .day-pill:hover {
   background: rgba(255, 255, 255, 0.75);
+}
+
+.day-pill:active {
+  transform: scale3d(0.92, 0.92, 1);
 }
 
 .day-pill.active {
@@ -1521,6 +1572,7 @@ img {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
+/* Панель выбора класса с 1 по 11 (11 тактильных кнопок) */
 .grade-selector-bar {
   display: grid;
   grid-template-columns: repeat(11, 1fr);
@@ -1530,7 +1582,7 @@ img {
 
 .grade-pill {
   position: relative;
-  min-height: 36px;
+  min-height: 34px;
   border: 1px solid #cbd5e1;
   background: #ffffff;
   color: var(--text-main);
@@ -1541,18 +1593,23 @@ img {
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.18s ease, color 0.18s ease;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.16s var(--spring-ease), background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
 .grade-pill::after {
   content: "";
   position: absolute;
-  inset: -5px -2px;
+  inset: -5px -1px;
 }
 
 .grade-pill:hover {
   border-color: var(--primary);
   color: var(--primary);
+}
+
+.grade-pill:active {
+  transform: scale3d(0.92, 0.92, 1);
 }
 
 .grade-pill.active {
@@ -1563,11 +1620,11 @@ img {
 }
 
 /* ==========================================================================
-   8. ЦИФРОВОЙ НАВИГАТОР, ФАКТЫ, ПЕДАГОГИ И BENTO-ДОСТИЖЕНИЯ (ZERO-JANK)
+   8. ЦИФРОВОЙ НАВИГАТОР, ФАКТЫ, ПЕДАГОГИ И BENTO-ДОСТИЖЕНИЯ
    ========================================================================== */
+/* [PERF]: content-visibility: auto разгружает начальный рендер оффскрин-секций на слабых Android */
 .section {
   padding: 64px 0;
-  /* [PERF]: Отложенный рендер оффскрин-секций для мгновенного старта на слабых CPU */
   content-visibility: auto;
   contain-intrinsic-size: auto 640px;
 }
@@ -1592,12 +1649,6 @@ img {
   font-size: 1.04rem;
 }
 
-/* [PERF]: Grid-стек для 4 вкладок Цифрового навигатора — 0.00 CLS при переключении */
-#digital-guide > .container {
-  display: grid;
-  grid-template-columns: 100%;
-}
-
 .digital-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1606,7 +1657,7 @@ img {
 }
 
 .digital-tab-btn {
-  min-height: 52px;
+  min-height: 54px;
   padding: 14px 16px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border);
@@ -1616,8 +1667,13 @@ img {
   font-size: 0.92rem;
   line-height: 1.35;
   cursor: pointer;
-  transition: transform 0.28s var(--spring-snappy), background-color var(--transition), color var(--transition), border-color var(--transition);
+  box-shadow: var(--specular-top), var(--shadow-sm);
+  transition: transform 0.22s var(--spring-ease), background-color var(--transition), color var(--transition), border-color var(--transition);
   text-align: left;
+}
+
+.digital-tab-btn:active {
+  transform: scale3d(0.97, 0.97, 1);
 }
 
 .digital-tab-btn.active,
@@ -1625,33 +1681,29 @@ img {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
-  box-shadow: var(--shadow-md);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--shadow-md);
   transform: translate3d(0, -2px, 0);
 }
 
 .digital-panel {
-  grid-row: 3;
-  grid-column: 1;
   padding: 30px 26px;
   border: 2px solid #dbeafe;
-  transition: opacity 0.28s ease, transform 0.32s var(--spring-snappy), visibility 0.28s;
-  contain: content;
+  contain: layout style;
 }
 
-/* [PERF]: Бесшовный композитный стек вместо скачка display: none */
-body:not(.visually-impaired) .digital-panel.hidden {
-  display: block !important;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate3d(0, 8px, 0) scale(0.99);
+.digital-panel.active {
+  animation: panelFadeIn 0.32s var(--spring-ease);
 }
 
-body:not(.visually-impaired) .digital-panel.active {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-  transform: translate3d(0, 0, 0) scale(1);
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .digital-panel-header {
@@ -1703,7 +1755,7 @@ body:not(.visually-impaired) .digital-panel.active {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 20px 18px;
-  contain: content;
+  box-shadow: var(--specular-top);
 }
 
 .guide-step-num {
@@ -1760,13 +1812,14 @@ body:not(.visually-impaired) .digital-panel.active {
   text-align: center;
 }
 
+/* [PERF]: tabular-nums гарантирует 0.00 CLS при работе анимации счётчика */
 .fact-number {
   font-size: 2.9rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   color: var(--primary);
   line-height: 1.1;
   margin-bottom: 10px;
+  font-variant-numeric: tabular-nums;
 }
 
 .fact-icon {
@@ -1836,6 +1889,7 @@ body:not(.visually-impaired) .digital-panel.active {
   margin-bottom: 14px;
   border: 3px solid #dbeafe;
   flex-shrink: 0;
+  background: var(--primary-soft);
 }
 
 .teacher-photo {
@@ -1892,8 +1946,7 @@ body:not(.visually-impaired) .digital-panel.active {
   border-radius: var(--radius-lg);
   margin-bottom: 38px;
   text-align: center;
-  box-shadow: var(--shadow-md);
-  contain: content;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), var(--shadow-md);
 }
 
 .stat-item {
@@ -1910,10 +1963,10 @@ body:not(.visually-impaired) .digital-panel.active {
   display: block;
   font-size: 2.4rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   line-height: 1.1;
   margin-bottom: 6px;
   color: #fbbf24;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
@@ -1930,18 +1983,11 @@ body:not(.visually-impaired) .digital-panel.active {
   overflow: hidden;
 }
 
-/* [PERF]: Композитное раскрытие шкалы через scaleX */
 .stat-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #fbbf24, #34d399);
   border-radius: 999px;
   transform-origin: left center;
-  transform: scaleX(0);
-  transition: transform 0.85s var(--spring-ease);
-}
-
-.stats-banner.visible .stat-progress-fill {
-  transform: scaleX(1);
 }
 
 .subsection-title {
@@ -2023,7 +2069,7 @@ body:not(.visually-impaired) .digital-panel.active {
   border-radius: var(--radius-md);
   padding: 16px;
   margin-top: 14px;
-  contain: content;
+  contain: layout style;
 }
 
 .live-menu-title {
@@ -2081,12 +2127,12 @@ body:not(.visually-impaired) .digital-panel.active {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.42s var(--spring-snappy);
+  transition: transform 0.42s var(--spring-ease);
 }
 
 @media (hover: hover) {
   .gallery-item:hover .gallery-img {
-    transform: scale(1.05);
+    transform: scale3d(1.06, 1.06, 1);
   }
 }
 
@@ -2102,7 +2148,7 @@ body:not(.visually-impaired) .digital-panel.active {
   border-radius: 999px;
   opacity: 0;
   transform: translate3d(0, 6px, 0);
-  transition: opacity 0.22s ease, transform 0.22s var(--spring-snappy);
+  transition: opacity 0.22s ease, transform 0.22s var(--spring-ease);
 }
 
 .gallery-item:hover .gallery-zoom-badge,
@@ -2119,11 +2165,11 @@ body:not(.visually-impaired) .digital-panel.active {
   color: var(--text-main);
 }
 
-/* [PERF]: Модальное окно Fluid Lightbox без дорогого blur на мобильных GPU */
+/* [PERF]: Модальное окно Lightbox без убийственного backdrop-filter на слабых смартфонах */
 .lightbox-backdrop {
   position: fixed;
   inset: 0;
-  background: oklch(0.18 0.03 265 / 0.96);
+  background: rgba(15, 23, 42, 0.96);
   z-index: 1500;
   display: flex;
   align-items: center;
@@ -2132,10 +2178,10 @@ body:not(.visually-impaired) .digital-panel.active {
   contain: strict;
 }
 
-@supports (backdrop-filter: blur(8px)) {
-  @media (min-width: 1024px) and (hover: hover) {
+@media (min-width: 1024px) and (hover: hover) {
+  @supports (backdrop-filter: blur(8px)) {
     .lightbox-backdrop {
-      background: oklch(0.18 0.03 265 / 0.9);
+      background: rgba(15, 23, 42, 0.9);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
@@ -2171,15 +2217,19 @@ body:not(.visually-impaired) .digital-panel.active {
   background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 7px 16px;
+  padding: 8px 18px;
   border-radius: 999px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.2s ease;
+  transition: transform 0.18s var(--spring-ease), background-color 0.2s ease;
 }
 
 .lightbox-close-btn:hover {
   background: rgba(255, 255, 255, 0.28);
+}
+
+.lightbox-close-btn:active {
+  transform: scale3d(0.95, 0.95, 1);
 }
 
 .lightbox-stage {
@@ -2209,8 +2259,8 @@ body:not(.visually-impaired) .digital-panel.active {
 }
 
 .lightbox-nav-btn {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.14);
@@ -2222,11 +2272,15 @@ body:not(.visually-impaired) .digital-panel.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.2s ease;
+  transition: transform 0.18s var(--spring-ease), background-color 0.2s ease;
 }
 
 .lightbox-nav-btn:hover {
   background: rgba(255, 255, 255, 0.28);
+}
+
+.lightbox-nav-btn:active {
+  transform: scale3d(0.92, 0.92, 1);
 }
 
 .lightbox-meta {
@@ -2269,18 +2323,19 @@ body:not(.visually-impaired) .digital-panel.active {
   font-weight: 600;
 }
 
+/* [PERF]: Эргономичная кнопка копирования с расширенным хитбоксом ::after */
 .btn-copy-mini {
   position: relative;
-  min-height: 36px;
+  min-height: 32px;
   border: 1px solid var(--border);
   background: var(--bg-alt);
   color: var(--primary);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  padding: 5px 10px;
+  padding: 4px 10px;
   border-radius: 6px;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color 0.2s ease, color 0.2s ease;
+  transition: transform 0.18s var(--spring-ease), background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-copy-mini::after {
@@ -2293,6 +2348,10 @@ body:not(.visually-impaired) .digital-panel.active {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
+}
+
+.btn-copy-mini:active {
+  transform: scale3d(0.93, 0.93, 1);
 }
 
 .contact-value {
@@ -2308,7 +2367,7 @@ body:not(.visually-impaired) .digital-panel.active {
   overflow-wrap: anywhere;
 }
 
-/* [PERF]: Плавающая кнопка "Наверх" + нативный scroll-timeline прогресс без JS-скролла */
+/* Плавающая кнопка "Наверх" с кольцом прогресса чтения */
 .scroll-top-btn {
   position: fixed;
   right: 20px;
@@ -2328,14 +2387,18 @@ body:not(.visually-impaired) .digital-panel.active {
   opacity: 0;
   pointer-events: none;
   transform: translate3d(0, 12px, 0);
-  transition: opacity 0.28s ease, transform 0.32s var(--spring-snappy);
-  contain: layout style paint;
+  transition: opacity 0.28s ease, transform 0.28s var(--spring-ease);
+  contain: layout style;
 }
 
 .scroll-top-btn.visible {
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(0, 0, 0);
+}
+
+.scroll-top-btn:active {
+  transform: scale3d(0.92, 0.92, 1);
 }
 
 .progress-ring {
@@ -2350,18 +2413,7 @@ body:not(.visually-impaired) .digital-panel.active {
 
 .progress-ring-fill {
   stroke: var(--primary);
-}
-
-@supports (animation-timeline: scroll()) {
-  .progress-ring-fill {
-    animation: scrollRingFill linear both;
-    animation-timeline: scroll(root);
-  }
-
-  @keyframes scrollRingFill {
-    from { stroke-dashoffset: 119.38; }
-    to { stroke-dashoffset: 0; }
-  }
+  transition: stroke-dashoffset 0.12s linear;
 }
 
 .scroll-top-arrow {
@@ -2386,10 +2438,9 @@ body:not(.visually-impaired) .digital-panel.active {
   border-radius: var(--radius-xl);
   padding: 48px 36px;
   text-align: center;
-  box-shadow: var(--shadow-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--shadow-lg);
   position: relative;
   overflow: hidden;
-  contain: content;
 }
 
 .cta-eyebrow {
@@ -2433,7 +2484,8 @@ body:not(.visually-impaired) .digital-panel.active {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: transform 0.28s var(--spring-snappy), background-color var(--transition), border-color var(--transition);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.26s var(--spring-ease), background-color var(--transition), border-color var(--transition);
 }
 
 @media (hover: hover) {
@@ -2443,6 +2495,10 @@ body:not(.visually-impaired) .digital-panel.active {
     transform: translate3d(0, -4px, 0);
     color: #ffffff;
   }
+}
+
+.cta-reason-card:active {
+  transform: scale3d(0.98, 0.98, 1);
 }
 
 .cta-reason-icon {
@@ -2571,14 +2627,19 @@ body:not(.visually-impaired) .digital-panel.active {
   overflow: hidden;
 }
 
-/* [PERF]: Заполнение прогресса шагов через композитный scaleX вместо анимации width */
+/* [PERF]: HARD BAN FIX — анимация заполнения шага через transform: scaleX() вместо width */
 .steps-progress-bar {
-  width: 100%;
+  width: 100% !important;
   height: 100%;
   background: var(--primary);
-  transform-origin: left center;
   transform: scaleX(0);
+  transform-origin: left center;
   transition: transform 0.45s var(--spring-ease);
+}
+
+.steps-progress-bar[style*="100%"],
+.steps-progress-bar.is-complete {
+  transform: scaleX(1);
 }
 
 .step-pill {
@@ -2598,11 +2659,17 @@ body:not(.visually-impaired) .digital-panel.active {
 
 .feedback-card {
   padding: 32px 28px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--specular-top), var(--shadow-md);
   border-top: 5px solid var(--primary);
-  transition: transform 0.35s var(--spring-snappy), opacity 0.28s ease;
+  transition: transform 0.32s var(--spring-ease), opacity 0.28s ease;
+  contain: layout style;
 }
 
+.step-transition-card:not(.hidden) {
+  animation: panelFadeIn 0.34s var(--spring-ease);
+}
+
+/* [PRESERVED]: Темы карточки обращения */
 .feedback-card.topic-theme-thanks {
   border-top-color: #16a34a;
 }
@@ -2666,7 +2733,11 @@ body:not(.visually-impaired) .digital-panel.active {
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: transform 0.2s var(--spring-snappy), background-color var(--transition), color var(--transition), border-color var(--transition);
+  transition: transform 0.18s var(--spring-ease), background-color var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.topic-chip:active {
+  transform: scale3d(0.96, 0.96, 1);
 }
 
 .topic-chip.active,
@@ -2794,7 +2865,7 @@ body:not(.visually-impaired) .digital-panel.active {
   border: 2px dashed #16a34a;
   border-radius: var(--radius-md);
   padding: 22px;
-  animation: contentPop 0.38s var(--spring-snappy);
+  animation: panelFadeIn 0.35s var(--spring-ease);
 }
 
 .receipt-header {
@@ -2860,9 +2931,307 @@ body:not(.visually-impaired) .digital-panel.active {
 .reveal {
   opacity: 0;
   transform: translate3d(0, 18px, 0);
-  transition: opacity 0.42s ease, transform 0.42s var(--spring-snappy);
+  transition: opacity 0.42s ease, transform 0.42s var(--spring-ease);
 }
 
 .reveal.visible {
   opacity: 1;
-  transform: translate3d(
+  transform: translate3d(0, 0, 0);
+}
+
+/* [PERF]: Полная поддержка prefers-reduced-motion (замена пространственного движения на семантические переходы) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.12s !important;
+  }
+
+  .reveal,
+  .diary-lesson-row,
+  .elevate-card:hover,
+  .btn:hover:not(:disabled),
+  .digital-tab-btn.active,
+  .digital-tab-btn:hover,
+  .cta-reason-card:hover,
+  .gallery-item:hover .gallery-img {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .radar-ping,
+  .chalk-cursor.thinking {
+    animation: none !important;
+  }
+}
+
+/* [PRESERVED]: Контракт ГОСТ-режима для слабовидящих (.visually-impaired) 1:1 */
+body.visually-impaired {
+  background-color: #000000 !important;
+  background-image: none !important;
+  color: #ffff00 !important;
+  font-size: 1.2rem !important;
+  line-height: 1.7 !important;
+  letter-spacing: 0.02em;
+}
+
+body.visually-impaired *,
+body.visually-impaired *::before,
+body.visually-impaired *::after {
+  background-color: #000000 !important;
+  background-image: none !important;
+  color: #ffff00 !important;
+  border-color: #ffff00 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+body.visually-impaired .utility-inner {
+  flex-wrap: nowrap !important;
+}
+
+body.visually-impaired .btn-a11y {
+  font-size: 0.92rem !important;
+  padding: 7px 14px !important;
+  border: 2px solid #ffff00 !important;
+  outline: 2px solid #ffff00 !important;
+}
+
+body.visually-impaired input,
+body.visually-impaired textarea,
+body.visually-impaired select,
+body.visually-impaired .form-control {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  -webkit-text-fill-color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+  caret-color: #ffff00 !important;
+  font-size: 1.15rem !important;
+}
+
+body.visually-impaired input::placeholder,
+body.visually-impaired textarea::placeholder {
+  color: #cccc00 !important;
+  -webkit-text-fill-color: #cccc00 !important;
+  opacity: 1 !important;
+}
+
+body.visually-impaired input:-webkit-autofill,
+body.visually-impaired textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #000000 inset !important;
+  -webkit-text-fill-color: #ffff00 !important;
+}
+
+body.visually-impaired img:not(.logo-img) {
+  display: none !important;
+}
+
+body.visually-impaired .teacher-photo-wrap,
+body.visually-impaired .radar-dot-wrap,
+body.visually-impaired .gallery-img-wrap,
+body.visually-impaired .chalk-pieces {
+  display: none !important;
+}
+
+body.visually-impaired .btn,
+body.visually-impaired .btn-refresh,
+body.visually-impaired .digital-tab-btn,
+body.visually-impaired .topic-chip,
+body.visually-impaired .day-pill,
+body.visually-impaired .grade-pill,
+body.visually-impaired .diary-lesson-row,
+body.visually-impaired .chalk-btn {
+  border: 2px solid #ffff00 !important;
+  font-size: 1.05rem !important;
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+body.visually-impaired .digital-tab-btn.active,
+body.visually-impaired .topic-chip.active,
+body.visually-impaired .day-pill.active,
+body.visually-impaired .grade-pill.active {
+  outline: 3px solid #ffff00 !important;
+  text-decoration: underline;
+}
+
+body.visually-impaired .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* ==========================================================================
+   12. АДАПТИВНОСТЬ (ПЛАНШЕТЫ, МОБИЛЬНЫЕ И ЭКРАНЫ 320PX)
+   ========================================================================== */
+@media (max-width: 992px) {
+  .hero-grid,
+  .info-blocks-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chalkboard-card {
+    min-height: 195px;
+  }
+
+  .teachers-grid,
+  .facts-grid,
+  .pillars-grid,
+  .digital-tabs,
+  .steps-guide-grid,
+  .success-grid,
+  .contacts-grid,
+  .stats-banner,
+  .gallery-grid,
+  .cta-reasons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .utility-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .utility-datetime {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .utility-a11y-slot .btn-a11y {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .teachers-grid,
+  .facts-grid,
+  .pillars-grid,
+  .digital-tabs,
+  .steps-guide-grid,
+  .success-grid,
+  .contacts-grid,
+  .stats-banner,
+  .gallery-grid,
+  .cta-reasons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-main-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .brand {
+    flex: 1 1 auto;
+  }
+
+  .main-nav {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .header-actions,
+  .hero-actions,
+  .digital-quick-links,
+  .receipt-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .hero-actions .btn,
+  .digital-tab-btn,
+  .digital-quick-links .btn,
+  .receipt-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .feedback-card,
+  .digital-panel,
+  .cta-card {
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .weather-top-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .grade-selector-bar {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+
+  .grade-pill {
+    min-height: 38px;
+    font-size: 0.78rem;
+  }
+
+  .day-pill {
+    min-height: 36px;
+    padding: 6px 10px;
+  }
+
+  .diary-lesson-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .chalkboard-stage {
+    padding: 14px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  .brand-title {
+    font-size: 0.94rem;
+  }
+
+  .hero-section,
+  .section {
+    padding: 36px 0;
+  }
+
+  .hero-title {
+    font-size: 1.35rem;
+  }
+
+  .live-widget,
+  .fact-card,
+  .pillar-card,
+  .teacher-card,
+  .success-card,
+  .info-box,
+  .contact-card,
+  .feedback-card,
+  .digital-panel {
+    padding: 16px 12px;
+  }
+
+  .btn,
+  .btn-a11y {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+
+  body.visually-impaired {
+    font-size: 1.08rem !important;
+  }
+}
