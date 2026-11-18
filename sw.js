@@ -1,5 +1,5 @@
 // [PRESERVED]: Контракт имени кэша и списка обязательных ассетов
-const CACHE_NAME = "yambirno-school-v6";
+const CACHE_NAME = "yambirno-school-v7";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
