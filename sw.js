@@ -1,3 +1,4 @@
+// [PRESERVED]: Контракт имени кэша и списка обязательных ассетов
 const CACHE_NAME = "yambirno-school-v6";
 const ASSETS_TO_CACHE = [
   "./",
@@ -36,6 +37,9 @@ self.addEventListener("fetch", (event) => {
         }
         return networkResponse;
       })
-      .catch(() => caches.match(event.request))
+      /* [PERF]: ignoreSearch позволяет открывать feedback.html?topic=thanks|idea|question в офлайне из единого кэша feedback.html */
+      .catch(() =>
+        caches.match(event.request, { ignoreSearch: true })
+      )
   );
 });
