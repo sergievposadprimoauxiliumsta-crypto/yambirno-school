@@ -8,7 +8,7 @@ const YAMBIRNO_LON = 41.9708;
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 const A11Y_SETTINGS_KEY = "yambirno_a11y_settings_v1";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v11";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v12";
 const SHEET3_CACHE_KEY = "yambirno_publications_cache_v1";
 const FEEDBACK_COOLDOWN_KEY = "yambirno_feedback_last_sent";
 
@@ -20,6 +20,7 @@ const ALLOWED_DOC_HOSTS = [
   "gosuslugi.ru",
   "edu.ru",
   "ryazangov.ru",
+  "takzdorovo.ru",
   "vk.ru",
   "vk.com",
   "uchi.ru",
@@ -50,13 +51,13 @@ const DAY_NAMES_FULL = {
 };
 
 const DEFAULT_BELL_TIMES = {
-  1: { start: "08:30", end: "09:15", startMin: 510, endMin: 555 },
-  2: { start: "09:25", end: "10:10", startMin: 565, endMin: 610 },
-  3: { start: "10:25", end: "11:10", startMin: 625, endMin: 670 },
-  4: { start: "11:25", end: "12:10", startMin: 685, endMin: 730 },
-  5: { start: "12:20", end: "13:05", startMin: 740, endMin: 785 },
-  6: { start: "13:15", end: "14:00", startMin: 795, endMin: 840 },
-  7: { start: "14:10", end: "14:55", startMin: 850, endMin: 895 }
+  1: { start: "08:30", end: "09:10", startMin: 510, endMin: 550 },
+  2: { start: "09:20", end: "10:00", startMin: 560, endMin: 600 },
+  3: { start: "10:10", end: "10:50", startMin: 610, endMin: 650 },
+  4: { start: "11:10", end: "11:50", startMin: 670, endMin: 710 },
+  5: { start: "12:10", end: "12:50", startMin: 730, endMin: 770 },
+  6: { start: "13:00", end: "13:40", startMin: 780, endMin: 820 },
+  7: { start: "13:50", end: "14:30", startMin: 830, endMin: 870 }
 };
 
 let activeBellTimes = cloneDefaultBells();
@@ -142,22 +143,6 @@ const CHALKBOARD_CURRICULUM = [
     problem: "a = 3, b = 4, c = √(a² + b²)",
     steps: " = √(9 + 16) = √25",
     answer: " = 5"
-  },
-  {
-    grade: 10,
-    badge: "10 класс • Тригонометрия",
-    topic: "Тема урока: Основное тригонометрическое тождество",
-    problem: "sin²α + cos²α",
-    steps: " = (a/c)² + (b/c)² = c²/c²",
-    answer: " = 1"
-  },
-  {
-    grade: 11,
-    badge: "11 класс • Математический анализ (ЕГЭ)",
-    topic: "Тема урока: Производная и точки экстремума",
-    problem: "f(x) = x³ − 3x",
-    steps: " → f'(x) = 3x² − 3 = 0",
-    answer: " → x = ±1"
   }
 ];
 
@@ -167,86 +152,6 @@ const DEFAULT_SANPIN_LUNCH =
   "Первое горячее блюдо, порционное мясное/рыбное блюдо с гарниром, сезонная овощная нарезка/салат, напиток по нормам СанПиН.";
 const DEFAULT_SANPIN_NOTE =
   "Фактическое ежедневное меню заверяется руководителем и размещается на информационном стенде школьной столовой.";
-
-const DEFAULT_GRADE_SCHEDULES = {
-  1: {
-    1: "1. Разговоры о важном 2. Обучение грамоте 3. Письмо 4. Математика",
-    2: "1. Обучение грамоте 2. Письмо 3. Математика 4. Окружающий мир",
-    3: "1. Обучение грамоте 2. Письмо 3. Математика 4. Физкультура",
-    4: "1. Обучение грамоте 2. Письмо 3. Музыка 4. ИЗО",
-    5: "1. Обучение грамоте 2. Окружающий мир 3. Труд (технология) 4. Физкультура"
-  },
-  2: {
-    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. Литературное чтение",
-    2: "1. Русский язык 2. Математика 3. Английский язык 4. Окружающий мир",
-    3: "1. Математика 2. Русский язык 3. Литературное чтение 4. Физкультура",
-    4: "1. Русский язык 2. Математика 3. Английский язык 4. Музыка",
-    5: "1. Русский язык 2. Литературное чтение 3. ИЗО 4. Труд (технология)"
-  },
-  3: {
-    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. Литературное чтение",
-    2: "1. Математика 2. Русский язык 3. Английский язык 4. Окружающий мир",
-    3: "1. Русский язык 2. Математика 3. Литературное чтение 4. Физкультура",
-    4: "1. Математика 2. Русский язык 3. Английский язык 4. Музыка",
-    5: "1. Русский язык 2. Окружающий мир 3. ИЗО 4. Труд (технология)"
-  },
-  4: {
-    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. Литературное чтение",
-    2: "1. Русский язык 2. Математика 3. Английский язык 4. Окружающий мир",
-    3: "1. Математика 2. Русский язык 3. ОРКСЭ 4. Физкультура",
-    4: "1. Русский язык 2. Математика 3. Английский язык 4. Литературное чтение",
-    5: "1. Русский язык 2. Окружающий мир 3. ИЗО 4. Труд (технология)"
-  },
-  5: {
-    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. История 5. Биология",
-    2: "1. Математика 2. Русский язык 3. Английский язык 4. Литература 5. Физкультура",
-    3: "1. Русский язык 2. Математика 3. География 4. Литература 5. Труд (технология)",
-    4: "1. Математика 2. Русский язык 3. История 4. Английский язык 5. Музыка",
-    5: "1. Русский язык 2. Математика 3. Литература 4. ИЗО 5. Физкультура"
-  },
-  6: {
-    1: "1. Разговоры о важном 2. Русский язык 3. Математика 4. История 5. Биология",
-    2: "1. Математика 2. Русский язык 3. Английский язык 4. География 5. Литература",
-    3: "1. Русский язык 2. Математика 3. Обществознание 4. Литература 5. Физкультура",
-    4: "1. Математика 2. Русский язык 3. История 4. Английский язык 5. Труд (технология)",
-    5: "1. Русский язык 2. Математика 3. Литература 4. Музыка / ИЗО 5. Физкультура"
-  },
-  7: {
-    1: "1. Разговоры о важном 2. Русский язык 3. Алгебра 4. Физика 5. История",
-    2: "1. Геометрия 2. Русский язык 3. Английский язык 4. География 5. Биология",
-    3: "1. Алгебра 2. Русский язык 3. Литература 4. Физика 5. Информатика",
-    4: "1. Геометрия 2. Русский язык 3. История 4. Обществознание 5. Английский язык",
-    5: "1. Алгебра 2. Литература 3. География 4. Труд (технология) 5. Физкультура"
-  },
-  8: {
-    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Химия 5. История 6. Биология",
-    2: "1. Геометрия 2. Литература 3. Английский язык 4. Физика 5. География 6. Физкультура",
-    3: "1. Алгебра 2. Русский язык 3. Химия 4. Обществознание 5. Информатика 6. ОБЗР",
-    4: "1. Геометрия 2. Русский язык 3. История 4. Физика 5. Английский язык 6. Биология",
-    5: "1. Алгебра 2. Литература 3. География 4. Английский язык 5. Профориентация 6. Физкультура"
-  },
-  9: {
-    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Физика 5. История 6. Химия",
-    2: "1. Геометрия 2. Литература 3. Английский язык 4. Обществознание 5. Биология 6. Информатика",
-    3: "1. Алгебра 2. Русский язык 3. Химия 4. География 5. Физика 6. Физкультура",
-    4: "1. Геометрия 2. Русский язык 3. История 4. Литература 5. Английский язык 6. ОБЗР",
-    5: "1. Алгебра 2. Литература 3. Физика 4. Химия 5. Биология 6. Консультация ОГЭ"
-  },
-  10: {
-    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Физика 5. История 6. Английский язык",
-    2: "1. Геометрия 2. Литература 3. Химия 4. Обществознание 5. Биология 6. Информатика",
-    3: "1. Алгебра 2. Русский язык 3. История 4. География 5. Физика 6. Физкультура",
-    4: "1. Геометрия 2. Литература 3. Обществознание 4. Английский язык 5. ОБЗР 6. Индивидуальный проект",
-    5: "1. Алгебра 2. Литература 3. Физика 4. Химия 5. Биология 6. Физкультура"
-  },
-  11: {
-    1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Физика 5. История 6. Химия",
-    2: "1. Геометрия 2. Литература 3. Английский язык 4. Обществознание 5. Биология 6. Информатика",
-    3: "1. Алгебра 2. Русский язык 3. Химия 4. География 5. Физика 6. Физкультура",
-    4: "1. Геометрия 2. Русский язык 3. История 4. Литература 5. Английский язык 6. ОБЗР",
-    5: "1. Алгебра 2. Литература 3. Физика 4. Обществознание 5. Практикум ЕГЭ 6. Физкультура"
-  }
-};
 
 let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
@@ -277,7 +182,7 @@ function getDefaultSchoolWeekday() {
 function getSavedGradeSelection() {
   try {
     const saved = parseInt(localStorage.getItem(GRADE_STORAGE_KEY) || "1", 10);
-    if (saved >= 1 && saved <= 11) return saved;
+    if (saved >= 1 && saved <= 9) return saved;
   } catch (_) {}
   return 1;
 }
@@ -499,6 +404,7 @@ function initChalkboardEngine() {
   let isViewportVisible = true;
   let runToken = 0;
   let revealResolver = null;
+  const totalSteps = CHALKBOARD_CURRICULUM.length;
 
   if ("IntersectionObserver" in window) {
     const obs = new IntersectionObserver(
@@ -555,7 +461,7 @@ function initChalkboardEngine() {
     if (cursorEl) cursorEl.classList.add("hidden");
     if (badgeEl) badgeEl.textContent = item.badge;
     if (topicEl) topicEl.textContent = item.topic;
-    if (counterEl) counterEl.textContent = `Ступень ${item.grade} из 11`;
+    if (counterEl) counterEl.textContent = `Ступень ${item.grade} из ${totalSteps}`;
     problemEl.textContent = item.problem;
 
     if (isQuizMode) {
@@ -590,7 +496,7 @@ function initChalkboardEngine() {
 
       if (badgeEl) badgeEl.textContent = item.badge;
       if (topicEl) topicEl.textContent = item.topic;
-      if (counterEl) counterEl.textContent = `Ступень ${item.grade} из 11`;
+      if (counterEl) counterEl.textContent = `Ступень ${item.grade} из ${totalSteps}`;
 
       if (statusEl) statusEl.textContent = "Пишет условие у доски...";
       const ok1 = await typeChalkString(problemEl, item.problem, token, 62);
@@ -635,7 +541,7 @@ function initChalkboardEngine() {
       const okWipe = await waitMs(750, token);
       if (!okWipe) return;
 
-      currentIdx = (currentIdx + 1) % CHALKBOARD_CURRICULUM.length;
+      currentIdx = (currentIdx + 1) % totalSteps;
     }
   };
 
@@ -684,7 +590,7 @@ function initChalkboardEngine() {
 
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
-      currentIdx = (currentIdx + 1) % CHALKBOARD_CURRICULUM.length;
+      currentIdx = (currentIdx + 1) % totalSteps;
       restartFromCurrent();
     });
   }
@@ -693,66 +599,103 @@ function initChalkboardEngine() {
 }
 
 function parseBellTimeRangeString(rawRangeStr, lessonNum) {
-  const fallback = DEFAULT_BELL_TIMES[lessonNum] || { start: "08:30", end: "09:15", startMin: 510, endMin: 555 };
+  const fallback = DEFAULT_BELL_TIMES[lessonNum] || null;
   const cleaned = sanitizeInput(rawRangeStr || "", 40);
-  if (!cleaned) return { ...fallback, isCustom: false };
+  if (!cleaned) return fallback ? { ...fallback, isCustom: false } : null;
 
   const match = cleaned.match(/(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/);
-  if (!match) return { ...fallback, isCustom: false };
+  if (!match) return fallback ? { ...fallback, isCustom: false } : null;
 
   const sh = parseInt(match[1], 10);
   const sm = parseInt(match[2], 10);
   const eh = parseInt(match[3], 10);
   const em = parseInt(match[4], 10);
 
-  if (sh > 23 || sm > 59 || eh > 23 || em > 59) return { ...fallback, isCustom: false };
+  if (sh > 23 || sm > 59 || eh > 23 || em > 59) return fallback ? { ...fallback, isCustom: false } : null;
 
   const startFormatted = `${String(sh).padStart(2, "0")}:${String(sm).padStart(2, "0")}`;
   const endFormatted = `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
   const startMin = sh * 60 + sm;
   const endMin = eh * 60 + em;
 
-  const isDifferentFromDefault =
-    startFormatted !== fallback.start || endFormatted !== fallback.end;
+  const isDifferentFromDefault = fallback
+    ? startFormatted !== fallback.start || endFormatted !== fallback.end
+    : false;
 
   return {
     start: startFormatted,
     end: endFormatted,
     startMin,
-    endMin: endMin > startMin ? endMin : startMin + 45,
+    endMin: endMin > startMin ? endMin : startMin + 40,
     isCustom: isDifferentFromDefault
   };
 }
 
 function classifyLessonSubject(subjectTitle) {
   const s = (subjectTitle || "").toLowerCase();
-  if (s.includes("математ") || s.includes("алгебр") || s.includes("геометр") || s.includes("информат") || s.includes("физик") || s.includes("вероятност")) {
+  if (
+    s.includes("математ") ||
+    s.includes("мат. грамот") ||
+    s.includes("алгебр") ||
+    s.includes("геометр") ||
+    s.includes("информат") ||
+    s.includes("физик") ||
+    s.includes("вероятност")
+  ) {
     return { cls: "subj-math", icon: "📐" };
   }
-  if (s.includes("русск") || s.includes("литерат") || s.includes("чтени") || s.includes("грамот") || s.includes("письм") || s.includes("английск") || s.includes("родной")) {
-    return { cls: "subj-lang", icon: "📖" };
-  }
-  if (s.includes("биолог") || s.includes("хими") || s.includes("географ") || s.includes("окружающ")) {
+  if (
+    s.includes("естественно-науч") ||
+    s.includes("ен грамот") ||
+    s.includes("биолог") ||
+    s.includes("хими") ||
+    s.includes("географ") ||
+    s.includes("окружающ")
+  ) {
     return { cls: "subj-sci", icon: "🌿" };
   }
-  if (s.includes("истори") || s.includes("обществ") || s.includes("важном") || s.includes("орксэ") || s.includes("профориент") || s.includes("проект")) {
+  if (
+    s.includes("русск") ||
+    s.includes("литерат") ||
+    s.includes("чтени") ||
+    s.includes("читательск") ||
+    s.includes("грамот") ||
+    s.includes("письм") ||
+    s.includes("английск") ||
+    s.includes("родной")
+  ) {
+    return { cls: "subj-lang", icon: "📖" };
+  }
+  if (
+    s.includes("истори") ||
+    s.includes("обществ") ||
+    s.includes("важном") ||
+    s.includes("горизонт") ||
+    s.includes("орксэ") ||
+    s.includes("днкр") ||
+    s.includes("орлят") ||
+    s.includes("служен") ||
+    s.includes("край") ||
+    s.includes("профориент") ||
+    s.includes("проект")
+  ) {
     return { cls: "subj-hist", icon: "🏛️" };
   }
   return { cls: "subj-art", icon: "⚡" };
 }
 
 function parseRawScheduleIntoLessons(rawText) {
-  const cleaned = sanitizeInput(rawText || "", 800);
+  const cleaned = sanitizeInput(rawText || "", 1200);
   if (!cleaned) return [];
 
   const parts = cleaned
-    .replace(/(\d+)\s*[.)]\s*/g, "\n$1. ")
+    .replace(/(^|\s)([0-9])\.(?=\s*[А-Яа-яЁёA-Za-z«"(])/g, "\n$2. ")
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean);
 
   return parts.map((item, idx) => {
-    const match = item.match(/^(\d+)\.\s*(.+)$/);
+    const match = item.match(/^([0-9])\.\s*(.+)$/);
     if (match) {
       return { num: parseInt(match[1], 10), title: match[2].trim() };
     }
@@ -760,7 +703,34 @@ function parseRawScheduleIntoLessons(rawText) {
   });
 }
 
-function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, skipAnimation = false) {
+function renderEmptyScheduleState(containerEl, isOfflineError = false) {
+  if (!containerEl) return;
+  const box = document.createElement("div");
+  box.className = "diary-empty-state";
+
+  const title = document.createElement("div");
+  title.className = "diary-empty-title";
+  title.textContent = isOfflineError
+    ? "⏳ Не удалось загрузить расписание"
+    : "⏳ Расписание уточняется";
+
+  const text = document.createElement("p");
+  text.className = "diary-empty-text";
+  text.textContent = isOfflineError
+    ? "Проверьте подключение к интернету и нажмите кнопку «Обновить». Приносим извинения за временные неудобства!"
+    : "Актуальное расписание занятий для этого класса сейчас уточняется и будет опубликовано в ближайшее время. Приносим извинения за временные неудобства!";
+
+  const contact = document.createElement("div");
+  contact.className = "diary-empty-contact";
+  contact.textContent = "Уточнить уроки можно у классного руководителя или по тел. 8 (49147) 2-63-68";
+
+  box.appendChild(title);
+  box.appendChild(text);
+  box.appendChild(contact);
+  containerEl.appendChild(box);
+}
+
+function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, skipAnimation = false, isOfflineError = false) {
   if (!containerEl) return;
   containerEl.innerHTML = "";
 
@@ -771,7 +741,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
 
   const lessons = parseRawScheduleIntoLessons(rawScheduleText);
   if (lessons.length === 0) {
-    containerEl.textContent = "Занятия проводятся согласно основному расписанию уроков";
+    renderEmptyScheduleState(containerEl, isOfflineError);
     return;
   }
 
@@ -795,7 +765,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
     left.className = "diary-lesson-left";
 
     const numBadge = document.createElement("span");
-    numBadge.className = "diary-lesson-num";
+    numBadge.className = lessonObj.num === 0 ? "diary-lesson-num is-zero" : "diary-lesson-num";
     numBadge.textContent = String(lessonObj.num);
 
     const iconSpan = document.createElement("span");
@@ -862,11 +832,14 @@ function initShareScheduleToChat() {
       latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday]
     ) {
       rawSchedule = latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday];
-    } else if (DEFAULT_GRADE_SCHEDULES[currentSelectedGrade]) {
-      rawSchedule = DEFAULT_GRADE_SCHEDULES[currentSelectedGrade][currentSelectedWeekday] || "";
     }
 
     const lessons = parseRawScheduleIntoLessons(rawSchedule);
+    if (lessons.length === 0) {
+      showDynamicIslandToast(`Расписание для ${currentSelectedGrade} класса пока уточняется`);
+      return;
+    }
+
     const formattedLessons = lessons
       .map((l) => {
         const bell = activeBellTimes[l.num] || DEFAULT_BELL_TIMES[l.num];
@@ -881,7 +854,7 @@ function initShareScheduleToChat() {
 
     const textForChat =
       `📘 Расписание уроков — ${dayName} (${currentSelectedGrade} класс):\n` +
-      (formattedLessons || "По основному расписанию") +
+      formattedLessons +
       weatherLine;
 
     try {
@@ -1197,7 +1170,6 @@ function initAccessibilityMode() {
     });
   }
 }
-
 function parseCSVPreserveRowIndex(csvText) {
   const rows = [];
   let currentRow = [];
@@ -1949,13 +1921,9 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1, skipAni
     dataObj.scheduleByGradeAndDay[gradeNum][dayNum]
   ) {
     scheduleText = dataObj.scheduleByGradeAndDay[gradeNum][dayNum];
-  } else if (DEFAULT_GRADE_SCHEDULES[gradeNum] && DEFAULT_GRADE_SCHEDULES[gradeNum][dayNum]) {
-    scheduleText = DEFAULT_GRADE_SCHEDULES[gradeNum][dayNum];
-  } else {
-    scheduleText = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
   }
 
-  renderDiaryLessonCards(scheduleEl, scheduleText, dayNum, skipAnimation);
+  renderDiaryLessonCards(scheduleEl, scheduleText, dayNum, skipAnimation, false);
 
   const dayMenuObj = (dataObj.menuByDay && dataObj.menuByDay[dayNum]) ? dataObj.menuByDay[dayNum] : {};
 
@@ -1982,16 +1950,16 @@ function detectWeekdayIndexFromCell(cellString) {
 
 function detectGradeNumberFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
-  const match = s.match(/^([1-9]|10|11)\s*(класс|кл\.?|кл)$/i);
+  const match = s.match(/^([1-9])\s*(класс|кл\.?|кл)$/i);
   if (match && match[1]) return parseInt(match[1], 10);
   return 0;
 }
 
 function detectBellLessonNumberFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
-  const match = s.match(/^([1-7])\s*(урок|ур\.?)$/i);
-  if (match && match[1]) return parseInt(match[1], 10);
-  return 0;
+  const match = s.match(/^([0-8])\s*(урок|ур\.?)$/i);
+  if (match && match[1] !== undefined) return parseInt(match[1], 10);
+  return -1;
 }
 
 function detectPhotoRowFromCell(cellString) {
@@ -2066,8 +2034,8 @@ function initLiveSheetWidgetAndMenu() {
       const secondRow = rows.length > 1 ? rows[1] : [];
 
       const scheduleByGradeAndDay = {};
-      for (let g = 1; g <= 11; g++) {
-        scheduleByGradeAndDay[g] = { ...(DEFAULT_GRADE_SCHEDULES[g] || {}) };
+      for (let g = 1; g <= 9; g++) {
+        scheduleByGradeAndDay[g] = {};
       }
 
       const menuByDay = {};
@@ -2089,15 +2057,17 @@ function initLiveSheetWidgetAndMenu() {
           continue;
         }
         const bellLessonNum = detectBellLessonNumberFromCell(colA);
-        if (bellLessonNum >= 1 && bellLessonNum <= 7) {
+        if (bellLessonNum >= 0 && bellLessonNum <= 8) {
           const parsedBell = parseBellTimeRangeString(colB, bellLessonNum);
-          parsedBellTimes[bellLessonNum] = {
-            start: parsedBell.start,
-            end: parsedBell.end,
-            startMin: parsedBell.startMin,
-            endMin: parsedBell.endMin
-          };
-          if (parsedBell.isCustom) hasCustomBells = true;
+          if (parsedBell) {
+            parsedBellTimes[bellLessonNum] = {
+              start: parsedBell.start,
+              end: parsedBell.end,
+              startMin: parsedBell.startMin,
+              endMin: parsedBell.endMin
+            };
+            if (parsedBell.isCustom) hasCustomBells = true;
+          }
           continue;
         }
 
@@ -2117,9 +2087,9 @@ function initLiveSheetWidgetAndMenu() {
         }
 
         const gradeNum = detectGradeNumberFromCell(colA);
-        if (gradeNum >= 1 && gradeNum <= 11) {
+        if (gradeNum >= 1 && gradeNum <= 9) {
           for (let d = 1; d <= 5; d++) {
-            const cellLesson = sanitizeInput(r[d] || "", 600);
+            const cellLesson = sanitizeInput(r[d] || "", 1200);
             if (cellLesson) {
               scheduleByGradeAndDay[gradeNum][d] = cellLesson;
             }
@@ -2145,12 +2115,12 @@ function initLiveSheetWidgetAndMenu() {
               note: sanitizeInput(colD, 400)
             };
           } else if (currentMode === "schedule_grouped") {
-            const s14 = sanitizeInput(colB, 600);
-            const s57 = sanitizeInput(colC, 600);
-            const s89 = sanitizeInput(colD, 600);
+            const s14 = sanitizeInput(colB, 1200);
+            const s57 = sanitizeInput(colC, 1200);
+            const s89 = sanitizeInput(colD, 1200);
             if (s14) [1, 2, 3, 4].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s14; });
             if (s57) [5, 6, 7].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s57; });
-            if (s89) [8, 9, 10, 11].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
+            if (s89) [8, 9].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
           }
         }
       }
@@ -2206,11 +2176,7 @@ function initLiveSheetWidgetAndMenu() {
       } else {
         [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
         newsEl.textContent = "Информация обновляется";
-        renderDiaryLessonCards(
-          scheduleEl,
-          DEFAULT_GRADE_SCHEDULES[currentSelectedGrade][currentSelectedWeekday],
-          currentSelectedWeekday
-        );
+        renderDiaryLessonCards(scheduleEl, "", currentSelectedWeekday, false, true);
         importantEl.textContent = "Желаем хорошего дня!";
         if (statusEl) statusEl.textContent = "Автономный режим";
       }
