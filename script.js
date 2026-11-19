@@ -8,7 +8,7 @@ const YAMBIRNO_LON = 41.9708;
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 const A11Y_SETTINGS_KEY = "yambirno_a11y_settings_v1";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v12";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v13";
 const SHEET3_CACHE_KEY = "yambirno_publications_cache_v1";
 const FEEDBACK_COOLDOWN_KEY = "yambirno_feedback_last_sent";
 
@@ -159,6 +159,7 @@ let latestRawSheet3Rows = null;
 let lastRenderedPublicationsSignature = "";
 let currentSelectedWeekday = getDefaultSchoolWeekday();
 let currentSelectedGrade = getSavedGradeSelection();
+let currentSelectedMenuWeek = 1;
 let toastTimeoutId = null;
 let lastModalTriggerEl = null;
 
@@ -1170,6 +1171,7 @@ function initAccessibilityMode() {
     });
   }
 }
+
 function parseCSVPreserveRowIndex(csvText) {
   const rows = [];
   let currentRow = [];
@@ -1856,6 +1858,7 @@ function updateTeachersFromSheetRows(teachersDataArray) {
 function initWeekdayAndGradeSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill");
   const allGradePills = document.querySelectorAll(".grade-pill");
+  const allWeekPills = document.querySelectorAll(".week-pill");
 
   allDayPills.forEach((pill) => {
     pill.addEventListener("click", () => {
@@ -1882,6 +1885,17 @@ function initWeekdayAndGradeSwitchers() {
     });
   });
 
+  allWeekPills.forEach((wPill) => {
+    wPill.addEventListener("click", () => {
+      const weekNum = parseInt(wPill.getAttribute("data-week") || "1", 10);
+      currentSelectedMenuWeek = weekNum === 2 ? 2 : 1;
+      syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
+      if (latestParsedSheetData) {
+        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade, true);
+      }
+    });
+  });
+
   syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
 }
 
@@ -1898,18 +1912,36 @@ function syncDayAndGradeUI(dayNum, gradeNum) {
     gPill.classList.toggle("active", pGrade === gradeNum);
   });
 
+  const allWeekPills = document.querySelectorAll(".week-pill");
+  allWeekPills.forEach((wPill) => {
+    const pWeek = parseInt(wPill.getAttribute("data-week") || "1", 10);
+    wPill.classList.toggle("active", pWeek === currentSelectedMenuWeek);
+  });
+
   const jsToday = new Date().getDay();
   const dayName = DAY_NAMES_FULL[dayNum] || "Понедельник";
   const dayLabelText = jsToday === dayNum ? `${dayName}, ${gradeNum} класс` : `${dayName} (${gradeNum} класс)`;
 
+  const hasWeek2 = Boolean(
+    latestParsedSheetData &&
+    latestParsedSheetData.menuByWeekAndDay &&
+    latestParsedSheetData.menuByWeekAndDay[2] &&
+    Object.keys(latestParsedSheetData.menuByWeekAndDay[2]).length > 0
+  );
+
   const scheduleDayLabel = document.getElementById("schedule-day-label");
   const menuDayLabel = document.getElementById("menu-day-label");
   if (scheduleDayLabel) scheduleDayLabel.textContent = dayLabelText;
-  if (menuDayLabel) menuDayLabel.textContent = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
+  if (menuDayLabel) {
+    const baseMenuLabel = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
+    menuDayLabel.textContent = hasWeek2 ? `${baseMenuLabel} • ${currentSelectedMenuWeek} нед.` : baseMenuLabel;
+  }
 }
 
 function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1, skipAnimation = false) {
   const scheduleEl = document.getElementById("col-schedule");
+  const menuWeekPills = document.getElementById("menu-week-pills");
+  const menuBreakfastSlot = document.getElementById("menu-breakfast-slot");
   const menuBreakfastEl = document.getElementById("menu-breakfast");
   const menuLunchEl = document.getElementById("menu-lunch");
   const menuNoteEl = document.getElementById("menu-note");
@@ -1925,11 +1957,35 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1, skipAni
 
   renderDiaryLessonCards(scheduleEl, scheduleText, dayNum, skipAnimation, false);
 
-  const dayMenuObj = (dataObj.menuByDay && dataObj.menuByDay[dayNum]) ? dataObj.menuByDay[dayNum] : {};
+  const hasWeek2 = Boolean(
+    dataObj.menuByWeekAndDay &&
+    dataObj.menuByWeekAndDay[2] &&
+    Object.keys(dataObj.menuByWeekAndDay[2]).length > 0
+  );
 
-  if (menuBreakfastEl) {
-    menuBreakfastEl.textContent = dayMenuObj.breakfast || dataObj.menuBreakfast || DEFAULT_SANPIN_BREAKFAST;
+  if (menuWeekPills) {
+    menuWeekPills.classList.toggle("hidden", !hasWeek2);
   }
+  if (!hasWeek2 && currentSelectedMenuWeek !== 1) {
+    currentSelectedMenuWeek = 1;
+  }
+
+  const weekMap = (dataObj.menuByWeekAndDay && dataObj.menuByWeekAndDay[currentSelectedMenuWeek])
+    ? dataObj.menuByWeekAndDay[currentSelectedMenuWeek]
+    : (dataObj.menuByDay || {});
+  const dayMenuObj = weekMap[dayNum] || {};
+
+  const breakfastText = (dayMenuObj.breakfast || "").trim();
+  if (menuBreakfastSlot && menuBreakfastEl) {
+    if (breakfastText) {
+      menuBreakfastEl.textContent = breakfastText;
+      menuBreakfastSlot.classList.remove("hidden");
+    } else {
+      menuBreakfastEl.textContent = "";
+      menuBreakfastSlot.classList.add("hidden");
+    }
+  }
+
   if (menuLunchEl) {
     menuLunchEl.textContent = dayMenuObj.lunch || dataObj.menuLunch || DEFAULT_SANPIN_LUNCH;
   }
@@ -2031,9 +2087,7 @@ function initLiveSheetWidgetAndMenu() {
       const csvText = await response.text();
       const rows = parseCSVPreserveRowIndex(csvText);
 
-      const secondRow = rows.length > 1 ? rows[1] : [];
-
-const scheduleByGradeAndDay = {};
+      const scheduleByGradeAndDay = {};
       for (let g = 1; g <= 9; g++) {
         scheduleByGradeAndDay[g] = {};
       }
