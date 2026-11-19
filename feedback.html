@@ -5,17 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
   <meta name="description" content="Электронная приёмная Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»: отправьте благодарность учителю, предложение или вопрос руководителю школы в соответствии с 152-ФЗ.">
+  <link rel="canonical" href="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E">
 
-  <!-- [PERF]: Ранний прогрев соединения к шлюзу приёма обращений Google Apps Script -->
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 
-  <!-- [PRESERVED]: Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
+  <meta property="og:url" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html">
+  <meta property="og:site_name" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
   <meta property="og:title" content="Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
   <meta property="og:description" content="Поблагодарите педагога, предложите идею или задайте вопрос администрации Ямбирнского филиала МОУ «Лесно-Конобеевская СШ».">
-  <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Обратная+связь+•+Ямбирнский+филиал">
+  <meta property="og:image" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
 
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
@@ -24,13 +27,11 @@
 
   <a href="#feedback-main" class="skip-link">Перейти к форме обращения</a>
 
-  <!-- [PRESERVED]: ВСПЛЫВАЮЩАЯ КАПСУЛА УВЕДОМЛЕНИЙ (DYNAMIC ISLAND TOAST) -->
   <div id="dynamic-island-toast" class="dynamic-island" role="status" aria-live="polite" aria-hidden="true">
     <span class="island-dot" aria-hidden="true"></span>
     <span id="dynamic-island-text" class="island-text">Готово</span>
   </div>
 
-  <!-- [PRESERVED]: 1. ДВУХУРОВНЕВАЯ ШАПКА С ЗАКРЕПЛЕННОЙ КНОПКОЙ СЛАБОВИДЯЩИХ -->
   <header class="site-header">
     <div class="top-utility-bar" role="region" aria-label="Панель текущего времени и специальных возможностей">
       <div class="container utility-inner">
@@ -43,12 +44,13 @@
         </div>
 
         <div class="utility-a11y-slot">
-          <button 
-            type="button" 
-            id="a11y-toggle" 
-            class="btn-a11y" 
-            aria-label="Версия для слабовидящих" 
+          <button
+            type="button"
+            id="a11y-toggle"
+            class="btn-a11y"
+            aria-label="Версия для слабовидящих"
             aria-pressed="false"
+            aria-controls="a11y-panel"
           >
             <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -60,14 +62,41 @@
       </div>
     </div>
 
+    <div id="a11y-panel" class="a11y-panel hidden" role="region" aria-label="Настройки версии для слабовидящих" hidden>
+      <div class="container a11y-panel-inner">
+        <div class="a11y-group" role="group" aria-label="Размер шрифта">
+          <span class="a11y-group-label">Шрифт:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="normal" aria-pressed="true">А</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="large" aria-pressed="false">А+</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="xlarge" aria-pressed="false">А++</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Цветовая схема">
+          <span class="a11y-group-label">Цвета:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="yellow" aria-pressed="true">Ж/Ч</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="white" aria-pressed="false">Ч/Б</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="black" aria-pressed="false">Б/Ч</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Интервал между буквами">
+          <span class="a11y-group-label">Интервал:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="normal" aria-pressed="true">1x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="medium" aria-pressed="false">1.5x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="large" aria-pressed="false">2x</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Изображения">
+          <span class="a11y-group-label">Фото:</span>
+          <button type="button" class="a11y-opt-btn" id="a11y-images-toggle" aria-pressed="false">Скрыты</button>
+        </div>
+        <button type="button" class="a11y-opt-btn a11y-reset-btn" id="a11y-reset-btn">Сбросить</button>
+      </div>
+    </div>
+
     <div class="container header-main-inner">
       <a href="index.html" class="brand" aria-label="Вернуться на главную страницу школы">
-        <!-- [PERF]: fetchpriority="high" и decoding="async" для мгновенной отрисовки логотипа без сдвига макета -->
-        <img 
-          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" 
-          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ" 
-          class="logo-img" 
-          width="58" 
+        <img
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
+          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
+          class="logo-img"
+          width="58"
           height="58"
           fetchpriority="high"
           decoding="async"
@@ -87,11 +116,9 @@
 
   <main id="feedback-main" class="feedback-main">
     <div class="container feedback-container">
-      
-      <!-- Единственный заголовок H1 на странице -->
+
       <h1 class="page-main-title">Электронное обращение в школу</h1>
 
-      <!-- Карточка адресата (Электронный талон приёмной) -->
       <div class="recipient-ticket surface-card">
         <div class="director-avatar-badge" aria-hidden="true">ЕА</div>
         <div class="recipient-ticket-info">
@@ -101,7 +128,6 @@
         </div>
       </div>
 
-      <!-- [PRESERVED]: Индикатор шагов с композитной линией морфинга (transform: scaleX) -->
       <div class="steps-indicator" aria-label="Этапы отправки обращения">
         <div class="step-pill active" id="step-indicator-1">Этап 1. Согласие 152-ФЗ</div>
         <div class="steps-progress-track" aria-hidden="true">
@@ -110,7 +136,6 @@
         <div class="step-pill" id="step-indicator-2">Этап 2. Ваше сообщение</div>
       </div>
 
-      <!-- [PRESERVED]: ЭТАП 1: СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ (152-ФЗ) -->
       <section id="consent-step" class="feedback-card surface-card step-transition-card" aria-labelledby="consent-title">
         <div class="law-badge">Федеральный закон № 152-ФЗ</div>
         <h2 id="consent-title" class="feedback-title">Согласие на обработку персональных данных</h2>
@@ -124,7 +149,6 @@
         </div>
       </section>
 
-      <!-- [PRESERVED]: ЭТАП 2: СКРЫТЫЙ И ЗАБЛОКИРОВАННЫЙ БЛОК ФОРМЫ С ДИНАМИЧЕСКИМ АКЦЕНТОМ ТЕМЫ -->
       <section id="form-step" class="feedback-card surface-card step-transition-card topic-theme-question hidden" aria-labelledby="form-title" aria-hidden="true" hidden>
         <h2 id="form-title" class="feedback-title">Напишите ваше обращение, идею или благодарность</h2>
         <p class="feedback-subtitle">
@@ -133,8 +157,12 @@
 
         <form id="feedback-form" novalidate autocomplete="on">
           <fieldset id="form-fieldset" class="form-fieldset" disabled>
-            
-            <!-- [PRESERVED]: Быстрый выбор повода обращения с изменением цветовой темы карточки -->
+
+            <div class="hp-field" aria-hidden="true">
+              <label for="website-hp">Оставьте это поле пустым</label>
+              <input type="text" id="website-hp" name="website_hp" tabindex="-1" autocomplete="off">
+            </div>
+
             <div class="form-group">
               <span class="form-label">Повод обращения:</span>
               <div class="topic-selector" role="group" aria-label="Выберите повод обращения">
@@ -146,12 +174,12 @@
 
             <div class="form-group">
               <label for="fio-input" class="form-label">Ваши Фамилия и Имя (Отчество — при наличии) <span class="req">*</span></label>
-              <input 
-                type="text" 
-                id="fio-input" 
-                name="fio" 
-                class="form-control" 
-                placeholder="Например: Иванова Мария Ивановна" 
+              <input
+                type="text"
+                id="fio-input"
+                name="fio"
+                class="form-control"
+                placeholder="Например: Иванова Мария Ивановна"
                 maxlength="120"
                 autocomplete="name"
                 required
@@ -161,12 +189,12 @@
 
             <div class="form-group">
               <label for="contact-input" class="form-label">Контакт для обратной связи (телефон или Email) <span class="req">*</span></label>
-              <input 
-                type="text" 
-                id="contact-input" 
-                name="contact" 
-                class="form-control" 
-                placeholder="+7 (900) 000-00-00 или example@yandex.ru" 
+              <input
+                type="text"
+                id="contact-input"
+                name="contact"
+                class="form-control"
+                placeholder="+7 (900) 000-00-00 или example@yandex.ru"
                 maxlength="100"
                 required
               >
@@ -178,12 +206,12 @@
                 <label for="comment-input" class="form-label">Текст сообщения <span class="req">*</span></label>
                 <span id="comment-char-counter" class="char-counter">0 / 2000</span>
               </div>
-              <textarea 
-                id="comment-input" 
-                name="comment" 
-                rows="5" 
-                class="form-control" 
-                placeholder="Напишите здесь ваш вопрос, слова благодарности педагогу или предложение..." 
+              <textarea
+                id="comment-input"
+                name="comment"
+                rows="5"
+                class="form-control"
+                placeholder="Напишите здесь ваш вопрос, слова благодарности педагогу или предложение..."
                 maxlength="2000"
                 required
               ></textarea>
@@ -203,7 +231,6 @@
           <div id="form-response" class="form-response hidden" role="status" aria-live="polite"></div>
         </form>
 
-        <!-- [PRESERVED]: ЭЛЕКТРОННАЯ КВИТАНЦИЯ-ПОДТВЕРЖДЕНИЕ (ПОЯВЛЯЕТСЯ ПОСЛЕ УСПЕШНОЙ ОТПРАВКИ) -->
         <div id="feedback-receipt" class="receipt-box hidden" aria-live="polite">
           <div class="receipt-header">
             <span class="receipt-check-icon" aria-hidden="true">✓</span>
