@@ -2033,18 +2033,28 @@ function initLiveSheetWidgetAndMenu() {
 
       const secondRow = rows.length > 1 ? rows[1] : [];
 
-      const scheduleByGradeAndDay = {};
+const scheduleByGradeAndDay = {};
       for (let g = 1; g <= 9; g++) {
         scheduleByGradeAndDay[g] = {};
       }
 
       const menuByDay = {};
+      const menuByWeekAndDay = { 1: {}, 2: {} };
       const galleryList = [];
+      const teachersList = [];
       const parsedBellTimes = cloneDefaultBells();
       let hasCustomBells = false;
-      let currentMode = "schedule_grouped";
 
-      for (let rIdx = 2; rIdx < rows.length; rIdx++) {
+      let col1News = "";
+      let col2Schedule = "";
+      let col3Important = "";
+      let col4Status = "";
+
+      let currentMode = "";
+      let boardCols = { news: 0, schedule: -1, important: 1, status: 2 };
+      let boardReadDone = false;
+
+      for (let rIdx = 0; rIdx < rows.length; rIdx++) {
         const r = rows[rIdx] || [];
         const colA = (r[0] || "").trim();
         const colALower = colA.toLowerCase();
@@ -2052,15 +2062,90 @@ function initLiveSheetWidgetAndMenu() {
         const colC = (r[2] || "").trim();
         const colD = (r[3] || "").trim();
 
-        if (colALower.includes("расписание звонков") || colALower === "звонки") {
+        if (!r.some((cell) => (cell || "").trim())) continue;
+        if (colA.startsWith("ℹ️") || colALower.startsWith("панель управления сайтом")) continue;
+
+        if (colALower.includes("оперативное табло")) {
+          currentMode = "board";
+          continue;
+        }
+        if (colALower === "новости дня") {
+          currentMode = "board";
+          if (colB.toLowerCase().includes("расписан")) {
+            boardCols = { news: 0, schedule: 1, important: 2, status: 3 };
+          } else {
+            boardCols = { news: 0, schedule: -1, important: 1, status: 2 };
+          }
+          continue;
+        }
+        if (colALower.includes("расписание уроков") || colALower === "класс") {
+          currentMode = "schedule";
+          continue;
+        }
+        if (colALower.includes("расписание звонков") || colALower === "звонки" || colB.toLowerCase().includes("расписание звонков")) {
           currentMode = "bells";
           continue;
         }
-        const bellLessonNum = detectBellLessonNumberFromCell(colA);
-        if (bellLessonNum >= 0 && bellLessonNum <= 8) {
-          const parsedBell = parseBellTimeRangeString(colB, bellLessonNum);
+        if (
+          colALower.includes("меню питания") ||
+          (colALower.includes("день") && (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")))
+        ) {
+          currentMode = (colALower.includes("2") || colALower.includes("вторая")) ? "menu_w2" : "menu_w1";
+          continue;
+        }
+        if (colALower.includes("фотогалере")) {
+          currentMode = "gallery";
+          continue;
+        }
+        if (colALower.includes("педагогический коллектив")) {
+          currentMode = "teachers";
+          continue;
+        }
+        if (colALower === "урок" || colALower.startsWith("фото (ссылка")) {
+          continue;
+        }
+
+        if (currentMode === "board" && !boardReadDone) {
+          col1News = sanitizeInput(r[boardCols.news] || "", 600);
+          col2Schedule = boardCols.schedule >= 0 ? sanitizeInput(r[boardCols.schedule] || "", 600) : "";
+          col3Important = sanitizeInput(r[boardCols.important] || "", 600);
+          col4Status = sanitizeInput(r[boardCols.status] || "", 120);
+          boardReadDone = true;
+          continue;
+        }
+
+        if (currentMode === "teachers") {
+          const fio = sanitizeInput(r[2] || "", 120);
+          if (!fio || fio.toLowerCase().includes("фио")) continue;
+          teachersList.push({
+            photo: (r[0] || "").trim(),
+            badge: sanitizeInput(r[1] || "", 100),
+            fio,
+            role: sanitizeInput(r[3] || "", 160),
+            desc: sanitizeInput(r[4] || "", 450)
+          });
+          continue;
+        }
+
+        const bellNumA = detectBellLessonNumberFromCell(colA);
+        const bellNumB = bellNumA >= 0 ? -1 : detectBellLessonNumberFromCell(colB);
+        if (bellNumA >= 0 && bellNumA <= 8) {
+          const parsedBell = parseBellTimeRangeString(colB, bellNumA);
           if (parsedBell) {
-            parsedBellTimes[bellLessonNum] = {
+            parsedBellTimes[bellNumA] = {
+              start: parsedBell.start,
+              end: parsedBell.end,
+              startMin: parsedBell.startMin,
+              endMin: parsedBell.endMin
+            };
+            if (parsedBell.isCustom) hasCustomBells = true;
+          }
+          continue;
+        }
+        if (currentMode === "bells" && bellNumB >= 0 && bellNumB <= 8) {
+          const parsedBell = parseBellTimeRangeString(colC, bellNumB);
+          if (parsedBell) {
+            parsedBellTimes[bellNumB] = {
               start: parsedBell.start,
               end: parsedBell.end,
               startMin: parsedBell.startMin,
@@ -2071,10 +2156,6 @@ function initLiveSheetWidgetAndMenu() {
           continue;
         }
 
-        if (colALower.includes("фотогалере")) {
-          currentMode = "gallery";
-          continue;
-        }
         if (currentMode === "gallery" || detectPhotoRowFromCell(colA)) {
           if (detectPhotoRowFromCell(colA)) {
             galleryList.push({
@@ -2097,63 +2178,48 @@ function initLiveSheetWidgetAndMenu() {
           continue;
         }
 
-        if (colALower.includes("день")) {
-          if (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")) {
-            currentMode = "menu";
-          } else {
-            currentMode = "schedule_grouped";
-          }
-          continue;
-        }
-
         const dayIndex = detectWeekdayIndexFromCell(colA);
-        if (dayIndex >= 1 && dayIndex <= 5) {
-          if (currentMode === "menu") {
-            menuByDay[dayIndex] = {
-              breakfast: sanitizeInput(colB, 400),
-              lunch: sanitizeInput(colC, 400),
-              note: sanitizeInput(colD, 400)
-            };
-          } else if (currentMode === "schedule_grouped") {
-            const s14 = sanitizeInput(colB, 1200);
-            const s57 = sanitizeInput(colC, 1200);
-            const s89 = sanitizeInput(colD, 1200);
-            if (s14) [1, 2, 3, 4].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s14; });
-            if (s57) [5, 6, 7].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s57; });
-            if (s89) [8, 9].forEach((g) => { scheduleByGradeAndDay[g][dayIndex] = s89; });
-          }
+        if (dayIndex >= 1 && dayIndex <= 5 && (currentMode === "menu_w1" || currentMode === "menu_w2")) {
+          const targetWeek = currentMode === "menu_w2" ? 2 : 1;
+          const entry = {
+            breakfast: sanitizeInput(colB, 600),
+            lunch: sanitizeInput(colC, 600),
+            note: sanitizeInput(colD, 600)
+          };
+          menuByWeekAndDay[targetWeek][dayIndex] = entry;
+          if (targetWeek === 1) menuByDay[dayIndex] = entry;
         }
       }
 
-      const teachersList = [];
-      for (let rIdx = 1; rIdx < rows.length; rIdx++) {
-        const r = rows[rIdx] || [];
-        const colA = (r[0] || "").trim().toLowerCase();
-        const isScheduleMatrixRow = colA === "класс" || detectGradeNumberFromCell(colA) > 0;
-
-        const rawPhoto = isScheduleMatrixRow ? "" : (r[5] || "").trim();
-        const badge = sanitizeInput(r[6] || "", 100);
-        const fio = sanitizeInput(r[7] || "", 120);
-        const role = sanitizeInput(r[8] || "", 160);
-        const desc = sanitizeInput(r[9] || "", 450);
-
-        if (!fio) continue;
-        if (fio.toLowerCase().includes("фио учителя") || fio.toLowerCase() === "фио") continue;
-
-        teachersList.push({ photo: rawPhoto, badge, fio, role, desc });
+      if (teachersList.length === 0) {
+        for (let rIdx = 1; rIdx < rows.length; rIdx++) {
+          const r = rows[rIdx] || [];
+          const colA = (r[0] || "").trim().toLowerCase();
+          const isScheduleMatrixRow = colA === "класс" || detectGradeNumberFromCell(colA) > 0;
+          const fio = sanitizeInput(r[7] || "", 120);
+          if (!fio || fio.toLowerCase().includes("фио")) continue;
+          teachersList.push({
+            photo: isScheduleMatrixRow ? "" : (r[5] || "").trim(),
+            badge: sanitizeInput(r[6] || "", 100),
+            fio,
+            role: sanitizeInput(r[8] || "", 160),
+            desc: sanitizeInput(r[9] || "", 450)
+          });
+        }
       }
 
       const nowLabel = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 
       const parsedData = {
-        col1News: sanitizeInput(secondRow[0] || "", 600),
-        col2Schedule: sanitizeInput(secondRow[1] || "", 600),
-        col3Important: sanitizeInput(secondRow[2] || "", 600),
-        col4Status: sanitizeInput(secondRow[3] || "", 120),
+        col1News,
+        col2Schedule,
+        col3Important,
+        col4Status,
         bellTimes: parsedBellTimes,
         hasCustomBells,
         scheduleByGradeAndDay,
         menuByDay,
+        menuByWeekAndDay,
         teachers: teachersList,
         gallery: galleryList,
         timeLabel: nowLabel
