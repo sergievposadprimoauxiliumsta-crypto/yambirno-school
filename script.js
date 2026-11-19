@@ -6,9 +6,25 @@ const YAMBIRNO_LAT = 54.1286;
 const YAMBIRNO_LON = 41.9708;
 
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
+const A11Y_SETTINGS_KEY = "yambirno_a11y_settings_v1";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
 const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v11";
 const SHEET3_CACHE_KEY = "yambirno_publications_cache_v1";
+const FEEDBACK_COOLDOWN_KEY = "yambirno_feedback_last_sent";
+
+const ALLOWED_DOC_HOSTS = [
+  "drive.google.com",
+  "docs.google.com",
+  "disk.yandex.ru",
+  "disk.yandex.com",
+  "gosuslugi.ru",
+  "edu.ru",
+  "ryazangov.ru",
+  "vk.ru",
+  "vk.com",
+  "uchi.ru",
+  "sergievposadprimoauxiliumsta-crypto.github.io"
+];
 
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
@@ -205,7 +221,7 @@ const DEFAULT_GRADE_SCHEDULES = {
   8: {
     1: "1. Разговоры о важном 2. Алгебра 3. Русский язык 4. Химия 5. История 6. Биология",
     2: "1. Геометрия 2. Литература 3. Английский язык 4. Физика 5. География 6. Физкультура",
-    3: "1. Алгебра 2. Русский язык 4. Химия 4. Обществознание 5. Информатика 6. ОБЗР",
+    3: "1. Алгебра 2. Русский язык 3. Химия 4. Обществознание 5. Информатика 6. ОБЗР",
     4: "1. Геометрия 2. Русский язык 3. История 4. Физика 5. Английский язык 6. Биология",
     5: "1. Алгебра 2. Литература 3. География 4. Английский язык 5. Профориентация 6. Физкультура"
   },
@@ -235,9 +251,23 @@ const DEFAULT_GRADE_SCHEDULES = {
 let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
 let latestRawSheet3Rows = null;
+let lastRenderedPublicationsSignature = "";
 let currentSelectedWeekday = getDefaultSchoolWeekday();
 let currentSelectedGrade = getSavedGradeSelection();
 let toastTimeoutId = null;
+let lastModalTriggerEl = null;
+
+function isReducedMotionPreferred() {
+  return Boolean(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
+
+function pluralRu(n, one, few, many) {
+  const mod10 = Math.abs(n) % 10;
+  const mod100 = Math.abs(n) % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
+}
 
 function getDefaultSchoolWeekday() {
   const jsDay = new Date().getDay();
@@ -252,13 +282,21 @@ function getSavedGradeSelection() {
   return 1;
 }
 
+function escapeXml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
     .replace(/<[^>]*>?/gm, "")
     .replace(/javascript:|data:|vbscript:/gi, "")
-    .replace(/[<>"'`\\]/g, "")
-    .replace(/^[=+\-@]+/, "")
     .trim()
     .slice(0, maxLength);
 }
@@ -266,10 +304,60 @@ function sanitizeInput(rawString, maxLength = 1000) {
 function sanitizeDocumentUrl(rawUrl) {
   if (typeof rawUrl !== "string") return "";
   const cleaned = rawUrl.trim();
-  if (/^https?:\/\/[^\s"'<>]+$/i.test(cleaned)) {
-    return cleaned;
+  if (!/^https?:\/\/[^\s"'<>]+$/i.test(cleaned)) return "";
+
+  try {
+    const parsed = new URL(cleaned);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return "";
+    const host = parsed.hostname.toLowerCase();
+    const isAllowed = ALLOWED_DOC_HOSTS.some(
+      (allowed) => host === allowed || host.endsWith(`.${allowed}`)
+    );
+    return isAllowed ? parsed.href : "";
+  } catch (_) {
+    return "";
   }
-  return "";
+}
+
+function getFocusableElements(container) {
+  if (!container) return [];
+  return Array.from(
+    container.querySelectorAll(
+      'a[href]:not(.hidden):not([hidden]), button:not([disabled]):not(.hidden):not([hidden]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((el) => el.offsetParent !== null);
+}
+
+function handleModalFocusTrap(e, modalEl) {
+  if (e.key !== "Tab" || modalEl.classList.contains("hidden")) return;
+  const focusables = getFocusableElements(modalEl);
+  if (focusables.length === 0) return;
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+
+  if (e.shiftKey) {
+    if (document.activeElement === first || !modalEl.contains(document.activeElement)) {
+      e.preventDefault();
+      last.focus();
+    }
+  } else if (document.activeElement === last || !modalEl.contains(document.activeElement)) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+function lockPageScrollForModal() {
+  lastModalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  document.body.style.overflow = "hidden";
+}
+
+function unlockPageScrollAfterModal() {
+  document.body.style.overflow = "";
+  if (lastModalTriggerEl && document.contains(lastModalTriggerEl)) {
+    lastModalTriggerEl.focus();
+  }
+  lastModalTriggerEl = null;
 }
 
 function showDynamicIslandToast(message) {
@@ -290,13 +378,13 @@ function showDynamicIslandToast(message) {
 
 function buildInitialsSvgDataUri(initials, index = 0) {
   const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
-  const safeChars = sanitizeInput(initials, 3).toUpperCase() || "УЧ";
+  const safeChars = escapeXml(sanitizeInput(initials, 3).toUpperCase() || "УЧ");
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><circle cx='60' cy='60' r='60' fill='${palette.bg}'/><text x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='${palette.fg}' text-anchor='middle'>${safeChars}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
 function buildPublicationFallbackSvg(titleText) {
-  const safeTitle = sanitizeInput(titleText || "Материал школы", 40);
+  const safeTitle = escapeXml(sanitizeInput(titleText || "Материал школы", 40));
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 375'><defs><linearGradient id='pg' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#1e3a8a'/><stop offset='100%' stop-color='#2563eb'/></linearGradient></defs><rect width='600' height='375' fill='url(#pg)'/><circle cx='300' cy='155' r='50' fill='#ffffff' opacity='0.15'/><text x='300' y='168' font-family='sans-serif' font-size='38' text-anchor='middle' fill='#fbbf24'>📢</text><text x='300' y='245' font-family='sans-serif' font-size='20' font-weight='bold' fill='#ffffff' text-anchor='middle'>${safeTitle}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
@@ -441,6 +529,10 @@ function initChalkboardEngine() {
     });
 
   const typeChalkString = async (targetEl, text, token, baseSpeed = 58) => {
+    if (isReducedMotionPreferred()) {
+      targetEl.textContent = text;
+      return token === runToken;
+    }
     targetEl.textContent = "";
     for (let i = 0; i < text.length; i++) {
       if (token !== runToken) return false;
@@ -457,7 +549,34 @@ function initChalkboardEngine() {
     return true;
   };
 
+  const renderStaticReducedItem = (item) => {
+    contentWrap.classList.remove("erasing");
+    wetWipeEl.classList.remove("wiping");
+    if (cursorEl) cursorEl.classList.add("hidden");
+    if (badgeEl) badgeEl.textContent = item.badge;
+    if (topicEl) topicEl.textContent = item.topic;
+    if (counterEl) counterEl.textContent = `Ступень ${item.grade} из 11`;
+    problemEl.textContent = item.problem;
+
+    if (isQuizMode) {
+      stepsEl.textContent = "";
+      answerEl.textContent = "";
+      if (statusEl) statusEl.textContent = "Проверьте себя и нажмите кнопку ниже";
+      revealBtn.classList.remove("hidden");
+    } else {
+      stepsEl.textContent = item.steps;
+      answerEl.textContent = item.answer;
+      if (statusEl) statusEl.textContent = "✓ Решено верно!";
+      revealBtn.classList.add("hidden");
+    }
+  };
+
   const runStageLoop = async (token) => {
+    if (isReducedMotionPreferred()) {
+      renderStaticReducedItem(CHALKBOARD_CURRICULUM[currentIdx]);
+      return;
+    }
+
     while (token === runToken) {
       const item = CHALKBOARD_CURRICULUM[currentIdx];
 
@@ -539,6 +658,10 @@ function initChalkboardEngine() {
           ? "Включён режим самопроверки на школьной доске"
           : "Включён автоматический показ решений на доске"
       );
+      if (isReducedMotionPreferred()) {
+        renderStaticReducedItem(CHALKBOARD_CURRICULUM[currentIdx]);
+        return;
+      }
       if (!isQuizMode && revealResolver) {
         revealResolver(true);
       }
@@ -547,6 +670,14 @@ function initChalkboardEngine() {
 
   if (revealBtn) {
     revealBtn.addEventListener("click", () => {
+      if (isReducedMotionPreferred()) {
+        const item = CHALKBOARD_CURRICULUM[currentIdx];
+        stepsEl.textContent = item.steps;
+        answerEl.textContent = item.answer;
+        revealBtn.classList.add("hidden");
+        if (statusEl) statusEl.textContent = "✓ Решено верно!";
+        return;
+      }
       if (revealResolver) revealResolver(true);
     });
   }
@@ -629,7 +760,7 @@ function parseRawScheduleIntoLessons(rawText) {
   });
 }
 
-function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
+function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, skipAnimation = false) {
   if (!containerEl) return;
   containerEl.innerHTML = "";
 
@@ -652,7 +783,13 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum) {
     const row = document.createElement("div");
     const subjMeta = classifyLessonSubject(lessonObj.title);
     row.className = `diary-lesson-row ${subjMeta.cls}`;
-    row.style.setProperty("--step", String(idx));
+    if (skipAnimation) {
+      row.style.animation = "none";
+      row.style.opacity = "1";
+      row.style.transform = "none";
+    } else {
+      row.style.setProperty("--step", String(idx));
+    }
 
     const left = document.createElement("div");
     left.className = "diary-lesson-left";
@@ -762,10 +899,12 @@ function initLiveDateTimeClockAndAmbient() {
   const statusEl = document.getElementById("school-day-status");
   const widgetTodayPill = document.getElementById("widget-today-pill");
   const heroAmbient = document.getElementById("hero-ambient");
+  let lastScheduleMinute = -1;
 
   const updateClock = () => {
     const now = new Date();
     const hour = now.getHours();
+    const currentMinuteKey = now.getDay() * 1440 + hour * 60 + now.getMinutes();
 
     if (heroAmbient) {
       heroAmbient.classList.toggle("ambient-morning", hour >= 6 && hour < 11);
@@ -808,6 +947,14 @@ function initLiveDateTimeClockAndAmbient() {
         }
       }
     }
+
+    if (currentMinuteKey !== lastScheduleMinute) {
+      const shouldRefreshSchedule = lastScheduleMinute !== -1 && latestParsedSheetData && now.getDay() === currentSelectedWeekday;
+      lastScheduleMinute = currentMinuteKey;
+      if (shouldRefreshSchedule) {
+        renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade, true);
+      }
+    }
   };
 
   updateClock();
@@ -823,7 +970,7 @@ function decodeWmoWeather(code) {
   if (code >= 61 && code <= 67) return { icon: "🌧️", text: "Дождь", rain: true, snow: false, sky: "rain" };
   if (code >= 71 && code <= 77) return { icon: "❄️", text: "Снег", rain: false, snow: true, sky: "snow" };
   if (code >= 80 && code <= 82) return { icon: "🌧️", text: "Ливень", rain: true, snow: false, sky: "rain" };
-  if (code === 85 || code === 86) return { icon: "🌨️", text: "Снегопад", rain: false, snow: true, sky: "snow" };
+  if (code >= 85 || code === 86) return { icon: "🌨️", text: "Снегопад", rain: false, snow: true, sky: "snow" };
   if (code >= 95) return { icon: "⛈️", text: "Гроза", rain: true, snow: false, sky: "rain" };
   return { icon: "🌤️", text: "Без осадков", rain: false, snow: false, sky: "clear" };
 }
@@ -908,12 +1055,81 @@ async function initYambirnoWeatherWidget() {
 
 function initAccessibilityMode() {
   const toggleBtn = document.getElementById("a11y-toggle");
+  const panel = document.getElementById("a11y-panel");
   if (!toggleBtn) return;
+
+  const sizeBtns = panel ? panel.querySelectorAll("[data-a11y-size]") : [];
+  const themeBtns = panel ? panel.querySelectorAll("[data-a11y-theme]") : [];
+  const spacingBtns = panel ? panel.querySelectorAll("[data-a11y-spacing]") : [];
+  const imagesToggleBtn = document.getElementById("a11y-images-toggle");
+  const resetBtn = document.getElementById("a11y-reset-btn");
+
+  const defaultSettings = {
+    size: "normal",
+    theme: "yellow",
+    spacing: "normal",
+    showImages: false
+  };
+
+  let settings = { ...defaultSettings };
+  try {
+    const rawSettings = localStorage.getItem(A11Y_SETTINGS_KEY);
+    if (rawSettings) {
+      const parsed = JSON.parse(rawSettings);
+      settings = { ...defaultSettings, ...parsed };
+    }
+  } catch (_) {}
+
+  const saveSettings = () => {
+    try {
+      localStorage.setItem(A11Y_SETTINGS_KEY, JSON.stringify(settings));
+    } catch (_) {}
+  };
+
+  const applySettings = () => {
+    document.body.classList.remove(
+      "a11y-size-large",
+      "a11y-size-xlarge",
+      "a11y-theme-white",
+      "a11y-theme-black",
+      "a11y-spacing-medium",
+      "a11y-spacing-large",
+      "a11y-show-images"
+    );
+
+    if (settings.size === "large") document.body.classList.add("a11y-size-large");
+    if (settings.size === "xlarge") document.body.classList.add("a11y-size-xlarge");
+    if (settings.theme === "white") document.body.classList.add("a11y-theme-white");
+    if (settings.theme === "black") document.body.classList.add("a11y-theme-black");
+    if (settings.spacing === "medium") document.body.classList.add("a11y-spacing-medium");
+    if (settings.spacing === "large") document.body.classList.add("a11y-spacing-large");
+    if (settings.showImages) document.body.classList.add("a11y-show-images");
+
+    sizeBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-size") === settings.size)));
+    themeBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-theme") === settings.theme)));
+    spacingBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-spacing") === settings.spacing)));
+
+    if (imagesToggleBtn) {
+      imagesToggleBtn.setAttribute("aria-pressed", String(settings.showImages));
+      imagesToggleBtn.textContent = settings.showImages ? "Показаны" : "Скрыты";
+    }
+  };
 
   const applyMode = (isEnabled, announce = false) => {
     document.body.classList.toggle("visually-impaired", isEnabled);
     toggleBtn.setAttribute("aria-pressed", String(isEnabled));
     toggleBtn.setAttribute("aria-label", "Версия для слабовидящих");
+
+    if (panel) {
+      panel.classList.toggle("hidden", !isEnabled);
+      if (isEnabled) panel.removeAttribute("hidden");
+      else panel.setAttribute("hidden", "");
+    }
+
+    if (isEnabled) {
+      applySettings();
+      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+    }
 
     const textSpan = toggleBtn.querySelector(".a11y-btn-text");
     if (textSpan) {
@@ -929,6 +1145,7 @@ function initAccessibilityMode() {
     savedState = localStorage.getItem(A11Y_STORAGE_KEY) === "true";
   } catch (_) {}
 
+  applySettings();
   applyMode(savedState, false);
 
   toggleBtn.addEventListener("click", () => {
@@ -938,7 +1155,49 @@ function initAccessibilityMode() {
       localStorage.setItem(A11Y_STORAGE_KEY, String(nextState));
     } catch (_) {}
   });
+
+  sizeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      settings.size = btn.getAttribute("data-a11y-size") || "normal";
+      applySettings();
+      saveSettings();
+    });
+  });
+
+  themeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      settings.theme = btn.getAttribute("data-a11y-theme") || "yellow";
+      applySettings();
+      saveSettings();
+    });
+  });
+
+  spacingBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      settings.spacing = btn.getAttribute("data-a11y-spacing") || "normal";
+      applySettings();
+      saveSettings();
+    });
+  });
+
+  if (imagesToggleBtn) {
+    imagesToggleBtn.addEventListener("click", () => {
+      settings.showImages = !settings.showImages;
+      applySettings();
+      saveSettings();
+    });
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      settings = { ...defaultSettings };
+      applySettings();
+      saveSettings();
+      showDynamicIslandToast("Настройки версии для слабовидящих сброшены");
+    });
+  }
 }
+
 function parseCSVPreserveRowIndex(csvText) {
   const rows = [];
   let currentRow = [];
@@ -1049,6 +1308,7 @@ function openPublicationModal(pubItem) {
   const galleryEl = document.getElementById("pub-modal-gallery");
   const bodyEl = document.getElementById("pub-modal-body");
   const docLinkEl = document.getElementById("pub-modal-doc-link");
+  const closeBtn = document.getElementById("pub-modal-close");
 
   if (!modal || !titleEl || !bodyEl) return;
 
@@ -1067,6 +1327,8 @@ function openPublicationModal(pubItem) {
 
         const img = document.createElement("img");
         img.setAttribute("referrerpolicy", "no-referrer");
+        img.loading = "lazy";
+        img.decoding = "async";
         img.alt = `${pubItem.title || "Фото материала"} — изображение ${idx + 1}`;
 
         const resolved = resolveImageLinkSource(rawUrl, fallbackSvg);
@@ -1101,8 +1363,10 @@ function openPublicationModal(pubItem) {
     }
   }
 
+  lockPageScrollForModal();
   modal.classList.remove("hidden");
   modal.removeAttribute("hidden");
+  if (closeBtn) closeBtn.focus();
 }
 
 function initPublicationModalEvents() {
@@ -1115,8 +1379,10 @@ function initPublicationModalEvents() {
   if (!modal) return;
 
   const closeModal = () => {
+    if (modal.classList.contains("hidden")) return;
     modal.classList.add("hidden");
     modal.setAttribute("hidden", "");
+    unlockPageScrollAfterModal();
   };
 
   if (closeBtn) closeBtn.addEventListener("click", closeModal);
@@ -1126,9 +1392,12 @@ function initPublicationModalEvents() {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (!modal.classList.contains("hidden") && e.key === "Escape") {
+    if (modal.classList.contains("hidden")) return;
+    if (e.key === "Escape") {
       closeModal();
+      return;
     }
+    handleModalFocusTrap(e, modal);
   });
 
   if (copyBtn) {
@@ -1145,7 +1414,7 @@ function initPublicationModalEvents() {
   }
 }
 
-function renderSheet3Publications(rowsArray) {
+function renderSheet3Publications(rowsArray, forceRender = false) {
   const sectionEl = document.getElementById("school-publications");
   const gridEl = document.getElementById("publications-grid");
   const navLinkEl = document.getElementById("nav-publications-link");
@@ -1153,9 +1422,9 @@ function renderSheet3Publications(rowsArray) {
 
   if (!sectionEl || !gridEl) return;
 
-  gridEl.innerHTML = "";
-
   if (!Array.isArray(rowsArray) || rowsArray.length <= 1) {
+    lastRenderedPublicationsSignature = "[]";
+    gridEl.innerHTML = "";
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
     if (navLinkEl) navLinkEl.classList.add("hidden");
@@ -1190,6 +1459,13 @@ function renderSheet3Publications(rowsArray) {
     });
   }
 
+  const nextSignature = JSON.stringify(activePublications);
+  if (!forceRender && nextSignature === lastRenderedPublicationsSignature) {
+    return;
+  }
+  lastRenderedPublicationsSignature = nextSignature;
+  gridEl.innerHTML = "";
+
   if (activePublications.length === 0) {
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
@@ -1218,6 +1494,8 @@ function renderSheet3Publications(rowsArray) {
       const img = document.createElement("img");
       img.className = "pub-card-img";
       img.setAttribute("referrerpolicy", "no-referrer");
+      img.loading = "lazy";
+      img.decoding = "async";
       img.alt = pub.title;
 
       const fallbackSvg = buildPublicationFallbackSvg(pub.title);
@@ -1321,7 +1599,7 @@ async function loadSheet3PublicationsData() {
     const csvText = await response.text();
     const rows = parseCSVPreserveRowIndex(csvText);
     latestRawSheet3Rows = rows;
-    renderSheet3Publications(rows);
+    renderSheet3Publications(rows, false);
 
     try {
       localStorage.setItem(SHEET3_CACHE_KEY, JSON.stringify(rows));
@@ -1332,7 +1610,7 @@ async function loadSheet3PublicationsData() {
       if (rawCache) {
         const cachedRows = JSON.parse(rawCache);
         latestRawSheet3Rows = cachedRows;
-        renderSheet3Publications(cachedRows);
+        renderSheet3Publications(cachedRows, false);
       }
     } catch (_) {}
   }
@@ -1340,7 +1618,7 @@ async function loadSheet3PublicationsData() {
 
 setInterval(() => {
   if (latestRawSheet3Rows) {
-    renderSheet3Publications(latestRawSheet3Rows);
+    renderSheet3Publications(latestRawSheet3Rows, false);
   }
 }, 60000);
 
@@ -1363,7 +1641,7 @@ function updateGalleryFromSheetRows(galleryArray) {
       figure.setAttribute("role", "button");
       figure.innerHTML = `
         <div class="gallery-img-wrap">
-          <img src="" alt="" class="gallery-img" referrerpolicy="no-referrer">
+          <img src="" alt="" class="gallery-img" width="600" height="400" loading="lazy" decoding="async" referrerpolicy="no-referrer">
           <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
         </div>
         <figcaption class="gallery-caption"></figcaption>
@@ -1418,7 +1696,7 @@ function initGalleryLightbox() {
 
   const getFigures = () => Array.from(grid.querySelectorAll(".gallery-item"));
 
-  const openLightboxAt = (idx) => {
+  const openLightboxAt = (idx, isNavigation = false) => {
     const figures = getFigures();
     if (figures.length === 0) return;
 
@@ -1432,20 +1710,26 @@ function initGalleryLightbox() {
     if (lbDesc) lbDesc.textContent = fig.getAttribute("data-desc") || "";
     if (lbCounter) lbCounter.textContent = `${currentSlideIdx + 1} / ${figures.length}`;
 
-    lightbox.classList.remove("hidden");
-    lightbox.removeAttribute("hidden");
+    if (!isNavigation) {
+      lockPageScrollForModal();
+      lightbox.classList.remove("hidden");
+      lightbox.removeAttribute("hidden");
+      if (closeBtn) closeBtn.focus();
+    }
   };
 
   const closeLightbox = () => {
+    if (lightbox.classList.contains("hidden")) return;
     lightbox.classList.add("hidden");
     lightbox.setAttribute("hidden", "");
+    unlockPageScrollAfterModal();
   };
 
   grid.addEventListener("click", (e) => {
     const fig = e.target.closest(".gallery-item");
     if (!fig) return;
     const idx = getFigures().indexOf(fig);
-    if (idx !== -1) openLightboxAt(idx);
+    if (idx !== -1) openLightboxAt(idx, false);
   });
 
   grid.addEventListener("keydown", (e) => {
@@ -1454,13 +1738,13 @@ function initGalleryLightbox() {
       if (!fig) return;
       e.preventDefault();
       const idx = getFigures().indexOf(fig);
-      if (idx !== -1) openLightboxAt(idx);
+      if (idx !== -1) openLightboxAt(idx, false);
     }
   });
 
   if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
-  if (prevBtn) prevBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx - 1));
-  if (nextBtn) nextBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx + 1));
+  if (prevBtn) prevBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx - 1, true));
+  if (nextBtn) nextBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx + 1, true));
 
   lightbox.addEventListener("click", (e) => {
     if (e.target === lightbox) closeLightbox();
@@ -1468,9 +1752,19 @@ function initGalleryLightbox() {
 
   document.addEventListener("keydown", (e) => {
     if (lightbox.classList.contains("hidden")) return;
-    if (e.key === "Escape") closeLightbox();
-    if (e.key === "ArrowLeft") openLightboxAt(currentSlideIdx - 1);
-    if (e.key === "ArrowRight") openLightboxAt(currentSlideIdx + 1);
+    if (e.key === "Escape") {
+      closeLightbox();
+      return;
+    }
+    if (e.key === "ArrowLeft") {
+      openLightboxAt(currentSlideIdx - 1, true);
+      return;
+    }
+    if (e.key === "ArrowRight") {
+      openLightboxAt(currentSlideIdx + 1, true);
+      return;
+    }
+    handleModalFocusTrap(e, lightbox);
   });
 }
 
@@ -1481,7 +1775,7 @@ function createNewTeacherCardElement() {
 
   article.innerHTML = `
     <div class="teacher-photo-wrap">
-      <img src="" alt="" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
+      <img src="" alt="" class="teacher-photo" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer">
     </div>
     <span class="teacher-badge">Основной состав</span>
     <h3 class="teacher-name"></h3>
@@ -1581,7 +1875,9 @@ function updateTeachersFromSheetRows(teachersDataArray) {
   const subtitleEl = document.getElementById("teachers-subtitle");
 
   if (subtitleEl) {
-    subtitleEl.textContent = `Главная опора Ямбирнского филиала: ${mainCards.length} основных педагогов и ${partTimeCards.length} совместителя (всего ${allCards.length})`;
+    const mainWord = pluralRu(mainCards.length, "основной педагог", "основных педагога", "основных педагогов");
+    const partWord = pluralRu(partTimeCards.length, "совместитель", "совместителя", "совместителей");
+    subtitleEl.textContent = `Главная опора Ямбирнского филиала: ${mainCards.length} ${mainWord} и ${partTimeCards.length} ${partWord} (всего ${allCards.length})`;
   }
 }
 
@@ -1640,7 +1936,7 @@ function syncDayAndGradeUI(dayNum, gradeNum) {
   if (menuDayLabel) menuDayLabel.textContent = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
 }
 
-function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
+function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1, skipAnimation = false) {
   const scheduleEl = document.getElementById("col-schedule");
   const menuBreakfastEl = document.getElementById("menu-breakfast");
   const menuLunchEl = document.getElementById("menu-lunch");
@@ -1659,7 +1955,7 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1) {
     scheduleText = dataObj.col2Schedule || "Занятия проводятся согласно основному расписанию уроков";
   }
 
-  renderDiaryLessonCards(scheduleEl, scheduleText, dayNum);
+  renderDiaryLessonCards(scheduleEl, scheduleText, dayNum, skipAnimation);
 
   const dayMenuObj = (dataObj.menuByDay && dataObj.menuByDay[dayNum]) ? dataObj.menuByDay[dayNum] : {};
 
@@ -1993,31 +2289,51 @@ function initScrollSpyAndProgressRing() {
 
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener("click", () => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: isReducedMotionPreferred() ? "auto" : "smooth" });
     });
   }
 }
 
 function initDigitalNavigatorTabs() {
-  const tabBtns = document.querySelectorAll(".digital-tab-btn");
-  const panels = document.querySelectorAll(".digital-panel");
+  const tabBtns = Array.from(document.querySelectorAll(".digital-tab-btn"));
+  const panels = Array.from(document.querySelectorAll(".digital-panel"));
   if (tabBtns.length === 0 || panels.length === 0) return;
 
-  tabBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.getAttribute("data-dtab");
+  const activateTab = (targetBtn, moveFocus = false) => {
+    const targetId = targetBtn.getAttribute("data-dtab");
 
-      tabBtns.forEach((b) => {
-        const isCurrent = b === btn;
-        b.classList.toggle("active", isCurrent);
-        b.setAttribute("aria-selected", String(isCurrent));
-      });
+    tabBtns.forEach((b) => {
+      const isCurrent = b === targetBtn;
+      b.classList.toggle("active", isCurrent);
+      b.setAttribute("aria-selected", String(isCurrent));
+      b.setAttribute("tabindex", isCurrent ? "0" : "-1");
+    });
 
-      panels.forEach((panel) => {
-        const isMatch = panel.id === targetId;
-        panel.classList.toggle("hidden", !isMatch);
-        panel.classList.toggle("active", isMatch);
-      });
+    panels.forEach((panel) => {
+      const isMatch = panel.id === targetId;
+      panel.classList.toggle("hidden", !isMatch);
+      panel.classList.toggle("active", isMatch);
+      if (isMatch) panel.removeAttribute("hidden");
+      else panel.setAttribute("hidden", "");
+    });
+
+    if (moveFocus) targetBtn.focus();
+  };
+
+  tabBtns.forEach((btn, idx) => {
+    btn.addEventListener("click", () => activateTab(btn, false));
+
+    btn.addEventListener("keydown", (e) => {
+      let nextIdx = -1;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") nextIdx = (idx + 1) % tabBtns.length;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") nextIdx = (idx - 1 + tabBtns.length) % tabBtns.length;
+      else if (e.key === "Home") nextIdx = 0;
+      else if (e.key === "End") nextIdx = tabBtns.length - 1;
+
+      if (nextIdx !== -1) {
+        e.preventDefault();
+        activateTab(tabBtns[nextIdx], true);
+      }
     });
   });
 }
@@ -2034,6 +2350,7 @@ function initFeedbackForm() {
   const formFieldset = document.getElementById("form-fieldset");
   if (!consentStep || !formStep || !acceptBtn || !form || !formFieldset) return;
 
+  const hpInput = document.getElementById("website-hp");
   const fioInput = document.getElementById("fio-input");
   const contactInput = document.getElementById("contact-input");
   const commentInput = document.getElementById("comment-input");
@@ -2058,6 +2375,7 @@ function initFeedbackForm() {
   const newFeedbackBtn = document.getElementById("new-feedback-btn");
 
   let isConsentConfirmed = false;
+  let formUnlockedAtMs = 0;
   let selectedTopicPrefix = "[Вопрос руководителю] ";
 
   formFieldset.disabled = true;
@@ -2090,8 +2408,9 @@ function initFeedbackForm() {
   });
 
   try {
-    const params = new URLSearchParams(window.location.search);
-    const topicParam = params.get("topic");
+    const hashMatch = window.location.hash.match(/topic=([a-z]+)/i);
+    const searchParams = new URLSearchParams(window.location.search);
+    const topicParam = (hashMatch && hashMatch[1]) || searchParams.get("topic");
     if (topicParam === "thanks" && topicChips[1]) topicChips[1].click();
     else if (topicParam === "idea" && topicChips[2]) topicChips[2].click();
     else if (topicParam === "question" && topicChips[0]) topicChips[0].click();
@@ -2099,6 +2418,7 @@ function initFeedbackForm() {
 
   acceptBtn.addEventListener("click", () => {
     isConsentConfirmed = true;
+    formUnlockedAtMs = Date.now();
     formFieldset.disabled = false;
     submitBtn.disabled = false;
 
@@ -2114,7 +2434,7 @@ function initFeedbackForm() {
       stepInd2.classList.add("active");
     }
     if (stepsProgressBar) {
-      stepsProgressBar.style.width = "100%";
+      stepsProgressBar.classList.add("is-complete");
     }
 
     showDynamicIslandToast("✓ Согласие 152-ФЗ подтверждено");
@@ -2123,7 +2443,7 @@ function initFeedbackForm() {
 
   const validateFio = () => {
     const cleanVal = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
-    const onlyLettersAndSpaces = /^[А-Яа-яЁёA-Za-z\s]+$/.test(cleanVal);
+    const onlyLettersAndSpaces = /^[А-Яа-яЁёA-Za-z\-\s]+$/.test(cleanVal);
     const words = cleanVal.split(" ").filter((w) => w.length >= 2);
     const isValid = onlyLettersAndSpaces && words.length >= 2;
 
@@ -2131,7 +2451,7 @@ function initFeedbackForm() {
     fioInput.classList.toggle("is-invalid", !isValid && cleanVal.length > 0);
 
     if (!isValid && cleanVal.length > 0) {
-      fioHint.textContent = "Введите минимум 2 слова (только буквы и пробелы, без цифр и символов)";
+      fioHint.textContent = "Введите минимум 2 слова (только буквы, дефис и пробелы)";
       fioHint.className = "field-hint error-text";
     } else if (isValid) {
       fioHint.textContent = "✓ ФИО заполнено корректно";
@@ -2204,7 +2524,30 @@ function initFeedbackForm() {
     e.preventDefault();
     if (!isConsentConfirmed || formFieldset.disabled) return;
 
+    if (hpInput && hpInput.value.trim().length > 0) {
+      return;
+    }
+
     formResponse.classList.add("hidden");
+
+    if (Date.now() - formUnlockedAtMs < 2000) {
+      formResponse.textContent = "Пожалуйста, проверьте заполненные данные перед отправкой.";
+      formResponse.className = "form-response error";
+      formResponse.classList.remove("hidden");
+      return;
+    }
+
+    try {
+      const lastSentTs = parseInt(localStorage.getItem(FEEDBACK_COOLDOWN_KEY) || "0", 10);
+      const secondsSinceLast = Math.floor((Date.now() - lastSentTs) / 1000);
+      if (lastSentTs && secondsSinceLast < 60) {
+        const waitSec = 60 - secondsSinceLast;
+        formResponse.textContent = `Повторная отправка доступна через ${waitSec} сек.`;
+        formResponse.className = "form-response error";
+        formResponse.classList.remove("hidden");
+        return;
+      }
+    } catch (_) {}
 
     const isFioOk = validateFio();
     const isContactOk = validateContact();
@@ -2220,6 +2563,7 @@ function initFeedbackForm() {
     const sanitizedFio = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
     const sanitizedContact = sanitizeInput(contactInput.value, 100);
     const sanitizedComment = sanitizeInput(`${selectedTopicPrefix}${commentInput.value}`, 2000);
+    const fallbackTicketNum = `ЯМБ-${new Date().toLocaleDateString("ru-RU").replace(/\./g, "")}-${Math.floor(100 + Math.random() * 900)}`;
 
     submitBtn.disabled = true;
     submitBtnText.textContent = "Отправка сообщения...";
@@ -2229,6 +2573,8 @@ function initFeedbackForm() {
     formDataParams.append("fio", sanitizedFio);
     formDataParams.append("contact", sanitizedContact);
     formDataParams.append("comment", sanitizedComment);
+    formDataParams.append("ticket", fallbackTicketNum);
+    formDataParams.append("website_hp", hpInput ? hpInput.value : "");
 
     try {
       const response = await fetch(FEEDBACK_POST_URL, {
@@ -2236,11 +2582,26 @@ function initFeedbackForm() {
         body: formDataParams
       });
 
-      if (!response.ok && response.type !== "opaque") {
+      if (!response.ok) {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      const ticketNum = `ЯМБ-${new Date().toLocaleDateString("ru-RU").replace(/\./g, "")}-${Math.floor(100 + Math.random() * 900)}`;
+      let ticketNum = fallbackTicketNum;
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const payload = await response.json();
+        if (payload && payload.ok === false) {
+          throw new Error(payload.error || "Сервер отклонил обращение");
+        }
+        if (payload && payload.ticketId) {
+          ticketNum = sanitizeInput(String(payload.ticketId), 60) || fallbackTicketNum;
+        }
+      }
+
+      try {
+        localStorage.setItem(FEEDBACK_COOLDOWN_KEY, String(Date.now()));
+      } catch (_) {}
+
       if (receiptBox && receiptFio && receiptContact && receiptComment && receiptMeta) {
         receiptMeta.textContent = `Талон № ${ticketNum} • ${new Date().toLocaleString("ru-RU")}`;
         receiptFio.textContent = sanitizedFio;
@@ -2294,7 +2655,11 @@ function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
   const counters = document.querySelectorAll("[data-target]");
 
-  if (!("IntersectionObserver" in window) || document.body.classList.contains("visually-impaired")) {
+  if (
+    !("IntersectionObserver" in window) ||
+    document.body.classList.contains("visually-impaired") ||
+    isReducedMotionPreferred()
+  ) {
     revealElements.forEach((el) => el.classList.add("visible"));
     return;
   }
