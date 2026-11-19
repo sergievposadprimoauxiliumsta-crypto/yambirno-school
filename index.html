@@ -3,15 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Официальный сайт</title>
-  <meta name="description" content="Официальный сайт Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11). Поурочное расписание с 1 по 11 класс, новости и материалы школы, погода в с. Ямбирно, инструкции к Госуслугам, электронному дневнику и Учи.ру.">
+  <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Информационный портал</title>
+  <meta name="description" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» (с. Ямбирно, Шацкий район): расписание 1–11 классов, меню питания, педагоги, новости и гид по Дневнику и Учи.ру.">
+  <link rel="canonical" href="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E">
 
-  <!-- Open Graph разметка для мессенджера MAX, ВКонтакте и Telegram -->
+  <link rel="preconnect" href="https://docs.google.com" crossorigin>
+  <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
+  <meta property="og:url" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/">
+  <meta property="og:site_name" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
   <meta property="og:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
   <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Расписание 1–11 классов, официальные материалы, погода в с. Ямбирно, навигатор по Дневнику и Учи.ру.">
-  <meta property="og:image" content="https://placehold.co/1200x630/1e40af/ffffff.png?text=Ямбирнский+филиал+МОУ+Лесно-Конобеевская+СШ">
+  <meta property="og:image" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "School",
+    "name": "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
+    "url": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/",
+    "telephone": "+7-49147-2-63-68",
+    "email": "yambirno-school@yandex.ru",
+    "address": {
+      "@type": "PostalAddress",
+      "postalCode": "391573",
+      "addressRegion": "Рязанская область",
+      "addressLocality": "с. Ямбирно",
+      "streetAddress": "ул. Школьная, д. 11",
+      "addressCountry": "RU"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 54.1286,
+      "longitude": 41.9708
+    },
+    "sameAs": [
+      "https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/",
+      "https://vk.ru/public216706445"
+    ]
+  }
+  </script>
 
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
@@ -20,13 +55,11 @@
 
   <a href="#main-content" class="skip-link">Перейти к основному содержанию</a>
 
-  <!-- ВСПЛЫВАЮЩАЯ КАПСУЛА УВЕДОМЛЕНИЙ (DYNAMIC ISLAND TOAST) -->
   <div id="dynamic-island-toast" class="dynamic-island" role="status" aria-live="polite" aria-hidden="true">
     <span class="island-dot" aria-hidden="true"></span>
     <span id="dynamic-island-text" class="island-text">Скопировано в буфер обмена</span>
   </div>
 
-  <!-- 1. ОПТИЧЕСКАЯ ДВУХУРОВНЕВАЯ ШАПКА САЙТА -->
   <header class="site-header" id="top">
     <div class="top-utility-bar" role="region" aria-label="Панель текущего времени, погоды и специальных возможностей">
       <div class="container utility-inner">
@@ -40,12 +73,13 @@
         </div>
 
         <div class="utility-a11y-slot">
-          <button 
-            type="button" 
-            id="a11y-toggle" 
-            class="btn-a11y" 
-            aria-label="Версия для слабовидящих" 
+          <button
+            type="button"
+            id="a11y-toggle"
+            class="btn-a11y"
+            aria-label="Версия для слабовидящих"
             aria-pressed="false"
+            aria-controls="a11y-panel"
           >
             <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -57,14 +91,44 @@
       </div>
     </div>
 
+    <div id="a11y-panel" class="a11y-panel hidden" role="region" aria-label="Настройки версии для слабовидящих" hidden>
+      <div class="container a11y-panel-inner">
+        <div class="a11y-group" role="group" aria-label="Размер шрифта">
+          <span class="a11y-group-label">Шрифт:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="normal" aria-pressed="true">А</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="large" aria-pressed="false">А+</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="xlarge" aria-pressed="false">А++</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Цветовая схема">
+          <span class="a11y-group-label">Цвета:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="yellow" aria-pressed="true">Ж/Ч</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="white" aria-pressed="false">Ч/Б</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="black" aria-pressed="false">Б/Ч</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Интервал между буквами">
+          <span class="a11y-group-label">Интервал:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="normal" aria-pressed="true">1x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="medium" aria-pressed="false">1.5x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="large" aria-pressed="false">2x</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Изображения">
+          <span class="a11y-group-label">Фото:</span>
+          <button type="button" class="a11y-opt-btn" id="a11y-images-toggle" aria-pressed="false">Скрыты</button>
+        </div>
+        <button type="button" class="a11y-opt-btn a11y-reset-btn" id="a11y-reset-btn">Сбросить</button>
+      </div>
+    </div>
+
     <div class="container header-main-inner">
       <a href="index.html" class="brand" aria-label="Ямбирнский филиал МОУ Лесно-Конобеевская СШ — на главную">
-        <img 
-          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" 
-          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ" 
-          class="logo-img" 
-          width="58" 
+        <img
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
+          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
+          class="logo-img"
+          width="58"
           height="58"
+          fetchpriority="high"
+          decoding="async"
         >
         <div class="brand-text">
           <span class="brand-sub">Шацкий муниципальный район Рязанской области</span>
@@ -74,7 +138,6 @@
       </a>
 
       <nav class="main-nav" aria-label="Основная навигация по сайту">
-        <!-- Кнопка в меню появляется автоматически, когда на Листе 3 есть хотя бы 1 активная публикация -->
         <a href="#school-publications" id="nav-publications-link" class="nav-link nav-link-live hidden" data-scrollspy="school-publications">
           📢 Материалы <span id="nav-publications-count" class="nav-count-pill">0</span>
         </a>
@@ -90,10 +153,9 @@
   </header>
 
   <main id="main-content">
-    <!-- 2. ГЛАВНЫЙ ЭКРАН (HERO): СЛЕВА ПРИВЕТСТВИЕ + ЖИВАЯ ДОСКА (1–11 КЛ.), СПРАВА ОНЛАЙН-ТАБЛО -->
     <section class="hero-section" id="hero-ambient">
       <div class="container hero-grid">
-        
+
         <div class="hero-content reveal">
           <span class="badge">Рязанская область • Шацкий район • с. Ямбирно</span>
           <h1 class="hero-title">Небольшая школа — большие возможности: обучение, воспитание и единство</h1>
@@ -112,7 +174,6 @@
             </div>
           </div>
 
-          <!-- ИНТЕРАКТИВНЫЙ ДВИЖОК "ЖИВАЯ ШКОЛЬНАЯ ДОСКА: ПУТЬ ЗНАНИЙ ОТ 1 ДО 11 КЛАССА" -->
           <div class="chalkboard-card" id="chalkboard-widget" aria-label="Интерактивная школьная доска: примеры с 1 по 11 класс">
             <div class="chalkboard-topbar">
               <div class="chalkboard-meta">
@@ -158,7 +219,6 @@
           </div>
         </div>
 
-        <!-- Правая колонка: Виджет "Живая информация" -->
         <aside class="live-widget surface-card reveal" id="live-widget-card" aria-labelledby="live-widget-title">
           <div class="widget-header">
             <div class="live-badge-capsule">
@@ -186,8 +246,7 @@
           </div>
 
           <div class="widget-body" id="widget-content">
-            
-            <!-- БЛОК ПОГОДЫ В СЕЛЕ ЯМБИРНО -->
+
             <div class="widget-weather-card" id="yambirno-weather-box" aria-live="polite">
               <div class="weather-top-row">
                 <div class="weather-now-col">
@@ -195,7 +254,7 @@
                   <div class="weather-now-main">
                     <span id="weather-now-icon" class="weather-emoji" aria-hidden="true">🌤️</span>
                     <strong id="weather-now-temp" class="weather-temp-val">...</strong>
-                    <span id="weather-now-desc" class="weather-desc-text">Загрузка метеоданных...</span>
+                    <span id="weather-now-desc" class="weather-desc-text">Актуальный прогноз погоды</span>
                   </div>
                 </div>
                 <div class="weather-morning-col">
@@ -207,20 +266,18 @@
                 </div>
               </div>
               <div id="weather-parent-advice" class="weather-advice-banner">
-                Загружаем прогноз для родителей на утро...
+                Прогноз погоды и рекомендации для родителей к 1-му уроку
               </div>
             </div>
 
-            <!-- Блок Новостей дня -->
             <div class="widget-block">
               <div class="widget-block-head">
                 <span class="widget-block-icon" aria-hidden="true">📰</span>
                 <h3>Новости дня</h3>
               </div>
-              <div id="col-news" class="widget-value is-loading-shimmer">Загрузка данных...</div>
+              <div id="col-news" class="widget-value is-loading-shimmer">Актуальные новости и события Ямбирнского филиала</div>
             </div>
 
-            <!-- Блок Расписания (1–11 классы + кнопка отправки в чат + редактируемые звонки) -->
             <div class="widget-block widget-block-diary">
               <div class="widget-block-head widget-schedule-head">
                 <div class="schedule-title-line">
@@ -260,17 +317,16 @@
               </div>
 
               <div id="col-schedule" class="diary-lessons-list is-loading-shimmer" aria-live="polite">
-                Загрузка расписания...
+                Расписание уроков для 1–11 классов согласно учебному плану школы
               </div>
             </div>
 
-            <!-- Блок Важных объявлений -->
             <div class="widget-block widget-block-highlight">
               <div class="widget-block-head">
                 <span class="widget-block-icon" aria-hidden="true">⚡</span>
                 <h3>Важные объявления</h3>
               </div>
-              <div id="col-important" class="widget-value is-loading-shimmer">Загрузка данных...</div>
+              <div id="col-important" class="widget-value is-loading-shimmer">Желаем продуктивного учебного дня!</div>
             </div>
           </div>
         </aside>
@@ -278,8 +334,6 @@
       </div>
     </section>
 
-    <!-- 2.5. НОВЫЙ ДИНАМИЧЕСКИЙ РАЗДЕЛ: АКТУАЛЬНЫЕ МАТЕРИАЛЫ, ПАМЯТКИ И ПУБЛИКАЦИИ ШКОЛЫ (С ЛИСТА 3) -->
-    <!-- Если на Листе 3 пусто со 2-й строки — весь этот блок автоматически скрыт (hidden) и не занимает места -->
     <section id="school-publications" class="section section-alt school-grid-texture hidden" aria-labelledby="publications-title" hidden>
       <div class="container">
         <div class="section-header reveal visible">
@@ -288,12 +342,10 @@
           <p class="section-subtitle">Важные объявления руководства школы, памятки для родителей и фотоотчёты о событиях</p>
         </div>
 
-        <!-- Сетка карточек-бейджей (генерируется автоматически по строкам 2, 3, 4... Листа 3) -->
         <div id="publications-grid" class="publications-grid"></div>
       </div>
     </section>
 
-    <!-- 3. О ШКОЛЕ (ФАКТЫ И ПРИОРИТЕТЫ) -->
     <section id="about" class="section">
       <div class="container">
         <div class="section-header reveal">
@@ -348,7 +400,7 @@
         </div>
       </div>
     </section>
-    <!-- 4. ПОДРОБНАЯ ПОШАГОВАЯ ШПАРГАЛКА ДЛЯ РОДИТЕЛЕЙ И УЧЕНИКОВ -->
+
     <section id="digital-guide" class="section section-alt school-grid-texture">
       <div class="container">
         <div class="section-header reveal">
@@ -358,22 +410,21 @@
         </div>
 
         <div class="digital-tabs reveal" role="tablist" aria-label="Подробные инструкции для родителей">
-          <button type="button" class="digital-tab-btn active" data-dtab="tab-gosuslugi" role="tab" aria-selected="true">
+          <button type="button" id="btn-tab-gosuslugi" class="digital-tab-btn active" data-dtab="tab-gosuslugi" role="tab" aria-selected="true" aria-controls="tab-gosuslugi">
             1. Как зарегистрировать Госуслуги (себе и ребёнку)
           </button>
-          <button type="button" class="digital-tab-btn" data-dtab="tab-diary" role="tab" aria-selected="false">
+          <button type="button" id="btn-tab-diary" class="digital-tab-btn" data-dtab="tab-diary" role="tab" aria-selected="false" aria-controls="tab-diary" tabindex="-1">
             2. 📘 Как войти в Электронный дневник («Моя школа»)
           </button>
-          <button type="button" class="digital-tab-btn" data-dtab="tab-uchiru-cdz" role="tab" aria-selected="false">
+          <button type="button" id="btn-tab-uchiru-cdz" class="digital-tab-btn" data-dtab="tab-uchiru-cdz" role="tab" aria-selected="false" aria-controls="tab-uchiru-cdz" tabindex="-1">
             3. 💻 «Учи.ру»: как найти и сделать ЦДЗ
           </button>
-          <button type="button" class="digital-tab-btn" data-dtab="tab-uchiru-olymp" role="tab" aria-selected="false">
+          <button type="button" id="btn-tab-uchiru-olymp" class="digital-tab-btn" data-dtab="tab-uchiru-olymp" role="tab" aria-selected="false" aria-controls="tab-uchiru-olymp" tabindex="-1">
             4. 🏆 Олимпиады на «Учи.ру» и дипломы
           </button>
         </div>
 
-        <!-- ВКЛАДКА 1 -->
-        <div id="tab-gosuslugi" class="digital-panel active surface-card">
+        <div id="tab-gosuslugi" class="digital-panel active surface-card" role="tabpanel" aria-labelledby="btn-tab-gosuslugi" tabindex="0">
           <div class="digital-panel-header">
             <div>
               <h3>Шаг за шагом: регистрация родителя и создание детской учётной записи на Госуслугах</h3>
@@ -438,8 +489,7 @@
           </div>
         </div>
 
-        <!-- ВКЛАДКА 2 -->
-        <div id="tab-diary" class="digital-panel hidden surface-card">
+        <div id="tab-diary" class="digital-panel hidden surface-card" role="tabpanel" aria-labelledby="btn-tab-diary" tabindex="0" hidden>
           <div class="digital-panel-header">
             <div>
               <h3>Как войти в Электронный дневник («Моя школа») и смотреть оценки</h3>
@@ -498,8 +548,7 @@
           </div>
         </div>
 
-        <!-- ВКЛАДКА 3 -->
-        <div id="tab-uchiru-cdz" class="digital-panel hidden surface-card">
+        <div id="tab-uchiru-cdz" class="digital-panel hidden surface-card" role="tabpanel" aria-labelledby="btn-tab-uchiru-cdz" tabindex="0" hidden>
           <div class="digital-panel-header">
             <div>
               <h3>Платформа «Учи.ру»: как войти и выполнить ЦДЗ (Цифровое домашнее задание)</h3>
@@ -553,8 +602,7 @@
           </div>
         </div>
 
-        <!-- ВКЛАДКА 4 -->
-        <div id="tab-uchiru-olymp" class="digital-panel hidden surface-card">
+        <div id="tab-uchiru-olymp" class="digital-panel hidden surface-card" role="tabpanel" aria-labelledby="btn-tab-uchiru-olymp" tabindex="0" hidden>
           <div class="digital-panel-header">
             <div>
               <h3>Как участвовать во Всероссийских олимпиадах на «Учи.ру» (бесплатно)</h3>
@@ -610,16 +658,14 @@
       </div>
     </section>
 
-    <!-- 5. ПЕДАГОГИЧЕСКИЙ КОЛЛЕКТИВ (ЕДИНАЯ СЕТКА БЕЗ КНОПОК ФИЛЬТРАЦИИ) -->
     <section id="teachers" class="section">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="section-title">Педагогический коллектив</h2>
-          <p class="section-subtitle" id="teachers-subtitle">Главная опора Ямбирнского филиала:</p>
+          <p class="section-subtitle" id="teachers-subtitle">Главная опора Ямбирнского филиала: 9 основных педагогов и 3 совместителя (всего 12)</p>
         </div>
 
         <div class="teachers-grid" id="teachers-grid">
-          <!-- 1 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e40af' text-anchor='middle'%3EЕА%3C/text%3E%3C/svg%3E" alt="Аватар: Попихина Елена Александровна, заведующий филиалом" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -630,7 +676,6 @@
             <p class="teacher-meta">Внедряет инструменты искусственного интеллекта при подготовке к ОГЭ. Прошла 8 программ повышения квалификации за два учебных года.</p>
           </article>
 
-          <!-- 2 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fef3c7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%23b45309' text-anchor='middle'%3EММ%3C/text%3E%3C/svg%3E" alt="Аватар: Колупаева Мария Михайловна, учитель начальных классов" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -641,7 +686,6 @@
             <p class="teacher-meta">Стаж в школе — 49 лет. Награждена знаком Губернатора «Доброволец Рязанской области» и Почётной грамотой Минобразования региона.</p>
           </article>
 
-          <!-- 3 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dcfce7'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2315803d' text-anchor='middle'%3EЕП%3C/text%3E%3C/svg%3E" alt="Аватар: Грошева Елена Петровна, учитель русского языка и литературы" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -652,7 +696,6 @@
             <p class="teacher-meta">Готовит победителей всероссийских конкурсов («Живая классика», «Без срока давности»). Участник региональных этапов «Учитель года».</p>
           </article>
 
-          <!-- 4 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0e7ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233730a3' text-anchor='middle'%3EВА%3C/text%3E%3C/svg%3E" alt="Аватар: Матыкина Валентина Александровна, учитель английского языка" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -663,7 +706,6 @@
             <p class="teacher-meta">Развивает коммуникативную культуру школьников, интерес к изучению иностранных языков и страноведению.</p>
           </article>
 
-          <!-- 5 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23e0f2fe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230369a1' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Корягина Нина Алексеевна, учитель математики" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -674,7 +716,6 @@
             <p class="teacher-meta">Обеспечивает фундаментальную математическую подготовку, регулярную диагностику и подготовку выпускников к ОГЭ.</p>
           </article>
 
-          <!-- 6 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ecfccb'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%233f6212' text-anchor='middle'%3EСН%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёва Светлана Николаевна, учитель биологии" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -685,7 +726,6 @@
             <p class="teacher-meta">Руководит исследовательскими и экологическими проектами школьников, развивает культуру здорового образа жизни.</p>
           </article>
 
-          <!-- 7 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23f3e8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%236b21a8' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" alt="Аватар: Пителина Анна Александровна, учитель физики и информатики" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -696,7 +736,6 @@
             <p class="teacher-meta">Обучает цифровой грамотности, работе с образовательными платформами, алгоритмике и законам физики.</p>
           </article>
 
-          <!-- 8 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ffedd5'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239a3412' text-anchor='middle'%3EЛЮ%3C/text%3E%3C/svg%3E" alt="Аватар: Оглу Лариса Юрьевна, учитель начальных классов" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -707,7 +746,6 @@
             <p class="teacher-meta">Обеспечивает индивидуальный подход к младшим школьникам, развивает познавательный интерес, навыки чтения и проектного творчества.</p>
           </article>
 
-          <!-- 9 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="main">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fae8ff'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%2386198f' text-anchor='middle'%3EТЛ%3C/text%3E%3C/svg%3E" alt="Аватар: Сидорова Татьяна Ласловна, учитель начальных классов" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -718,7 +756,6 @@
             <p class="teacher-meta">Формирует прочную базу начального образования, раскрывает творческие способности детей и создаёт тёплую атмосферу в классе.</p>
           </article>
 
-          <!-- 10 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23ccfbf1'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%230f766e' text-anchor='middle'%3EНА%3C/text%3E%3C/svg%3E" alt="Аватар: Киселёв Николай Александрович, учитель географии" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -729,7 +766,6 @@
             <p class="teacher-meta">Формирует естественно-научную грамотность, навыки работы с картами и бережное отношение к природе Рязанского края.</p>
           </article>
 
-          <!-- 11 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23dbeafe'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EСС%3C/text%3E%3C/svg%3E" alt="Аватар: Малышев Сергей Сергеевич, учитель физической культуры" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -740,7 +776,6 @@
             <p class="teacher-meta">Отвечает за физическое развитие и укрепление здоровья школьников, подготовку к нормативам ГТО и проведение спортивных соревнований.</p>
           </article>
 
-          <!-- 12 -->
           <article class="teacher-card surface-card elevate-card reveal" data-category="part-time">
             <div class="teacher-photo-wrap">
               <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='60' fill='%23fce7f3'/%3E%3Ctext x='60' y='70' font-family='sans-serif' font-size='34' font-weight='bold' fill='%239d174d' text-anchor='middle'%3EАА%3C/text%3E%3C/svg%3E" alt="Аватар: Коконова Алла Александровна, учитель химии" class="teacher-photo" width="96" height="96" referrerpolicy="no-referrer">
@@ -754,7 +789,6 @@
       </div>
     </section>
 
-    <!-- 6. ДОСТИЖЕНИЯ (BENTO DATA CARDS) -->
     <section id="achievements" class="section section-alt school-grid-texture">
       <div class="container">
         <div class="section-header reveal">
@@ -816,7 +850,6 @@
       </div>
     </section>
 
-    <!-- 7. ОРГАНИЗАЦИЯ ПИТАНИЯ, БЕЗОПАСНОСТЬ И ИНТЕРАКТИВНАЯ ФОТОГАЛЕРЕЯ -->
     <section id="school-life" class="section">
       <div class="container">
         <div class="info-blocks-grid">
@@ -880,19 +913,23 @@
           </div>
 
           <div class="gallery-grid" id="gallery-grid">
-            <figure 
-              class="gallery-item surface-card elevate-card reveal" 
-              tabindex="0" 
+            <figure
+              class="gallery-item surface-card elevate-card reveal"
+              tabindex="0"
               role="button"
               aria-label="Открыть фото: Разные традиции — общие ценности"
               data-caption="Разные традиции — общие ценности"
               data-desc="В Год единства народов России дети знакомятся с семейными традициями друг друга через выставки творчества, конкурсы национальных блюд и совместные праздники."
             >
               <div class="gallery-img-wrap">
-                <img 
-                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Cdefs%3E%3ClinearGradient id='sky1' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%23dbeafe'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='400' fill='url(%23sky1)'/%3E%3Crect y='270' width='600' height='130' fill='%23b45309' opacity='0.18'/%3E%3Ccircle cx='300' cy='155' r='68' fill='%23ffffff' opacity='0.22'/%3E%3Cpath d='M220 160 H380 V185 H220 Z' fill='%23ffffff'/%3E%3Cpath d='M220 185 H380 V210 H220 Z' fill='%231d4ed8'/%3E%3Cpath d='M220 210 H380 V235 H220 Z' fill='%23dc2626'/%3E%3Ctext x='300' y='110' font-family='sans-serif' font-size='24' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EЕдинство культур и традиций%3C/text%3E%3Ctext x='300' y='325' font-family='sans-serif' font-size='17' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EВыставки семейного творчества и фестивали%3C/text%3E%3C/svg%3E" 
-                  alt="Разные традиции — общие ценности: выставки творчества и национальных блюд" 
+                <img
+                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Cdefs%3E%3ClinearGradient id='sky1' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%23dbeafe'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='400' fill='url(%23sky1)'/%3E%3Crect y='270' width='600' height='130' fill='%23b45309' opacity='0.18'/%3E%3Ccircle cx='300' cy='155' r='68' fill='%23ffffff' opacity='0.22'/%3E%3Cpath d='M220 160 H380 V185 H220 Z' fill='%23ffffff'/%3E%3Cpath d='M220 185 H380 V210 H220 Z' fill='%231d4ed8'/%3E%3Cpath d='M220 210 H380 V235 H220 Z' fill='%23dc2626'/%3E%3Ctext x='300' y='110' font-family='sans-serif' font-size='24' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EЕдинство культур и традиций%3C/text%3E%3Ctext x='300' y='325' font-family='sans-serif' font-size='17' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EВыставки семейного творчества и фестивали%3C/text%3E%3C/svg%3E"
+                  alt="Разные традиции — общие ценности: выставки творчества и национальных блюд"
                   class="gallery-img"
+                  width="600"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
                   referrerpolicy="no-referrer"
                 >
                 <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
@@ -900,19 +937,23 @@
               <figcaption class="gallery-caption">Разные традиции — общие ценности: выставки творчества и национальных блюд</figcaption>
             </figure>
 
-            <figure 
-              class="gallery-item surface-card elevate-card reveal" 
-              tabindex="0" 
+            <figure
+              class="gallery-item surface-card elevate-card reveal"
+              tabindex="0"
               role="button"
               aria-label="Открыть фото: Открытая практика и современный урок"
               data-caption="Открытая практика и современный урок"
               data-desc="В небольшом классе учитель видит продвижение каждого ученика: работа у интерактивной доски, развитие устной речи и индивидуальный подбор заданий."
             >
               <div class="gallery-img-wrap">
-                <img 
-                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dcfce7'/%3E%3Crect x='70' y='55' width='220' height='150' rx='8' fill='%23ffffff' stroke='%2315803d' stroke-width='5'/%3E%3Crect x='310' y='55' width='220' height='150' rx='4' fill='%2314532d' stroke='%23b45309' stroke-width='5'/%3E%3Ctext x='420' y='125' font-family='sans-serif' font-size='18' fill='%23ffffff' text-anchor='middle'%3E14 сентября%3C/text%3E%3Ctext x='420' y='155' font-family='sans-serif' font-size='15' fill='%2386efac' text-anchor='middle'%3EКлассная работа%3C/text%3E%3Ctext x='180' y='135' font-family='sans-serif' font-size='17' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EИнтерактивный экран%3C/text%3E%3Ctext x='300' y='285' font-family='sans-serif' font-size='23' font-weight='bold' fill='%2314532d' text-anchor='middle'%3EОткрытая практика на уроках%3C/text%3E%3Ctext x='300' y='320' font-family='sans-serif' font-size='16' fill='%23166534' text-anchor='middle'%3E«Чтобы каждый ребёнок сказал: У меня получается!»%3C/text%3E%3C/svg%3E" 
-                  alt="Открытые уроки и индивидуальная работа учителей с учениками" 
+                <img
+                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23dcfce7'/%3E%3Crect x='70' y='55' width='220' height='150' rx='8' fill='%23ffffff' stroke='%2315803d' stroke-width='5'/%3E%3Crect x='310' y='55' width='220' height='150' rx='4' fill='%2314532d' stroke='%23b45309' stroke-width='5'/%3E%3Ctext x='420' y='125' font-family='sans-serif' font-size='18' fill='%23ffffff' text-anchor='middle'%3E14 сентября%3C/text%3E%3Ctext x='420' y='155' font-family='sans-serif' font-size='15' fill='%2386efac' text-anchor='middle'%3EКлассная работа%3C/text%3E%3Ctext x='180' y='135' font-family='sans-serif' font-size='17' font-weight='bold' fill='%231e3a8a' text-anchor='middle'%3EИнтерактивный экран%3C/text%3E%3Ctext x='300' y='285' font-family='sans-serif' font-size='23' font-weight='bold' fill='%2314532d' text-anchor='middle'%3EОткрытая практика на уроках%3C/text%3E%3Ctext x='300' y='320' font-family='sans-serif' font-size='16' fill='%23166534' text-anchor='middle'%3E«Чтобы каждый ребёнок сказал: У меня получается!»%3C/text%3E%3C/svg%3E"
+                  alt="Открытые уроки и индивидуальная работа учителей с учениками"
                   class="gallery-img"
+                  width="600"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
                   referrerpolicy="no-referrer"
                 >
                 <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
@@ -920,19 +961,23 @@
               <figcaption class="gallery-caption">Открытая практика: внимание к каждому ученику и интерактивные уроки</figcaption>
             </figure>
 
-            <figure 
-              class="gallery-item surface-card elevate-card reveal" 
-              tabindex="0" 
+            <figure
+              class="gallery-item surface-card elevate-card reveal"
+              tabindex="0"
               role="button"
               aria-label="Открыть фото: Память поколений и волонтёрство"
               data-caption="Память поколений и волонтёрство"
               data-desc="Ученики, педагоги и родители вместе участвуют в шествии «Бессмертного полка», краеведческих проектах и волонтёрской мастерской помощи."
             >
               <div class="gallery-img-wrap">
-                <img 
-                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23fef3c7'/%3E%3Ccircle cx='300' cy='145' r='62' fill='%23f59e0b' opacity='0.22'/%3E%3Cpath d='M300 95 L315 130 L352 133 L324 157 L333 193 L300 173 L267 193 L276 157 L248 133 L285 130 Z' fill='%23d97706'/%3E%3Ctext x='300' y='265' font-family='sans-serif' font-size='23' font-weight='bold' fill='%2378350f' text-anchor='middle'%3EПамять поколений и добровольчество%3C/text%3E%3Ctext x='300' y='305' font-family='sans-serif' font-size='16' fill='%2392400e' text-anchor='middle'%3E«Бессмертный полк», краеведение и волонтёрский труд%3C/text%3E%3C/svg%3E" 
-                  alt="Шествие Бессмертного полка и волонтёрская мастерская" 
+                <img
+                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23fef3c7'/%3E%3Ccircle cx='300' cy='145' r='62' fill='%23f59e0b' opacity='0.22'/%3E%3Cpath d='M300 95 L315 130 L352 133 L324 157 L333 193 L300 173 L267 193 L276 157 L248 133 L285 130 Z' fill='%23d97706'/%3E%3Ctext x='300' y='265' font-family='sans-serif' font-size='23' font-weight='bold' fill='%2378350f' text-anchor='middle'%3EПамять поколений и добровольчество%3C/text%3E%3Ctext x='300' y='305' font-family='sans-serif' font-size='16' fill='%2392400e' text-anchor='middle'%3E«Бессмертный полк», краеведение и волонтёрский труд%3C/text%3E%3C/svg%3E"
+                  alt="Шествие Бессмертного полка и волонтёрская мастерская"
                   class="gallery-img"
+                  width="600"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
                   referrerpolicy="no-referrer"
                 >
                 <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
@@ -940,19 +985,23 @@
               <figcaption class="gallery-caption">Патриотическое воспитание: «Бессмертный полк» и волонтёрская помощь</figcaption>
             </figure>
 
-            <figure 
-              class="gallery-item surface-card elevate-card reveal" 
-              tabindex="0" 
+            <figure
+              class="gallery-item surface-card elevate-card reveal"
+              tabindex="0"
               role="button"
               aria-label="Открыть фото: Школа и семья — действуем вместе"
               data-caption="Школа и семья — действуем вместе"
               data-desc="Совместные спортивные эстафеты родителей и детей в школьном спортзале, встречи в сельской библиотеке и общие дела села Ямбирно."
             >
               <div class="gallery-img-wrap">
-                <img 
-                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3e8ff'/%3E%3Ccircle cx='300' cy='150' r='62' fill='%23a855f7' opacity='0.2'/%3E%3Cpath d='M300 185 C300 185 250 150 250 122 C250 106 264 95 280 95 C290 95 300 103 300 112 C300 103 310 95 320 95 C336 95 350 106 350 122 C350 150 300 185 300 185 Z' fill='%23dc2626'/%3E%3Ctext x='300' y='265' font-family='sans-serif' font-size='23' font-weight='bold' fill='%23581c87' text-anchor='middle'%3EШкола и семья — действуем вместе%3C/text%3E%3Ctext x='300' y='305' font-family='sans-serif' font-size='16' fill='%236b21a8' text-anchor='middle'%3EСпортивные праздники с родителями и сельская библиотека%3C/text%3E%3C/svg%3E" 
-                  alt="Совместные спортивные эстафеты родителей и детей, занятия в библиотеке" 
+                <img
+                  src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f3e8ff'/%3E%3Ccircle cx='300' cy='150' r='62' fill='%23a855f7' opacity='0.2'/%3E%3Cpath d='M300 185 C300 185 250 150 250 122 C250 106 264 95 280 95 C290 95 300 103 300 112 C300 103 310 95 320 95 C336 95 350 106 350 122 C350 150 300 185 300 185 Z' fill='%23dc2626'/%3E%3Ctext x='300' y='265' font-family='sans-serif' font-size='23' font-weight='bold' fill='%23581c87' text-anchor='middle'%3EШкола и семья — действуем вместе%3C/text%3E%3Ctext x='300' y='305' font-family='sans-serif' font-size='16' fill='%236b21a8' text-anchor='middle'%3EСпортивные праздники с родителями и сельская библиотека%3C/text%3E%3C/svg%3E"
+                  alt="Совместные спортивные эстафеты родителей и детей, занятия в библиотеке"
                   class="gallery-img"
+                  width="600"
+                  height="400"
+                  loading="lazy"
+                  decoding="async"
                   referrerpolicy="no-referrer"
                 >
                 <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
@@ -964,7 +1013,6 @@
       </div>
     </section>
 
-    <!-- 8. КОНТАКТЫ -->
     <section id="contacts" class="section section-alt school-grid-texture">
       <div class="container">
         <div class="section-header reveal">
@@ -1012,7 +1060,6 @@
       </div>
     </section>
 
-    <!-- 9. БЛОК ОБРАТНОЙ СВЯЗИ -->
     <section class="cta-section">
       <div class="container">
         <div class="cta-card reveal">
@@ -1023,19 +1070,19 @@
           </p>
 
           <div class="cta-reasons-grid">
-            <a href="feedback.html?topic=thanks" class="cta-reason-card">
+            <a href="feedback.html#topic=thanks" class="cta-reason-card">
               <span class="cta-reason-icon" aria-hidden="true">❤️</span>
               <strong>Сказать «Спасибо» педагогу</strong>
               <span>Выразить благодарность учителю или коллективу школы за заботу о детях</span>
             </a>
 
-            <a href="feedback.html?topic=idea" class="cta-reason-card">
+            <a href="feedback.html#topic=idea" class="cta-reason-card">
               <span class="cta-reason-icon" aria-hidden="true">💡</span>
               <strong>Предложить идею</strong>
               <span>Поделиться предложением по кружкам, праздникам или развитию школы</span>
             </a>
 
-            <a href="feedback.html?topic=question" class="cta-reason-card">
+            <a href="feedback.html#topic=question" class="cta-reason-card">
               <span class="cta-reason-icon" aria-hidden="true">❓</span>
               <strong>Задать вопрос руководителю</strong>
               <span>Уточнить расписание, вход в электронный дневник или записаться на встречу</span>
@@ -1051,7 +1098,6 @@
     </section>
   </main>
 
-  <!-- МОДАЛЬНОЕ ОКНО ЧТЕНИЯ ПОЛНЫХ МАТЕРИАЛОВ И ПАМЯТОК С ЛИСТА 3 -->
   <div id="publication-modal" class="lightbox-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="pub-modal-title" hidden>
     <div class="pub-modal-dialog surface-card">
       <div class="pub-modal-header">
@@ -1064,9 +1110,7 @@
 
       <div class="pub-modal-scroll-area">
         <h3 id="pub-modal-title" class="pub-modal-title"></h3>
-        <!-- Галерея фотографий публикации (1 или несколько фото из ячейки A) -->
         <div id="pub-modal-gallery" class="pub-modal-gallery hidden"></div>
-        <!-- Полный текст публикации из ячейки D -->
         <div id="pub-modal-body" class="pub-modal-body"></div>
       </div>
 
@@ -1081,7 +1125,6 @@
     </div>
   </div>
 
-  <!-- КИНЕМАТОГРАФИЧНЫЙ МОДАЛЬНЫЙ ПРОСМОТРЩИК ФОТОГАЛЕРЕИ (FLUID LIGHTBOX) -->
   <div id="gallery-lightbox" class="lightbox-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="lightbox-title" hidden>
     <div class="lightbox-dialog">
       <div class="lightbox-top-bar">
@@ -1102,7 +1145,6 @@
     </div>
   </div>
 
-  <!-- ПЛАВАЮЩАЯ КНОПКА "НАВЕРХ" С КОЛЬЦОМ ПРОГРЕССА ЧТЕНИЯ -->
   <button type="button" id="scroll-top-btn" class="scroll-top-btn" aria-label="Вернуться к началу страницы" title="Наверх">
     <svg class="progress-ring" width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
       <circle class="progress-ring-bg" cx="23" cy="23" r="19" fill="none" stroke-width="3"></circle>
@@ -1114,7 +1156,7 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11.</p>
-      <p>Заведующий филиалом: Попихина Елена Александровна</p>
+      <p>Заведующий филиалом: Попихина Елена Александровна • <a href="https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/" target="_blank" rel="noopener noreferrer" class="footer-link">Сведения об ОО (Госвеб) ↗</a></p>
     </div>
   </footer>
 
