@@ -35,6 +35,10 @@ html {
   width: 100%;
   scroll-behavior: smooth;
   font-size: 16px;
+  /* Защита от самостоятельного увеличения текста на смартфонах при повороте */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -2877,7 +2881,8 @@ img {
   width: 100%;
   max-width: 100%;
   padding: 12px 14px;
-  font-size: 1rem;
+  /* 16px предотвращает автоматический зум в iOS Safari при фокусе */
+  font-size: 16px;
   font-family: inherit;
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
@@ -3213,7 +3218,7 @@ body.visually-impaired .form-control {
   -webkit-text-fill-color: var(--a11y-fg) !important;
   border: 2px solid var(--a11y-fg) !important;
   caret-color: var(--a11y-fg) !important;
-  font-size: 1.15rem !important;
+  font-size: 16px !important;
 }
 
 body.visually-impaired .form-control:focus {
