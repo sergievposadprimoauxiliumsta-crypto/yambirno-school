@@ -27,6 +27,15 @@ const ALLOWED_DOC_HOSTS = [
   "sergievposadprimoauxiliumsta-crypto.github.io"
 ];
 
+const ALLOWED_IMAGE_HOSTS = [
+  "drive.google.com",
+  "googleusercontent.com",
+  "skrinshoter.ru",
+  "userapi.com",
+  "yandex.net",
+  "sergievposadprimoauxiliumsta-crypto.github.io"
+];
+
 const AVATAR_PALETTES = [
   { bg: "#dbeafe", fg: "#1e40af" },
   { bg: "#fef3c7", fg: "#b45309" },
@@ -156,7 +165,10 @@ const DEFAULT_SANPIN_NOTE =
 let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
 let latestRawSheet3Rows = null;
+let activePublicationsCache = [];
+let activePublicationModalItem = null;
 let lastRenderedPublicationsSignature = "";
+let hasCheckedInitialPubHash = false;
 let currentSelectedWeekday = getDefaultSchoolWeekday();
 let currentSelectedGrade = getSavedGradeSelection();
 let currentSelectedMenuWeek = 1;
@@ -197,29 +209,79 @@ function escapeXml(str) {
     .replace(/'/g, "&apos;");
 }
 
+// Очистка пользовательского и табличного текста. Все вставки в DOM выполняются строго через textContent.
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
-    .replace(/<[^>]*>?/gm, "")
+    .replace(/[<>]/g, "")
     .replace(/javascript:|data:|vbscript:/gi, "")
     .trim()
     .slice(0, maxLength);
 }
 
+// Защита от Google Sheets / CSV Formula Injection (CWE-1236)
+function neutralizeSpreadsheetFormula(value) {
+  const str = String(value || "").trim();
+  if (/^[=+\-@\t\r]/.test(str)) {
+    return `'${str}`;
+  }
+  return str;
+}
+
+function generateSecureTicketNumber() {
+  const datePart = new Date().toLocaleDateString("ru-RU").replace(/\./g, "");
+  let randomPart;
+  if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+    const buf = new Uint32Array(1);
+    window.crypto.getRandomValues(buf);
+    randomPart = String(100000 + (buf[0] % 900000));
+  } else {
+    randomPart = String(100000 + Math.floor(Math.random() * 900000));
+  }
+  return `ЯМБ-${datePart}-${randomPart}`;
+}
+
+async function copyTextToClipboard(text) {
+  if (!text) return false;
+
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (_) {}
+  }
+
+  try {
+    const helper = document.createElement("textarea");
+    helper.value = text;
+    helper.setAttribute("readonly", "");
+    helper.className = "hp-field";
+    document.body.appendChild(helper);
+    helper.select();
+    helper.setSelectionRange(0, helper.value.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(helper);
+    return Boolean(ok);
+  } catch (_) {
+    return false;
+  }
+}
+
+function isHostInAllowlist(hostname, allowlist) {
+  const host = String(hostname || "").toLowerCase();
+  return allowlist.some((allowed) => host === allowed || host.endsWith(`.${allowed}`));
+}
+
 function sanitizeDocumentUrl(rawUrl) {
   if (typeof rawUrl !== "string") return "";
   const cleaned = rawUrl.trim();
-  if (!/^https?:\/\/[^\s"'<>]+$/i.test(cleaned)) return "";
+  if (!/^https:\/\/[^\s"'<>]+$/i.test(cleaned)) return "";
 
   try {
     const parsed = new URL(cleaned);
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return "";
-    const host = parsed.hostname.toLowerCase();
-    const isAllowed = ALLOWED_DOC_HOSTS.some(
-      (allowed) => host === allowed || host.endsWith(`.${allowed}`)
-    );
-    return isAllowed ? parsed.href : "";
+    if (parsed.protocol !== "https:") return "";
+    return isHostInAllowlist(parsed.hostname, ALLOWED_DOC_HOSTS) ? parsed.href : "";
   } catch (_) {
     return "";
   }
@@ -255,11 +317,11 @@ function handleModalFocusTrap(e, modalEl) {
 
 function lockPageScrollForModal() {
   lastModalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  document.body.style.overflow = "hidden";
+  document.body.classList.add("modal-open");
 }
 
 function unlockPageScrollAfterModal() {
-  document.body.style.overflow = "";
+  document.body.classList.remove("modal-open");
   if (lastModalTriggerEl && document.contains(lastModalTriggerEl)) {
     lastModalTriggerEl.focus();
   }
@@ -303,51 +365,63 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
+// Строгая проверка изображений: только HTTPS с доверенных хостов или локальные безопасные пути (без стороннего прокси)
 function resolveImageLinkSource(rawUrlCell, fallbackSvg) {
   const cleaned = (rawUrlCell || "").trim();
   if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
 
-  const driveMatch =
-    cleaned.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
-    cleaned.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (cleaned.includes("drive.google.com") && driveMatch && driveMatch[1]) {
-    return {
-      src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`,
-      altTry: null,
-      fallback: fallbackSvg
-    };
+  const isSafeRelativePath =
+    /^(?!.*(?:^|\/)\.\.(?:\/|$))[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(cleaned) &&
+    !cleaned.startsWith("//");
+  if (isSafeRelativePath) {
+    return { src: cleaned, altTry: null, fallback: fallbackSvg };
   }
 
-  if (cleaned.includes("skrinshoter.ru")) {
-    const hasImgExt = /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(cleaned);
-    if (hasImgExt) {
+  if (!/^https:\/\/[^\s"'<>]+$/i.test(cleaned)) {
+    return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(cleaned);
+  } catch (_) {
+    return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
+  }
+
+  if (parsed.protocol !== "https:" || !isHostInAllowlist(parsed.hostname, ALLOWED_IMAGE_HOSTS)) {
+    return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
+  }
+
+  const host = parsed.hostname.toLowerCase();
+
+  if (host === "drive.google.com") {
+    const driveMatch =
+      parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+      parsed.search.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (driveMatch && driveMatch[1]) {
       return {
-        src: cleaned,
-        altTry: `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=1000`,
+        src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`,
+        altTry: null,
         fallback: fallbackSvg
       };
     }
-    const cleanNoSlash = cleaned.replace(/\/+$/, "");
+    return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
+  }
+
+  if (host === "skrinshoter.ru" || host.endsWith(".skrinshoter.ru")) {
+    const hasImgExt = /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(parsed.pathname);
+    if (hasImgExt) {
+      return { src: parsed.href, altTry: null, fallback: fallbackSvg };
+    }
+    const cleanNoSlash = parsed.href.replace(/\/+$/, "");
     return {
-      src: `https://wsrv.nl/?url=${encodeURIComponent(cleanNoSlash)}&w=1000`,
-      altTry: `${cleanNoSlash}.jpg`,
+      src: `${cleanNoSlash}.jpg`,
+      altTry: `${cleanNoSlash}.png`,
       fallback: fallbackSvg
     };
   }
 
-  const isSafeUrlOrPath =
-    /^https?:\/\/[^\s"'<>]+$/i.test(cleaned) ||
-    /^[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(cleaned);
-
-  if (isSafeUrlOrPath) {
-    return {
-      src: cleaned,
-      altTry: cleaned.startsWith("http") ? `https://wsrv.nl/?url=${encodeURIComponent(cleaned)}&w=1000` : null,
-      fallback: fallbackSvg
-    };
-  }
-
-  return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
+  return { src: parsed.href, altTry: null, fallback: fallbackSvg };
 }
 
 function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
@@ -733,7 +807,7 @@ function renderEmptyScheduleState(containerEl, isOfflineError = false) {
 
 function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, skipAnimation = false, isOfflineError = false) {
   if (!containerEl) return;
-  containerEl.innerHTML = "";
+  containerEl.replaceChildren();
 
   const shiftBanner = document.getElementById("bell-shift-warning");
   if (shiftBanner) {
@@ -754,10 +828,8 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
     const row = document.createElement("div");
     const subjMeta = classifyLessonSubject(lessonObj.title);
     row.className = `diary-lesson-row ${subjMeta.cls}`;
-    if (skipAnimation) {
-      row.style.animation = "none";
-      row.style.opacity = "1";
-      row.style.transform = "none";
+    if (skipAnimation || isReducedMotionPreferred()) {
+      row.classList.add("no-cascade");
     } else {
       row.style.setProperty("--step", String(idx));
     }
@@ -851,19 +923,22 @@ function initShareScheduleToChat() {
 
     const tomTemp = document.getElementById("weather-tomorrow-temp");
     const advice = document.getElementById("weather-parent-advice");
-    const weatherLine = tomTemp && advice ? `\n\n🌤 Погода в Ямбирно к 1-му уроку: ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}` : "";
+    const weatherLine =
+      tomTemp && advice
+        ? `\n\n🌤 Погода в Ямбирно к 1-му уроку: ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
+        : "";
 
     const textForChat =
       `📘 Расписание уроков — ${dayName} (${currentSelectedGrade} класс):\n` +
       formattedLessons +
       weatherLine;
 
-    try {
-      await navigator.clipboard.writeText(textForChat);
-      showDynamicIslandToast(`✓ Расписание ${currentSelectedGrade} класса скопировано для чата!`);
-    } catch (_) {
-      showDynamicIslandToast("✓ Расписание скопировано");
-    }
+    const copied = await copyTextToClipboard(textForChat);
+    showDynamicIslandToast(
+      copied
+        ? `✓ Расписание ${currentSelectedGrade} класса скопировано для чата!`
+        : "Не удалось скопировать — выделите расписание вручную"
+    );
   });
 }
 
@@ -873,6 +948,8 @@ function initLiveDateTimeClockAndAmbient() {
   const statusEl = document.getElementById("school-day-status");
   const widgetTodayPill = document.getElementById("widget-today-pill");
   const heroAmbient = document.getElementById("hero-ambient");
+  if (!dateEl && !timeEl && !statusEl && !widgetTodayPill && !heroAmbient) return;
+
   let lastScheduleMinute = -1;
 
   const updateClock = () => {
@@ -923,7 +1000,8 @@ function initLiveDateTimeClockAndAmbient() {
     }
 
     if (currentMinuteKey !== lastScheduleMinute) {
-      const shouldRefreshSchedule = lastScheduleMinute !== -1 && latestParsedSheetData && now.getDay() === currentSelectedWeekday;
+      const shouldRefreshSchedule =
+        lastScheduleMinute !== -1 && latestParsedSheetData && now.getDay() === currentSelectedWeekday;
       lastScheduleMinute = currentMinuteKey;
       if (shouldRefreshSchedule) {
         renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade, true);
@@ -949,9 +1027,22 @@ function decodeWmoWeather(code) {
   return { icon: "🌤️", text: "Без осадков", rain: false, snow: false, sky: "clear" };
 }
 
+function findTomorrowMorningWeatherIndex(hourlyTimes) {
+  if (!Array.isArray(hourlyTimes) || hourlyTimes.length === 0) return 32;
+  try {
+    const tomorrow = new Date(Date.now() + 86400000);
+    const moscowDateIso = tomorrow.toLocaleDateString("sv-SE", { timeZone: "Europe/Moscow" });
+    const exactIdx = hourlyTimes.indexOf(`${moscowDateIso}T08:00`);
+    if (exactIdx !== -1) return exactIdx;
+  } catch (_) {}
+  return hourlyTimes.length > 32 ? 32 : hourlyTimes.length - 1;
+}
+
 async function initYambirnoWeatherWidget() {
   const weatherBox = document.getElementById("yambirno-weather-box");
   const topPill = document.getElementById("top-weather-pill");
+  if (!weatherBox && !topPill) return;
+
   const nowIconEl = document.getElementById("weather-now-icon");
   const nowTempEl = document.getElementById("weather-now-temp");
   const nowDescEl = document.getElementById("weather-now-desc");
@@ -983,7 +1074,7 @@ async function initYambirnoWeatherWidget() {
     if (nowTempEl) nowTempEl.textContent = curSign;
     if (nowDescEl) nowDescEl.textContent = `${curWmo.text}, ветер ${curWind} м/с`;
 
-    const morningIndex = 32;
+    const morningIndex = findTomorrowMorningWeatherIndex(data.hourly && data.hourly.time);
     const tomTempRaw =
       data.hourly && data.hourly.temperature_2m && data.hourly.temperature_2m[morningIndex] !== undefined
         ? Math.round(data.hourly.temperature_2m[morningIndex])
@@ -1102,7 +1193,10 @@ function initAccessibilityMode() {
 
     if (isEnabled) {
       applySettings();
-      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+      document.querySelectorAll(".reveal").forEach((el) => {
+        el.classList.remove("reveal-pending");
+        el.classList.add("visible");
+      });
     }
 
     const textSpan = toggleBtn.querySelector(".a11y-btn-text");
@@ -1274,7 +1368,7 @@ function classifyPublicationBadgeTheme(badgeText) {
   return { cardCls: "", badgeCls: "" };
 }
 
-function openPublicationModal(pubItem) {
+function openPublicationModal(pubItem, updateUrlHash = true) {
   const modal = document.getElementById("publication-modal");
   const badgeEl = document.getElementById("pub-modal-badge");
   const dateEl = document.getElementById("pub-modal-date");
@@ -1286,13 +1380,15 @@ function openPublicationModal(pubItem) {
 
   if (!modal || !titleEl || !bodyEl) return;
 
+  activePublicationModalItem = pubItem;
+
   if (badgeEl) badgeEl.textContent = pubItem.badge || "Информация";
   if (dateEl) dateEl.textContent = pubItem.dateDisplay || "";
   titleEl.textContent = pubItem.title || "Объявление школы";
   bodyEl.textContent = pubItem.text || "";
 
   if (galleryEl) {
-    galleryEl.innerHTML = "";
+    galleryEl.replaceChildren();
     if (Array.isArray(pubItem.photos) && pubItem.photos.length > 0) {
       const fallbackSvg = buildPublicationFallbackSvg(pubItem.title);
       pubItem.photos.forEach((rawUrl, idx) => {
@@ -1303,6 +1399,8 @@ function openPublicationModal(pubItem) {
         img.setAttribute("referrerpolicy", "no-referrer");
         img.loading = "lazy";
         img.decoding = "async";
+        img.width = 600;
+        img.height = 375;
         img.alt = `${pubItem.title || "Фото материала"} — изображение ${idx + 1}`;
 
         const resolved = resolveImageLinkSource(rawUrl, fallbackSvg);
@@ -1337,16 +1435,40 @@ function openPublicationModal(pubItem) {
     }
   }
 
+  if (updateUrlHash && pubItem.id) {
+    try {
+      history.replaceState(null, "", `#pub-${pubItem.id}`);
+    } catch (_) {}
+  }
+
   lockPageScrollForModal();
   modal.classList.remove("hidden");
   modal.removeAttribute("hidden");
   if (closeBtn) closeBtn.focus();
 }
 
+function tryOpenPublicationFromUrl() {
+  if (!Array.isArray(activePublicationsCache) || activePublicationsCache.length === 0) return;
+
+  let pubId = "";
+  try {
+    const hashMatch = window.location.hash.match(/^#pub-([a-zA-Z0-9_-]+)$/);
+    const searchParams = new URLSearchParams(window.location.search);
+    pubId = (hashMatch && hashMatch[1]) || searchParams.get("pub") || "";
+  } catch (_) {}
+
+  if (!pubId) return;
+  const matched = activePublicationsCache.find((item) => item.id === pubId);
+  if (matched) {
+    openPublicationModal(matched, false);
+  }
+}
+
 function initPublicationModalEvents() {
   const modal = document.getElementById("publication-modal");
   const closeBtn = document.getElementById("pub-modal-close");
   const copyBtn = document.getElementById("pub-modal-copy-btn");
+  const copyLinkBtn = document.getElementById("pub-modal-link-btn");
   const titleEl = document.getElementById("pub-modal-title");
   const bodyEl = document.getElementById("pub-modal-body");
 
@@ -1356,6 +1478,12 @@ function initPublicationModalEvents() {
     if (modal.classList.contains("hidden")) return;
     modal.classList.add("hidden");
     modal.setAttribute("hidden", "");
+    activePublicationModalItem = null;
+    try {
+      if (window.location.hash.startsWith("#pub-")) {
+        history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      }
+    } catch (_) {}
     unlockPageScrollAfterModal();
   };
 
@@ -1374,16 +1502,35 @@ function initPublicationModalEvents() {
     handleModalFocusTrap(e, modal);
   });
 
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash.startsWith("#pub-")) {
+      tryOpenPublicationFromUrl();
+    }
+  });
+
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener("click", async () => {
+      const pubId = activePublicationModalItem && activePublicationModalItem.id;
+      const directUrl = pubId
+        ? `${window.location.origin}${window.location.pathname}#pub-${pubId}`
+        : window.location.href;
+      const copied = await copyTextToClipboard(directUrl);
+      showDynamicIslandToast(
+        copied
+          ? "✓ Прямая ссылка на материал скопирована"
+          : "Не удалось скопировать ссылку — скопируйте её из адресной строки"
+      );
+    });
+  }
+
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
       const fullText = `${titleEl ? titleEl.textContent : ""}\n\n${bodyEl ? bodyEl.textContent : ""}`.trim();
       if (!fullText) return;
-      try {
-        await navigator.clipboard.writeText(fullText);
-        showDynamicIslandToast("✓ Текст публикации скопирован");
-      } catch (_) {
-        showDynamicIslandToast("Скопировано в буфер обмена");
-      }
+      const copied = await copyTextToClipboard(fullText);
+      showDynamicIslandToast(
+        copied ? "✓ Текст публикации скопирован" : "Не удалось скопировать — выделите текст вручную"
+      );
     });
   }
 }
@@ -1398,7 +1545,8 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
 
   if (!Array.isArray(rowsArray) || rowsArray.length <= 1) {
     lastRenderedPublicationsSignature = "[]";
-    gridEl.innerHTML = "";
+    activePublicationsCache = [];
+    gridEl.replaceChildren();
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
     if (navLinkEl) navLinkEl.classList.add("hidden");
@@ -1424,6 +1572,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
     if (scheduleInfo.isFuture) continue;
 
     activePublications.push({
+      id: String(i),
       photos: photosList,
       title: rawTitleCell || "Объявление школы",
       badge: rawBadgeCell || "Информация",
@@ -1433,12 +1582,14 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
     });
   }
 
+  activePublicationsCache = activePublications;
+
   const nextSignature = JSON.stringify(activePublications);
   if (!forceRender && nextSignature === lastRenderedPublicationsSignature) {
     return;
   }
   lastRenderedPublicationsSignature = nextSignature;
-  gridEl.innerHTML = "";
+  gridEl.replaceChildren();
 
   if (activePublications.length === 0) {
     sectionEl.classList.add("hidden");
@@ -1458,6 +1609,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
   activePublications.forEach((pub) => {
     const theme = classifyPublicationBadgeTheme(pub.badge);
     const card = document.createElement("article");
+    card.id = `pub-${pub.id}`;
     card.className = `pub-card surface-card elevate-card reveal visible ${theme.cardCls}`.trim();
 
     if (pub.photos.length > 0) {
@@ -1470,6 +1622,8 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
       img.setAttribute("referrerpolicy", "no-referrer");
       img.loading = "lazy";
       img.decoding = "async";
+      img.width = 600;
+      img.height = 375;
       img.alt = pub.title;
 
       const fallbackSvg = buildPublicationFallbackSvg(pub.title);
@@ -1494,7 +1648,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
         mediaWrap.appendChild(multiBadge);
       }
 
-      mediaWrap.addEventListener("click", () => openPublicationModal(pub));
+      mediaWrap.addEventListener("click", () => openPublicationModal(pub, true));
       card.appendChild(mediaWrap);
     }
 
@@ -1539,7 +1693,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
       readBtn.type = "button";
       readBtn.className = "btn-pub-action";
       readBtn.textContent = pub.photos.length > 1 ? `📖 Открыть (${pub.photos.length} фото)` : "📖 Читать полностью";
-      readBtn.addEventListener("click", () => openPublicationModal(pub));
+      readBtn.addEventListener("click", () => openPublicationModal(pub, true));
       footer.appendChild(readBtn);
     }
 
@@ -1560,6 +1714,11 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
     card.appendChild(content);
     gridEl.appendChild(card);
   });
+
+  if (!hasCheckedInitialPubHash) {
+    hasCheckedInitialPubHash = true;
+    tryOpenPublicationFromUrl();
+  }
 }
 
 async function loadSheet3PublicationsData() {
@@ -1591,10 +1750,43 @@ async function loadSheet3PublicationsData() {
 }
 
 setInterval(() => {
-  if (latestRawSheet3Rows) {
+  if (latestRawSheet3Rows && document.getElementById("school-publications")) {
     renderSheet3Publications(latestRawSheet3Rows, false);
   }
 }, 60000);
+
+function createGalleryFigureElement() {
+  const figure = document.createElement("figure");
+  figure.className = "gallery-item surface-card elevate-card reveal visible";
+  figure.setAttribute("tabindex", "0");
+  figure.setAttribute("role", "button");
+
+  const imgWrap = document.createElement("div");
+  imgWrap.className = "gallery-img-wrap";
+
+  const img = document.createElement("img");
+  img.className = "gallery-img";
+  img.width = 600;
+  img.height = 400;
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.setAttribute("referrerpolicy", "no-referrer");
+
+  const zoomBadge = document.createElement("span");
+  zoomBadge.className = "gallery-zoom-badge";
+  zoomBadge.setAttribute("aria-hidden", "true");
+  zoomBadge.textContent = "🔍 Увеличить";
+
+  imgWrap.appendChild(img);
+  imgWrap.appendChild(zoomBadge);
+
+  const caption = document.createElement("figcaption");
+  caption.className = "gallery-caption";
+
+  figure.appendChild(imgWrap);
+  figure.appendChild(caption);
+  return figure;
+}
 
 function updateGalleryFromSheetRows(galleryArray) {
   if (!Array.isArray(galleryArray) || galleryArray.length === 0) return;
@@ -1609,23 +1801,15 @@ function updateGalleryFromSheetRows(galleryArray) {
 
     let figure = existingItems[idx];
     if (!figure) {
-      figure = document.createElement("figure");
-      figure.className = "gallery-item surface-card elevate-card reveal visible";
-      figure.setAttribute("tabindex", "0");
-      figure.setAttribute("role", "button");
-      figure.innerHTML = `
-        <div class="gallery-img-wrap">
-          <img src="" alt="" class="gallery-img" width="600" height="400" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-          <span class="gallery-zoom-badge" aria-hidden="true">🔍 Увеличить</span>
-        </div>
-        <figcaption class="gallery-caption"></figcaption>
-      `;
+      figure = createGalleryFigureElement();
       grid.appendChild(figure);
     }
 
     const imgEl = figure.querySelector(".gallery-img");
     const capEl = figure.querySelector(".gallery-caption");
-    const defaultSvg = imgEl ? imgEl.getAttribute("src") : "";
+    const defaultSvg =
+      (imgEl && imgEl.getAttribute("src")) ||
+      buildPublicationFallbackSvg(itemData.title || `Школьная жизнь #${idx + 1}`);
 
     const newTitle = itemData.title || (capEl ? capEl.textContent : `Школьная жизнь #${idx + 1}`);
     const newDesc = itemData.desc || figure.getAttribute("data-desc") || newTitle;
@@ -1747,15 +1931,36 @@ function createNewTeacherCardElement() {
   article.className = "teacher-card surface-card elevate-card reveal visible";
   article.setAttribute("data-category", "main");
 
-  article.innerHTML = `
-    <div class="teacher-photo-wrap">
-      <img src="" alt="" class="teacher-photo" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-    </div>
-    <span class="teacher-badge">Основной состав</span>
-    <h3 class="teacher-name"></h3>
-    <p class="teacher-role"></p>
-    <p class="teacher-meta"></p>
-  `;
+  const photoWrap = document.createElement("div");
+  photoWrap.className = "teacher-photo-wrap";
+
+  const photo = document.createElement("img");
+  photo.className = "teacher-photo";
+  photo.width = 96;
+  photo.height = 96;
+  photo.loading = "lazy";
+  photo.decoding = "async";
+  photo.setAttribute("referrerpolicy", "no-referrer");
+  photoWrap.appendChild(photo);
+
+  const badge = document.createElement("span");
+  badge.className = "teacher-badge";
+  badge.textContent = "Основной состав";
+
+  const name = document.createElement("h3");
+  name.className = "teacher-name";
+
+  const role = document.createElement("p");
+  role.className = "teacher-role";
+
+  const meta = document.createElement("p");
+  meta.className = "teacher-meta";
+
+  article.appendChild(photoWrap);
+  article.appendChild(badge);
+  article.appendChild(name);
+  article.appendChild(role);
+  article.appendChild(meta);
   return article;
 }
 
@@ -1856,9 +2061,11 @@ function updateTeachersFromSheetRows(teachersDataArray) {
 }
 
 function initWeekdayAndGradeSwitchers() {
-  const allDayPills = document.querySelectorAll(".day-pill");
+  const allDayPills = document.querySelectorAll(".day-pill[data-day]");
   const allGradePills = document.querySelectorAll(".grade-pill");
   const allWeekPills = document.querySelectorAll(".week-pill");
+
+  if (allDayPills.length === 0 && allGradePills.length === 0 && allWeekPills.length === 0) return;
 
   allDayPills.forEach((pill) => {
     pill.addEventListener("click", () => {
@@ -1900,22 +2107,28 @@ function initWeekdayAndGradeSwitchers() {
 }
 
 function syncDayAndGradeUI(dayNum, gradeNum) {
-  const allDayPills = document.querySelectorAll(".day-pill");
+  const allDayPills = document.querySelectorAll(".day-pill[data-day]");
   allDayPills.forEach((pill) => {
     const pDay = parseInt(pill.getAttribute("data-day") || "0", 10);
-    pill.classList.toggle("active", pDay === dayNum);
+    const isActive = pDay === dayNum;
+    pill.classList.toggle("active", isActive);
+    pill.setAttribute("aria-pressed", String(isActive));
   });
 
   const allGradePills = document.querySelectorAll(".grade-pill");
   allGradePills.forEach((gPill) => {
     const pGrade = parseInt(gPill.getAttribute("data-grade") || "0", 10);
-    gPill.classList.toggle("active", pGrade === gradeNum);
+    const isActive = pGrade === gradeNum;
+    gPill.classList.toggle("active", isActive);
+    gPill.setAttribute("aria-pressed", String(isActive));
   });
 
   const allWeekPills = document.querySelectorAll(".week-pill");
   allWeekPills.forEach((wPill) => {
     const pWeek = parseInt(wPill.getAttribute("data-week") || "1", 10);
-    wPill.classList.toggle("active", pWeek === currentSelectedMenuWeek);
+    const isActive = pWeek === currentSelectedMenuWeek;
+    wPill.classList.toggle("active", isActive);
+    wPill.setAttribute("aria-pressed", String(isActive));
   });
 
   const jsToday = new Date().getDay();
@@ -1970,12 +2183,21 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1, skipAni
     currentSelectedMenuWeek = 1;
   }
 
-  const weekMap = (dataObj.menuByWeekAndDay && dataObj.menuByWeekAndDay[currentSelectedMenuWeek])
-    ? dataObj.menuByWeekAndDay[currentSelectedMenuWeek]
-    : (dataObj.menuByDay || {});
+  const weekMap =
+    dataObj.menuByWeekAndDay && dataObj.menuByWeekAndDay[currentSelectedMenuWeek]
+      ? dataObj.menuByWeekAndDay[currentSelectedMenuWeek]
+      : dataObj.menuByDay || {};
   const dayMenuObj = weekMap[dayNum] || {};
 
-  const breakfastText = (dayMenuObj.breakfast || "").trim();
+  const hasAnyDayMenu = Boolean(
+    (dayMenuObj.breakfast || "").trim() ||
+    (dayMenuObj.lunch || "").trim() ||
+    (dayMenuObj.note || "").trim()
+  );
+  const breakfastText = hasAnyDayMenu
+    ? (dayMenuObj.breakfast || "").trim()
+    : DEFAULT_SANPIN_BREAKFAST;
+
   if (menuBreakfastSlot && menuBreakfastEl) {
     if (breakfastText) {
       menuBreakfastEl.textContent = breakfastText;
@@ -2144,7 +2366,7 @@ function initLiveSheetWidgetAndMenu() {
           colALower.includes("меню питания") ||
           (colALower.includes("день") && (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")))
         ) {
-          currentMode = (colALower.includes("2") || colALower.includes("вторая")) ? "menu_w2" : "menu_w1";
+          currentMode = colALower.includes("2") || colALower.includes("вторая") ? "menu_w2" : "menu_w1";
           continue;
         }
         if (colALower.includes("фотогалере")) {
@@ -2324,12 +2546,10 @@ function initCopyButtons() {
     btn.addEventListener("click", async () => {
       const textToCopy = btn.getAttribute("data-copy") || "";
       if (!textToCopy) return;
-      try {
-        await navigator.clipboard.writeText(textToCopy);
-        showDynamicIslandToast(`✓ Скопировано: ${textToCopy}`);
-      } catch (_) {
-        showDynamicIslandToast("Скопировано в буфер обмена");
-      }
+      const copied = await copyTextToClipboard(textToCopy);
+      showDynamicIslandToast(
+        copied ? `✓ Скопировано: ${textToCopy}` : "Не удалось скопировать — выделите текст вручную"
+      );
     });
   });
 }
@@ -2338,6 +2558,8 @@ function initScrollSpyAndProgressRing() {
   const scrollTopBtn = document.getElementById("scroll-top-btn");
   const progressCircle = document.getElementById("scroll-progress-circle");
   const spyLinks = document.querySelectorAll(".nav-link[data-scrollspy]");
+  if (!scrollTopBtn && spyLinks.length === 0) return;
+
   const circumference = 119.38;
 
   const onScroll = () => {
@@ -2431,10 +2653,33 @@ function initFeedbackForm() {
   const stepInd1 = document.getElementById("step-indicator-1");
   const stepInd2 = document.getElementById("step-indicator-2");
   const stepsProgressBar = document.getElementById("steps-progress-bar");
+  const frameGuardBanner = document.getElementById("frame-guard-banner");
 
   const form = document.getElementById("feedback-form");
   const formFieldset = document.getElementById("form-fieldset");
   if (!consentStep || !formStep || !acceptBtn || !form || !formFieldset) return;
+
+  // Защита формы от Clickjacking (встраивания в сторонний iframe)
+  let isEmbeddedInFrame = false;
+  try {
+    isEmbeddedInFrame = window.self !== window.top;
+  } catch (_) {
+    isEmbeddedInFrame = true;
+  }
+
+  if (isEmbeddedInFrame) {
+    if (frameGuardBanner) {
+      frameGuardBanner.classList.remove("hidden");
+      frameGuardBanner.removeAttribute("hidden");
+    }
+    consentStep.classList.add("hidden");
+    consentStep.setAttribute("hidden", "");
+    formStep.classList.add("hidden");
+    formStep.setAttribute("hidden", "");
+    acceptBtn.disabled = true;
+    formFieldset.disabled = true;
+    return;
+  }
 
   const hpInput = document.getElementById("website-hp");
   const fioInput = document.getElementById("fio-input");
@@ -2453,6 +2698,7 @@ function initFeedbackForm() {
   const formResponse = document.getElementById("form-response");
 
   const receiptBox = document.getElementById("feedback-receipt");
+  const receiptHeading = document.getElementById("receipt-heading");
   const receiptMeta = document.getElementById("receipt-meta");
   const receiptFio = document.getElementById("receipt-fio");
   const receiptContact = document.getElementById("receipt-contact");
@@ -2478,8 +2724,11 @@ function initFeedbackForm() {
 
   topicChips.forEach((chip) => {
     chip.addEventListener("click", () => {
-      topicChips.forEach((c) => c.classList.remove("active"));
-      chip.classList.add("active");
+      topicChips.forEach((c) => {
+        const isSelected = c === chip;
+        c.classList.toggle("active", isSelected);
+        c.setAttribute("aria-pressed", String(isSelected));
+      });
       const prefix = chip.getAttribute("data-topic-prefix") || "[Вопрос руководителю] ";
       const themeName = chip.getAttribute("data-topic-theme") || "question";
 
@@ -2532,11 +2781,13 @@ function initFeedbackForm() {
     const onlyLettersAndSpaces = /^[А-Яа-яЁёA-Za-z\-\s]+$/.test(cleanVal);
     const words = cleanVal.split(" ").filter((w) => w.length >= 2);
     const isValid = onlyLettersAndSpaces && words.length >= 2;
+    const isInvalidShown = !isValid && cleanVal.length > 0;
 
     fioInput.classList.toggle("is-valid", isValid);
-    fioInput.classList.toggle("is-invalid", !isValid && cleanVal.length > 0);
+    fioInput.classList.toggle("is-invalid", isInvalidShown);
+    fioInput.setAttribute("aria-invalid", String(isInvalidShown));
 
-    if (!isValid && cleanVal.length > 0) {
+    if (isInvalidShown) {
       fioHint.textContent = "Введите минимум 2 слова (только буквы, дефис и пробелы)";
       fioHint.className = "field-hint error-text";
     } else if (isValid) {
@@ -2557,9 +2808,11 @@ function initFeedbackForm() {
     const isEmail = emailRegex.test(cleanVal);
     const isPhone = phoneRegex.test(cleanVal);
     const isValid = isEmail || isPhone;
+    const isInvalidShown = !isValid && cleanVal.length > 0;
 
     contactInput.classList.toggle("is-valid", isValid);
-    contactInput.classList.toggle("is-invalid", !isValid && cleanVal.length > 0);
+    contactInput.classList.toggle("is-invalid", isInvalidShown);
+    contactInput.setAttribute("aria-invalid", String(isInvalidShown));
 
     if (isEmail) {
       contactHint.textContent = "✓ Распознан адрес электронной почты (Email)";
@@ -2567,7 +2820,7 @@ function initFeedbackForm() {
     } else if (isPhone) {
       contactHint.textContent = "✓ Распознан контактный номер телефона";
       contactHint.className = "field-hint valid-text";
-    } else if (cleanVal.length > 0) {
+    } else if (isInvalidShown) {
       contactHint.textContent = "Введите корректный телефон (+7 900 123-45-67) или Email";
       contactHint.className = "field-hint error-text";
     } else {
@@ -2585,11 +2838,13 @@ function initFeedbackForm() {
 
     const cleanVal = sanitizeInput(commentInput.value, 2000);
     const isValid = cleanVal.length >= 5;
+    const isInvalidShown = !isValid && cleanVal.length > 0;
 
     commentInput.classList.toggle("is-valid", isValid);
-    commentInput.classList.toggle("is-invalid", !isValid && cleanVal.length > 0);
+    commentInput.classList.toggle("is-invalid", isInvalidShown);
+    commentInput.setAttribute("aria-invalid", String(isInvalidShown));
 
-    if (!isValid && cleanVal.length > 0) {
+    if (isInvalidShown) {
       commentHint.textContent = "Слишком короткое сообщение (минимум 5 символов)";
       commentHint.className = "field-hint error-text";
     } else if (isValid) {
@@ -2640,6 +2895,9 @@ function initFeedbackForm() {
     const isCommentOk = validateComment();
 
     if (!isFioOk || !isContactOk || !isCommentOk) {
+      if (!isFioOk) fioInput.setAttribute("aria-invalid", "true");
+      if (!isContactOk) contactInput.setAttribute("aria-invalid", "true");
+      if (!isCommentOk) commentInput.setAttribute("aria-invalid", "true");
       formResponse.textContent = "Пожалуйста, проверьте правильность заполнения выделенных полей.";
       formResponse.className = "form-response error";
       formResponse.classList.remove("hidden");
@@ -2649,17 +2907,18 @@ function initFeedbackForm() {
     const sanitizedFio = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
     const sanitizedContact = sanitizeInput(contactInput.value, 100);
     const sanitizedComment = sanitizeInput(`${selectedTopicPrefix}${commentInput.value}`, 2000);
-    const fallbackTicketNum = `ЯМБ-${new Date().toLocaleDateString("ru-RU").replace(/\./g, "")}-${Math.floor(100 + Math.random() * 900)}`;
+    const fallbackTicketNum = generateSecureTicketNumber();
 
     submitBtn.disabled = true;
     submitBtnText.textContent = "Отправка сообщения...";
     submitLoader.classList.remove("hidden");
 
     const formDataParams = new URLSearchParams();
-    formDataParams.append("fio", sanitizedFio);
-    formDataParams.append("contact", sanitizedContact);
-    formDataParams.append("comment", sanitizedComment);
+    formDataParams.append("fio", neutralizeSpreadsheetFormula(sanitizedFio));
+    formDataParams.append("contact", neutralizeSpreadsheetFormula(sanitizedContact));
+    formDataParams.append("comment", neutralizeSpreadsheetFormula(sanitizedComment));
     formDataParams.append("ticket", fallbackTicketNum);
+    formDataParams.append("consent_152fz", "confirmed");
     formDataParams.append("website_hp", hpInput ? hpInput.value : "");
 
     try {
@@ -2695,6 +2954,7 @@ function initFeedbackForm() {
         receiptComment.textContent = sanitizedComment;
         form.classList.add("hidden");
         receiptBox.classList.remove("hidden");
+        if (receiptHeading) receiptHeading.focus();
       } else {
         formResponse.textContent = "Спасибо! Ваше сообщение успешно записано в реестр школы.";
         formResponse.className = "form-response success";
@@ -2706,6 +2966,7 @@ function initFeedbackForm() {
       if (charCounter) charCounter.textContent = "0 / 2000";
       [fioInput, contactInput, commentInput].forEach((el) => {
         el.classList.remove("is-valid", "is-invalid");
+        el.setAttribute("aria-invalid", "false");
       });
     } catch (_) {
       formResponse.textContent = "Не удалось отправить сообщение. Проверьте подключение к интернету и попробуйте снова.";
@@ -2721,10 +2982,10 @@ function initFeedbackForm() {
   if (copyReceiptBtn) {
     copyReceiptBtn.addEventListener("click", async () => {
       const receiptText = `${receiptMeta ? receiptMeta.textContent : ""}\nФИО: ${receiptFio ? receiptFio.textContent : ""}\nКонтакт: ${receiptContact ? receiptContact.textContent : ""}\nТекст: ${receiptComment ? receiptComment.textContent : ""}`;
-      try {
-        await navigator.clipboard.writeText(receiptText);
-        showDynamicIslandToast("✓ Текст квитанции скопирован");
-      } catch (_) {}
+      const copied = await copyTextToClipboard(receiptText);
+      showDynamicIslandToast(
+        copied ? "✓ Текст квитанции скопирован" : "Не удалось скопировать — выделите текст вручную"
+      );
     });
   }
 
@@ -2746,7 +3007,10 @@ function initScrollRevealAndCounters() {
     document.body.classList.contains("visually-impaired") ||
     isReducedMotionPreferred()
   ) {
-    revealElements.forEach((el) => el.classList.add("visible"));
+    revealElements.forEach((el) => {
+      el.classList.remove("reveal-pending");
+      el.classList.add("visible");
+    });
     return;
   }
 
@@ -2754,6 +3018,7 @@ function initScrollRevealAndCounters() {
     (entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
+          entry.target.classList.remove("reveal-pending");
           entry.target.classList.add("visible");
           observer.unobserve(entry.target);
         }
@@ -2762,7 +3027,17 @@ function initScrollRevealAndCounters() {
     { threshold: 0.12 }
   );
 
-  revealElements.forEach((el) => revealObserver.observe(el));
+  // Скрываем только элементы ниже текущего экрана, чтобы не задерживать LCP
+  const viewportCutoff = window.innerHeight * 0.95;
+  revealElements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top > viewportCutoff) {
+      el.classList.add("reveal-pending");
+      revealObserver.observe(el);
+    } else {
+      el.classList.add("visible");
+    }
+  });
 
   const animateCounter = (el) => {
     const target = parseFloat(el.getAttribute("data-target"));
