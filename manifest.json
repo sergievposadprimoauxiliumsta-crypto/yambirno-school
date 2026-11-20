@@ -8,14 +8,37 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#f8fafc",
   "theme_color": "#1e40af",
+  "prefer_related_applications": false,
   "categories": [
     "education",
     "government"
   ],
   "icons": [
+    {
+      "src": "assets/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/img/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "icon.svg",
       "sizes": "any",
@@ -37,6 +60,11 @@
       "url": "./#live-widget-card",
       "icons": [
         {
+          "src": "assets/img/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
           "src": "icon.svg",
           "sizes": "any",
           "type": "image/svg+xml"
@@ -50,6 +78,29 @@
       "url": "./#digital-guide",
       "icons": [
         {
+          "src": "assets/img/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Меню питания",
+      "short_name": "Питание",
+      "description": "Ежедневный рацион горячего питания по дням недели",
+      "url": "./#school-life",
+      "icons": [
+        {
+          "src": "assets/img/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
           "src": "icon.svg",
           "sizes": "any",
           "type": "image/svg+xml"
@@ -62,6 +113,11 @@
       "description": "Электронная приёмная руководителя филиала",
       "url": "./feedback.html",
       "icons": [
+        {
+          "src": "assets/img/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
         {
           "src": "icon.svg",
           "sizes": "any",
