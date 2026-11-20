@@ -1,16 +1,15 @@
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const SHEET3_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?gid=809598510&single=true&output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
-const API_SECRET_TOKEN = "SI28082026";
 
 const YAMBIRNO_LAT = 54.1286;
 const YAMBIRNO_LON = 41.9708;
 
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
-const A11Y_SETTINGS_KEY = "yambirno_a11y_settings_v1";
+const A11Y_SETTINGS_KEY = "yambirno_a11y_settings_v2";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v13";
-const SHEET3_CACHE_KEY = "yambirno_publications_cache_v1";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v14";
+const SHEET3_CACHE_KEY = "yambirno_publications_cache_v2";
 const FEEDBACK_COOLDOWN_KEY = "yambirno_feedback_last_sent";
 
 const ALLOWED_DOC_HOSTS = [
@@ -61,6 +60,7 @@ const DAY_NAMES_FULL = {
 };
 
 const DEFAULT_BELL_TIMES = {
+  0: { start: "08:00", end: "08:25", startMin: 480, endMin: 505 },
   1: { start: "08:30", end: "09:10", startMin: 510, endMin: 550 },
   2: { start: "09:20", end: "10:00", startMin: 560, endMin: 600 },
   3: { start: "10:10", end: "10:50", startMin: 610, endMin: 650 },
@@ -168,6 +168,7 @@ let latestParsedSheetData = null;
 let latestRawSheet3Rows = null;
 let activePublicationsCache = [];
 let activePublicationModalItem = null;
+let activePubFilterKey = "all";
 let lastRenderedPublicationsSignature = "";
 let hasCheckedInitialPubHash = false;
 let currentSelectedWeekday = getDefaultSchoolWeekday();
@@ -175,9 +176,87 @@ let currentSelectedGrade = getSavedGradeSelection();
 let currentSelectedMenuWeek = 1;
 let toastTimeoutId = null;
 let lastModalTriggerEl = null;
+const glidePillRefreshers = [];
+let chalkboardSyncCallback = null;
 
 function isReducedMotionPreferred() {
-  return Boolean(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const prefersReduced = Boolean(
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  const isVisuallyImpaired = Boolean(
+    document.body && document.body.classList.contains("visually-impaired")
+  );
+  return prefersReduced || isVisuallyImpaired;
+}
+
+function isDesktopHoverPointer() {
+  return Boolean(
+    window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches
+  );
+}
+
+function runViewTransition(updateDomFn) {
+  if (typeof document.startViewTransition === "function" && !isReducedMotionPreferred()) {
+    try {
+      document.startViewTransition(updateDomFn);
+      return;
+    } catch (_) {}
+  }
+  updateDomFn();
+}
+
+function createSpriteIcon(symbolId, extraClass = "", size = 16) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("class", `ui-ico ${extraClass}`.trim());
+  svg.setAttribute("width", String(size));
+  svg.setAttribute("height", String(size));
+  svg.setAttribute("aria-hidden", "true");
+
+  const use = document.createElementNS(svgNS, "use");
+  use.setAttribute("href", `#${symbolId}`);
+  svg.appendChild(use);
+  return svg;
+}
+
+function updateElementSpriteIcon(containerEl, symbolId) {
+  if (!containerEl) return;
+  const useEl = containerEl.querySelector("use");
+  if (useEl) {
+    useEl.setAttribute("href", `#${symbolId}`);
+  }
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 6500) {
+  if (typeof AbortController === "undefined") {
+    return fetch(url, options);
+  }
+  const controller = new AbortController();
+  const timerId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timerId);
+  }
+}
+
+function isValidCsvResponse(text, expectedMarkers = []) {
+  if (typeof text !== "string" || text.trim().length < 15) return false;
+  const head = text.slice(0, 320).trim().toLowerCase();
+  if (
+    head.startsWith("<!doctype") ||
+    head.startsWith("<html") ||
+    head.startsWith("<head") ||
+    head.startsWith("<script")
+  ) {
+    return false;
+  }
+  if (!text.includes(",") && !text.includes("\n")) return false;
+  if (expectedMarkers.length > 0) {
+    const lowerAll = text.toLowerCase();
+    return expectedMarkers.some((marker) => lowerAll.includes(marker));
+  }
+  return true;
 }
 
 function pluralRu(n, one, few, many) {
@@ -224,7 +303,7 @@ function sanitizeInput(rawString, maxLength = 1000) {
 // Защита от Google Sheets / CSV Formula Injection (CWE-1236)
 function neutralizeSpreadsheetFormula(value) {
   const str = String(value || "").trim();
-  if (/^[=+\-@\t\r]/.test(str)) {
+  if (/^[\s]*[=+\-@\t\r]/.test(str)) {
     return `'${str}`;
   }
   return str;
@@ -276,7 +355,7 @@ function isHostInAllowlist(hostname, allowlist) {
 
 function sanitizeDocumentUrl(rawUrl) {
   if (typeof rawUrl !== "string") return "";
-  const cleaned = rawUrl.trim();
+  const cleaned = rawUrl.replace(/[\x00-\x1F\x7F]/g, "").trim();
   if (!/^https:\/\/[^\s"'<>]+$/i.test(cleaned)) return "";
 
   try {
@@ -352,9 +431,10 @@ function buildInitialsSvgDataUri(initials, index = 0) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+// Авторская векторная заглушка без эмодзи (единый свет 45° сверху слева)
 function buildPublicationFallbackSvg(titleText) {
   const safeTitle = escapeXml(sanitizeInput(titleText || "Материал школы", 40));
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 375'><defs><linearGradient id='pg' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#1e3a8a'/><stop offset='100%' stop-color='#2563eb'/></linearGradient></defs><rect width='600' height='375' fill='url(#pg)'/><circle cx='300' cy='155' r='50' fill='#ffffff' opacity='0.15'/><text x='300' y='168' font-family='sans-serif' font-size='38' text-anchor='middle' fill='#fbbf24'>📢</text><text x='300' y='245' font-family='sans-serif' font-size='20' font-weight='bold' fill='#ffffff' text-anchor='middle'>${safeTitle}</text></svg>`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 375'><defs><linearGradient id='pg' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#1e3a8a'/><stop offset='100%' stop-color='#2563eb'/></linearGradient><linearGradient id='pa' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#fbbf24'/><stop offset='100%' stop-color='#d97706'/></linearGradient></defs><rect width='600' height='375' fill='url(#pg)'/><circle cx='300' cy='148' r='54' fill='#ffffff' opacity='0.14'/><circle cx='300' cy='132' r='16' fill='url(#pa)'/><path d='M256 154 C274 146 290 151 300 160 C310 151 326 146 344 154 V192 C326 184 310 189 300 198 C290 189 274 184 256 192 Z' fill='#ffffff' opacity='0.95'/><path d='M300 160 V198' stroke='#1e3a8a' stroke-width='3'/><text x='300' y='252' font-family='sans-serif' font-size='21' font-weight='bold' fill='#ffffff' text-anchor='middle'>${safeTitle}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
@@ -366,13 +446,13 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
-// Строгая проверка изображений: только HTTPS с доверенных хостов или локальные безопасные пути (без стороннего прокси)
-function resolveImageLinkSource(rawUrlCell, fallbackSvg) {
+// Строгая проверка изображений: только HTTPS с доверенных хостов или локальные пути, адаптивный размер Drive
+function resolveImageLinkSource(rawUrlCell, fallbackSvg, driveWidth = 640) {
   const cleaned = (rawUrlCell || "").trim();
   if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
 
   const isSafeRelativePath =
-    /^(?!.*(?:^|\/)\.\.(?:\/|$))[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(cleaned) &&
+    /^(?!.*(?:^|\/)\.\.(?:\/|$))[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(cleaned) &&
     !cleaned.startsWith("//");
   if (isSafeRelativePath) {
     return { src: cleaned, altTry: null, fallback: fallbackSvg };
@@ -401,7 +481,7 @@ function resolveImageLinkSource(rawUrlCell, fallbackSvg) {
       parsed.search.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (driveMatch && driveMatch[1]) {
       return {
-        src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`,
+        src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w${driveWidth}`,
         altTry: null,
         fallback: fallbackSvg
       };
@@ -436,17 +516,32 @@ function resolveTeacherPhotoSource(rawPhotoCell, teacherFio, cardIndex) {
     return { src: customSvg, altTry: null, fallback: customSvg };
   }
 
-  return resolveImageLinkSource(cleaned, fallbackSvg);
+  return resolveImageLinkSource(cleaned, fallbackSvg, 320);
+}
+
+function truncateAtWordBoundary(text, maxLen = 220) {
+  const str = String(text || "").trim();
+  if (str.length <= maxLen) return { short: str, rest: "", isTruncated: false };
+
+  let cut = str.lastIndexOf(" ", maxLen);
+  if (cut < Math.floor(maxLen * 0.6)) cut = maxLen;
+  return {
+    short: str.slice(0, cut).trim(),
+    rest: str.slice(cut).trim(),
+    isTruncated: true
+  };
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initHeroBackdropFallback();
+  initAccessibilityMode();
   initLiveDateTimeClockAndAmbient();
   initYambirnoWeatherWidget();
-  initAccessibilityMode();
   initChalkboardEngine();
   initScrollRevealAndCounters();
   initDigitalNavigatorTabs();
   initWeekdayAndGradeSwitchers();
+  initGlidePills();
   initShareScheduleToChat();
   initCopyButtons();
   initGalleryLightbox();
@@ -454,8 +549,27 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollSpyAndProgressRing();
   initLiveSheetWidgetAndMenu();
   initFeedbackForm();
+  initMotionTiltAndParallax();
   registerOfflineServiceWorker();
 });
+
+// Если растровый Hero ещё не загружен в assets/img/, аккуратно скрываем слой, оставляя градиент
+function initHeroBackdropFallback() {
+  const backdrop = document.getElementById("hero-backdrop");
+  const img = document.getElementById("hero-backdrop-img");
+  const scrim = document.querySelector(".hero-scrim");
+  if (!backdrop || !img) return;
+
+  const hideBackdrop = () => {
+    backdrop.classList.add("hidden");
+    if (scrim) scrim.classList.add("hidden");
+  };
+
+  img.addEventListener("error", hideBackdrop, { once: true });
+  if (img.complete && img.naturalWidth === 0) {
+    hideBackdrop();
+  }
+}
 
 function initChalkboardEngine() {
   const widget = document.getElementById("chalkboard-widget");
@@ -470,6 +584,7 @@ function initChalkboardEngine() {
   const wetWipeEl = document.getElementById("chalkboard-wet-wipe");
   const counterEl = document.getElementById("chalkboard-step-counter");
   const quizToggleBtn = document.getElementById("chalkboard-quiz-toggle");
+  const quizLabelEl = document.getElementById("chalkboard-quiz-label");
   const nextBtn = document.getElementById("chalkboard-next-btn");
   const revealBtn = document.getElementById("chalkboard-reveal-btn");
 
@@ -548,7 +663,7 @@ function initChalkboardEngine() {
     } else {
       stepsEl.textContent = item.steps;
       answerEl.textContent = item.answer;
-      if (statusEl) statusEl.textContent = "✓ Решено верно!";
+      if (statusEl) statusEl.textContent = "Решено верно";
       revealBtn.classList.add("hidden");
     }
   };
@@ -579,7 +694,7 @@ function initChalkboardEngine() {
       if (!ok1) return;
 
       if (cursorEl) cursorEl.classList.add("thinking");
-      if (statusEl) statusEl.textContent = "💭 Считает в уме...";
+      if (statusEl) statusEl.textContent = "Считает в уме...";
       const ok2 = await waitMs(950, token);
       if (!ok2) return;
 
@@ -606,7 +721,7 @@ function initChalkboardEngine() {
       const ok4 = await typeChalkString(answerEl, item.answer, token, 68);
       if (!ok4) return;
 
-      if (statusEl) statusEl.textContent = "✓ Решено верно!";
+      if (statusEl) statusEl.textContent = "Решено верно";
       const okHold = await waitMs(2300, token);
       if (!okHold) return;
 
@@ -630,11 +745,17 @@ function initChalkboardEngine() {
     runStageLoop(runToken);
   };
 
+  chalkboardSyncCallback = restartFromCurrent;
+
   if (quizToggleBtn) {
     quizToggleBtn.addEventListener("click", () => {
       isQuizMode = !isQuizMode;
       quizToggleBtn.setAttribute("aria-pressed", String(isQuizMode));
-      quizToggleBtn.textContent = isQuizMode ? "💡 Режим: Сам" : "💡 Решить самому";
+      if (quizLabelEl) {
+        quizLabelEl.textContent = isQuizMode ? "Режим: Сам" : "Решить самому";
+      } else {
+        quizToggleBtn.textContent = isQuizMode ? "Режим: Сам" : "Решить самому";
+      }
       showDynamicIslandToast(
         isQuizMode
           ? "Включён режим самопроверки на школьной доске"
@@ -657,7 +778,7 @@ function initChalkboardEngine() {
         stepsEl.textContent = item.steps;
         answerEl.textContent = item.answer;
         revealBtn.classList.add("hidden");
-        if (statusEl) statusEl.textContent = "✓ Решено верно!";
+        if (statusEl) statusEl.textContent = "Решено верно";
         return;
       }
       if (revealResolver) revealResolver(true);
@@ -707,8 +828,11 @@ function parseBellTimeRangeString(rawRangeStr, lessonNum) {
   };
 }
 
-function classifyLessonSubject(subjectTitle) {
+function classifyLessonSubject(subjectTitle, lessonNum = 1) {
   const s = (subjectTitle || "").toLowerCase();
+  if (lessonNum === 0 || s.includes("важном") || s.includes("горизонт")) {
+    return { cls: "subj-zero", iconId: "ico-zero-lesson" };
+  }
   if (
     s.includes("математ") ||
     s.includes("мат. грамот") ||
@@ -718,7 +842,7 @@ function classifyLessonSubject(subjectTitle) {
     s.includes("физик") ||
     s.includes("вероятност")
   ) {
-    return { cls: "subj-math", icon: "📐" };
+    return { cls: "subj-math", iconId: "ico-math" };
   }
   if (
     s.includes("естественно-науч") ||
@@ -728,7 +852,7 @@ function classifyLessonSubject(subjectTitle) {
     s.includes("географ") ||
     s.includes("окружающ")
   ) {
-    return { cls: "subj-sci", icon: "🌿" };
+    return { cls: "subj-sci", iconId: "ico-science" };
   }
   if (
     s.includes("русск") ||
@@ -740,13 +864,11 @@ function classifyLessonSubject(subjectTitle) {
     s.includes("английск") ||
     s.includes("родной")
   ) {
-    return { cls: "subj-lang", icon: "📖" };
+    return { cls: "subj-lang", iconId: "ico-cat-memo" };
   }
   if (
     s.includes("истори") ||
     s.includes("обществ") ||
-    s.includes("важном") ||
-    s.includes("горизонт") ||
     s.includes("орксэ") ||
     s.includes("днкр") ||
     s.includes("орлят") ||
@@ -755,9 +877,9 @@ function classifyLessonSubject(subjectTitle) {
     s.includes("профориент") ||
     s.includes("проект")
   ) {
-    return { cls: "subj-hist", icon: "🏛️" };
+    return { cls: "subj-hist", iconId: "ico-history" };
   }
-  return { cls: "subj-art", icon: "⚡" };
+  return { cls: "subj-art", iconId: "ico-art" };
 }
 
 function parseRawScheduleIntoLessons(rawText) {
@@ -779,6 +901,20 @@ function parseRawScheduleIntoLessons(rawText) {
   });
 }
 
+function renderScheduleSkeleton(containerEl) {
+  if (!containerEl) return;
+  containerEl.replaceChildren();
+  const stack = document.createElement("div");
+  stack.className = "skeleton-stack";
+  stack.setAttribute("aria-hidden", "true");
+  for (let i = 0; i < 5; i++) {
+    const row = document.createElement("div");
+    row.className = "skeleton-row";
+    stack.appendChild(row);
+  }
+  containerEl.appendChild(stack);
+}
+
 function renderEmptyScheduleState(containerEl, isOfflineError = false) {
   if (!containerEl) return;
   const box = document.createElement("div");
@@ -786,15 +922,18 @@ function renderEmptyScheduleState(containerEl, isOfflineError = false) {
 
   const title = document.createElement("div");
   title.className = "diary-empty-title";
-  title.textContent = isOfflineError
-    ? "⏳ Не удалось загрузить расписание"
-    : "⏳ Расписание уточняется";
+  title.appendChild(createSpriteIcon("ico-schedule", "", 17));
+  const titleSpan = document.createElement("span");
+  titleSpan.textContent = isOfflineError
+    ? "Не удалось загрузить расписание"
+    : "Расписание уточняется";
+  title.appendChild(titleSpan);
 
   const text = document.createElement("p");
   text.className = "diary-empty-text";
   text.textContent = isOfflineError
-    ? "Проверьте подключение к интернету и нажмите кнопку «Обновить». Приносим извинения за временные неудобства!"
-    : "Актуальное расписание занятий для этого класса сейчас уточняется и будет опубликовано в ближайшее время. Приносим извинения за временные неудобства!";
+    ? "Проверьте подключение к интернету и нажмите кнопку «Обновить». Приносим извинения за временные неудобства."
+    : "Актуальное расписание занятий для этого класса сейчас уточняется и будет опубликовано в ближайшее время.";
 
   const contact = document.createElement("div");
   contact.className = "diary-empty-contact";
@@ -827,7 +966,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
 
   lessons.forEach((lessonObj, idx) => {
     const row = document.createElement("div");
-    const subjMeta = classifyLessonSubject(lessonObj.title);
+    const subjMeta = classifyLessonSubject(lessonObj.title, lessonObj.num);
     row.className = `diary-lesson-row ${subjMeta.cls}`;
     if (skipAnimation || isReducedMotionPreferred()) {
       row.classList.add("no-cascade");
@@ -845,7 +984,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
     const iconSpan = document.createElement("span");
     iconSpan.className = "diary-lesson-icon";
     iconSpan.setAttribute("aria-hidden", "true");
-    iconSpan.textContent = subjMeta.icon;
+    iconSpan.appendChild(createSpriteIcon(subjMeta.iconId, "", 17));
 
     const nameSpan = document.createElement("span");
     nameSpan.className = "diary-lesson-name";
@@ -876,7 +1015,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
       } else if (isTodaySelected && currentTotalMinutes > bell.endMin && currentTotalMinutes < 980) {
         const donePill = document.createElement("span");
         donePill.className = "lesson-done-pill";
-        donePill.textContent = "✓ Прошёл";
+        donePill.textContent = "Прошёл";
         right.appendChild(donePill);
       }
 
@@ -926,18 +1065,18 @@ function initShareScheduleToChat() {
     const advice = document.getElementById("weather-parent-advice");
     const weatherLine =
       tomTemp && advice
-        ? `\n\n🌤 Погода в Ямбирно к 1-му уроку: ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
+        ? `\n\nПогода в с. Ямбирно к 1-му уроку: ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
         : "";
 
     const textForChat =
-      `📘 Расписание уроков — ${dayName} (${currentSelectedGrade} класс):\n` +
+      `Расписание уроков — ${dayName} (${currentSelectedGrade} класс):\n` +
       formattedLessons +
       weatherLine;
 
     const copied = await copyTextToClipboard(textForChat);
     showDynamicIslandToast(
       copied
-        ? `✓ Расписание ${currentSelectedGrade} класса скопировано для чата!`
+        ? `Расписание ${currentSelectedGrade} класса скопировано для чата`
         : "Не удалось скопировать — выделите расписание вручную"
     );
   });
@@ -947,7 +1086,9 @@ function initLiveDateTimeClockAndAmbient() {
   const dateEl = document.getElementById("live-date-display");
   const timeEl = document.getElementById("live-time-display");
   const statusEl = document.getElementById("school-day-status");
+  const statusTextEl = document.getElementById("school-day-status-text");
   const widgetTodayPill = document.getElementById("widget-today-pill");
+  const widgetTodayText = document.getElementById("widget-today-text");
   const heroAmbient = document.getElementById("hero-ambient");
   if (!dateEl && !timeEl && !statusEl && !widgetTodayPill && !heroAmbient) return;
 
@@ -982,21 +1123,39 @@ function initLiveDateTimeClockAndAmbient() {
 
     if (widgetTodayPill) {
       const shortDate = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "long" });
-      widgetTodayPill.textContent = `📅 Сегодня, ${shortDate}`;
+      if (widgetTodayText) {
+        widgetTodayText.textContent = `Сегодня, ${shortDate}`;
+      } else {
+        widgetTodayPill.textContent = `Сегодня, ${shortDate}`;
+      }
     }
 
     if (statusEl) {
+      const day = now.getDay();
+      let statusLabel = "";
+      let iconId = "ico-school-day";
+
       if (customSheetSchoolStatus) {
-        statusEl.textContent = `🟢 ${customSheetSchoolStatus}`;
+        statusLabel = customSheetSchoolStatus;
+        iconId = customSheetSchoolStatus.toLowerCase().includes("выходн")
+          ? "ico-day-off"
+          : "ico-school-day";
+      } else if (day === 0 || day === 6) {
+        statusLabel = "Выходной день • Приём обращений открыт";
+        iconId = "ico-day-off";
+      } else if (hour >= 8 && hour < 17) {
+        statusLabel = "Учебный день (работа по расписанию)";
+        iconId = "ico-school-day";
       } else {
-        const day = now.getDay();
-        if (day === 0 || day === 6) {
-          statusEl.textContent = "🏡 Выходной день • Приём обращений открыт";
-        } else if (hour >= 8 && hour < 17) {
-          statusEl.textContent = "🟢 Учебный день (работа по расписанию)";
-        } else {
-          statusEl.textContent = "🌙 Учебный день завершён • Приём обращений 24/7";
-        }
+        statusLabel = "Учебный день завершён • Приём обращений 24/7";
+        iconId = "ico-day-off";
+      }
+
+      if (statusTextEl) {
+        statusTextEl.textContent = statusLabel;
+        updateElementSpriteIcon(statusEl, iconId);
+      } else {
+        statusEl.textContent = statusLabel;
       }
     }
 
@@ -1011,21 +1170,26 @@ function initLiveDateTimeClockAndAmbient() {
   };
 
   updateClock();
-  setInterval(updateClock, 1000);
+  setInterval(() => {
+    if (!document.hidden) updateClock();
+  }, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) updateClock();
+  });
 }
 
 function decodeWmoWeather(code) {
-  if (code === 0) return { icon: "☀️", text: "Ясно", rain: false, snow: false, sky: "clear" };
-  if (code === 1 || code === 2) return { icon: "🌤️", text: "Переменная облачность", rain: false, snow: false, sky: "clear" };
-  if (code === 3) return { icon: "☁️", text: "Пасмурно", rain: false, snow: false, sky: "cloudy" };
-  if (code === 45 || code === 48) return { icon: "🌫️", text: "Туман", rain: false, snow: false, sky: "cloudy" };
-  if (code >= 51 && code <= 57) return { icon: "🌦️", text: "Морось", rain: true, snow: false, sky: "rain" };
-  if (code >= 61 && code <= 67) return { icon: "🌧️", text: "Дождь", rain: true, snow: false, sky: "rain" };
-  if (code >= 71 && code <= 77) return { icon: "❄️", text: "Снег", rain: false, snow: true, sky: "snow" };
-  if (code >= 80 && code <= 82) return { icon: "🌧️", text: "Ливень", rain: true, snow: false, sky: "rain" };
-  if (code >= 85 || code === 86) return { icon: "🌨️", text: "Снегопад", rain: false, snow: true, sky: "snow" };
-  if (code >= 95) return { icon: "⛈️", text: "Гроза", rain: true, snow: false, sky: "rain" };
-  return { icon: "🌤️", text: "Без осадков", rain: false, snow: false, sky: "clear" };
+  if (code === 0) return { iconId: "ico-weather-sun", text: "Ясно", rain: false, snow: false, sky: "clear" };
+  if (code === 1 || code === 2) return { iconId: "ico-weather-sun", text: "Переменная облачность", rain: false, snow: false, sky: "clear" };
+  if (code === 3) return { iconId: "ico-weather-cloud", text: "Пасмурно", rain: false, snow: false, sky: "cloudy" };
+  if (code === 45 || code === 48) return { iconId: "ico-weather-cloud", text: "Туман", rain: false, snow: false, sky: "cloudy" };
+  if (code >= 51 && code <= 57) return { iconId: "ico-weather-rain", text: "Морось", rain: true, snow: false, sky: "rain" };
+  if (code >= 61 && code <= 67) return { iconId: "ico-weather-rain", text: "Дождь", rain: true, snow: false, sky: "rain" };
+  if (code >= 71 && code <= 77) return { iconId: "ico-weather-snow", text: "Снег", rain: false, snow: true, sky: "snow" };
+  if (code >= 80 && code <= 82) return { iconId: "ico-weather-rain", text: "Ливень", rain: true, snow: false, sky: "rain" };
+  if (code >= 85 || code === 86) return { iconId: "ico-weather-snow", text: "Снегопад", rain: false, snow: true, sky: "snow" };
+  if (code >= 95) return { iconId: "ico-weather-rain", text: "Гроза", rain: true, snow: false, sky: "rain" };
+  return { iconId: "ico-weather-sun", text: "Без осадков", rain: false, snow: false, sky: "clear" };
 }
 
 function findTomorrowMorningWeatherIndex(hourlyTimes) {
@@ -1042,6 +1206,7 @@ function findTomorrowMorningWeatherIndex(hourlyTimes) {
 async function initYambirnoWeatherWidget() {
   const weatherBox = document.getElementById("yambirno-weather-box");
   const topPill = document.getElementById("top-weather-pill");
+  const topText = document.getElementById("top-weather-text");
   if (!weatherBox && !topPill) return;
 
   const nowIconEl = document.getElementById("weather-now-icon");
@@ -1054,7 +1219,7 @@ async function initYambirnoWeatherWidget() {
   const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${YAMBIRNO_LAT}&longitude=${YAMBIRNO_LON}&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&timezone=Europe%2FMoscow&forecast_days=2`;
 
   try {
-    const res = await fetch(apiUrl);
+    const res = await fetchWithTimeout(apiUrl, {}, 6500);
     if (!res.ok) throw new Error("Weather HTTP error");
     const data = await res.json();
 
@@ -1070,8 +1235,18 @@ async function initYambirnoWeatherWidget() {
       if (curWmo.sky === "snow") weatherBox.classList.add("weather-sky-snow");
     }
 
-    if (topPill) topPill.textContent = `${curWmo.icon} с. Ямбирно: ${curSign}`;
-    if (nowIconEl) nowIconEl.textContent = curWmo.icon;
+    if (topPill) {
+      if (topText) {
+        topText.textContent = `с. Ямбирно: ${curSign}`;
+        updateElementSpriteIcon(topPill, curWmo.iconId);
+      } else {
+        topPill.textContent = `с. Ямбирно: ${curSign}`;
+      }
+    }
+
+    if (nowIconEl) {
+      nowIconEl.replaceChildren(createSpriteIcon(curWmo.iconId, "", 22));
+    }
     if (nowTempEl) nowTempEl.textContent = curSign;
     if (nowDescEl) nowDescEl.textContent = `${curWmo.text}, ветер ${curWind} м/с`;
 
@@ -1092,28 +1267,36 @@ async function initYambirnoWeatherWidget() {
 
     const tomWmo = decodeWmoWeather(tomCode);
 
-    if (tomTempEl) tomTempEl.textContent = `${tomWmo.icon} ${tomSign}`;
+    if (tomTempEl) {
+      tomTempEl.replaceChildren(createSpriteIcon(tomWmo.iconId, "", 18));
+      const valNode = document.createElement("span");
+      valNode.textContent = tomSign;
+      tomTempEl.appendChild(valNode);
+    }
     if (tomDescEl) tomDescEl.textContent = `${tomWmo.text} (осадки ${tomPrecipProb}%)`;
 
     if (adviceEl) {
       adviceEl.classList.remove("advice-rain", "advice-cold");
       if (tomWmo.rain || (tomPrecipProb >= 40 && tomTempRaw > 0)) {
-        adviceEl.textContent = "☔ Совет на утро: возможен дождь — дайте ребёнку в школу зонт или дождевик!";
+        adviceEl.textContent = "Совет на утро: возможен дождь — дайте ребёнку в школу зонт или дождевик.";
         adviceEl.classList.add("advice-rain");
       } else if (tomWmo.snow || (tomPrecipProb >= 40 && tomTempRaw <= 0)) {
-        adviceEl.textContent = "❄️ Совет на утро: ожидается снег — оденьте ребёнка потеплее, на улице может быть скользко.";
+        adviceEl.textContent = "Совет на утро: ожидается снег — оденьте ребёнка потеплее, на улице может быть скользко.";
         adviceEl.classList.add("advice-cold");
       } else if (tomTempRaw <= -12) {
-        adviceEl.textContent = "🧣 Совет на утро: морозное утро — не забудьте тёплую шапку, шарф и варежки.";
+        adviceEl.textContent = "Совет на утро: морозное утро — не забудьте тёплую шапку, шарф и варежки.";
         adviceEl.classList.add("advice-cold");
       } else if (tomTempRaw <= 4) {
-        adviceEl.textContent = "🧥 Совет на утро: прохладно и без осадков — рекомендуем тёплую куртку по сезону.";
+        adviceEl.textContent = "Совет на утро: прохладно и без осадков — рекомендуем тёплую куртку по сезону.";
       } else {
-        adviceEl.textContent = "☀️ Совет на утро: осадков к 1-му уроку не ожидается — зонт не нужен!";
+        adviceEl.textContent = "Совет на утро: осадков к 1-му уроку не ожидается — зонт не понадобится.";
       }
     }
   } catch (_) {
-    if (topPill) topPill.textContent = "📍 с. Ямбирно";
+    if (topPill) {
+      if (topText) topText.textContent = "с. Ямбирно";
+      else topPill.textContent = "с. Ямбирно";
+    }
     if (nowDescEl) nowDescEl.textContent = "Метеоданные обновляются";
     if (adviceEl) adviceEl.textContent = "Удачного учебного дня и хорошей погоды!";
   }
@@ -1126,20 +1309,24 @@ function initAccessibilityMode() {
 
   const sizeBtns = panel ? panel.querySelectorAll("[data-a11y-size]") : [];
   const themeBtns = panel ? panel.querySelectorAll("[data-a11y-theme]") : [];
+  const fontBtns = panel ? panel.querySelectorAll("[data-a11y-font]") : [];
   const spacingBtns = panel ? panel.querySelectorAll("[data-a11y-spacing]") : [];
+  const lhBtns = panel ? panel.querySelectorAll("[data-a11y-lh]") : [];
   const imagesToggleBtn = document.getElementById("a11y-images-toggle");
   const resetBtn = document.getElementById("a11y-reset-btn");
 
   const defaultSettings = {
     size: "normal",
     theme: "yellow",
+    font: "sans",
     spacing: "normal",
+    lh: "normal",
     showImages: false
   };
 
   let settings = { ...defaultSettings };
   try {
-    const rawSettings = localStorage.getItem(A11Y_SETTINGS_KEY);
+    const rawSettings = localStorage.getItem(A11Y_SETTINGS_KEY) || localStorage.getItem("yambirno_a11y_settings_v1");
     if (rawSettings) {
       const parsed = JSON.parse(rawSettings);
       settings = { ...defaultSettings, ...parsed };
@@ -1158,8 +1345,12 @@ function initAccessibilityMode() {
       "a11y-size-xlarge",
       "a11y-theme-white",
       "a11y-theme-black",
+      "a11y-theme-blue",
+      "a11y-font-serif",
       "a11y-spacing-medium",
       "a11y-spacing-large",
+      "a11y-lh-medium",
+      "a11y-lh-large",
       "a11y-show-images"
     );
 
@@ -1167,13 +1358,19 @@ function initAccessibilityMode() {
     if (settings.size === "xlarge") document.body.classList.add("a11y-size-xlarge");
     if (settings.theme === "white") document.body.classList.add("a11y-theme-white");
     if (settings.theme === "black") document.body.classList.add("a11y-theme-black");
+    if (settings.theme === "blue") document.body.classList.add("a11y-theme-blue");
+    if (settings.font === "serif") document.body.classList.add("a11y-font-serif");
     if (settings.spacing === "medium") document.body.classList.add("a11y-spacing-medium");
     if (settings.spacing === "large") document.body.classList.add("a11y-spacing-large");
+    if (settings.lh === "medium") document.body.classList.add("a11y-lh-medium");
+    if (settings.lh === "large") document.body.classList.add("a11y-lh-large");
     if (settings.showImages) document.body.classList.add("a11y-show-images");
 
     sizeBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-size") === settings.size)));
     themeBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-theme") === settings.theme)));
+    fontBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-font") === settings.font)));
     spacingBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-spacing") === settings.spacing)));
+    lhBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute("data-a11y-lh") === settings.lh)));
 
     if (imagesToggleBtn) {
       imagesToggleBtn.setAttribute("aria-pressed", String(settings.showImages));
@@ -1204,6 +1401,12 @@ function initAccessibilityMode() {
     if (textSpan) {
       textSpan.textContent = isEnabled ? "✕ Обычный вид сайта" : "Версия для слабовидящих";
     }
+
+    if (typeof chalkboardSyncCallback === "function") {
+      chalkboardSyncCallback();
+    }
+    refreshAllGlidePills();
+
     if (announce) {
       showDynamicIslandToast(isEnabled ? "Включена версия для слабовидящих" : "Включён обычный вид сайта");
     }
@@ -1241,9 +1444,25 @@ function initAccessibilityMode() {
     });
   });
 
+  fontBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      settings.font = btn.getAttribute("data-a11y-font") || "sans";
+      applySettings();
+      saveSettings();
+    });
+  });
+
   spacingBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       settings.spacing = btn.getAttribute("data-a11y-spacing") || "normal";
+      applySettings();
+      saveSettings();
+    });
+  });
+
+  lhBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      settings.lh = btn.getAttribute("data-a11y-lh") || "normal";
       applySettings();
       saveSettings();
     });
@@ -1313,6 +1532,7 @@ function parseMultiplePhotoUrls(rawCell) {
     .filter((item) => item.length > 3);
 }
 
+// Парсинг даты публикации строго в часовом поясе Europe/Moscow (+03:00), включая DD.MM.YY
 function parseScheduleDateTime(rawDateStr) {
   const cleaned = sanitizeInput(rawDateStr || "", 60);
   if (!cleaned) {
@@ -1320,14 +1540,15 @@ function parseScheduleDateTime(rawDateStr) {
   }
 
   let parsedDate = null;
-  const ruMatch = cleaned.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{4})(?:\s+(\d{1,2})[:.](\d{2}))?/);
+  const ruMatch = cleaned.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})(?:\s+(\d{1,2})[:.](\d{2}))?/);
   if (ruMatch) {
-    const day = parseInt(ruMatch[1], 10);
-    const month = parseInt(ruMatch[2], 10) - 1;
-    const year = parseInt(ruMatch[3], 10);
-    const hours = ruMatch[4] !== undefined ? parseInt(ruMatch[4], 10) : 0;
-    const minutes = ruMatch[5] !== undefined ? parseInt(ruMatch[5], 10) : 0;
-    parsedDate = new Date(year, month, day, hours, minutes, 0);
+    const day = String(parseInt(ruMatch[1], 10)).padStart(2, "0");
+    const month = String(parseInt(ruMatch[2], 10)).padStart(2, "0");
+    let yearNum = parseInt(ruMatch[3], 10);
+    if (yearNum < 100) yearNum += 2000;
+    const hours = ruMatch[4] !== undefined ? String(parseInt(ruMatch[4], 10)).padStart(2, "0") : "00";
+    const minutes = ruMatch[5] !== undefined ? String(parseInt(ruMatch[5], 10)).padStart(2, "0") : "00";
+    parsedDate = new Date(`${yearNum}-${month}-${day}T${hours}:${minutes}:00+03:00`);
   } else {
     const fallbackTimestamp = Date.parse(cleaned);
     if (!Number.isNaN(fallbackTimestamp)) {
@@ -1343,10 +1564,10 @@ function parseScheduleDateTime(rawDateStr) {
   const targetMs = parsedDate.getTime();
   const hasTimePart = /\d{1,2}[:.]\d{2}/.test(cleaned);
   const displayStr = hasTimePart
-    ? parsedDate.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" }) +
+    ? parsedDate.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Moscow" }) +
       " в " +
-      parsedDate.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
-    : parsedDate.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+      parsedDate.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Moscow" })
+    : parsedDate.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Moscow" });
 
   return {
     timestamp: targetMs,
@@ -1358,15 +1579,57 @@ function parseScheduleDateTime(rawDateStr) {
 function classifyPublicationBadgeTheme(badgeText) {
   const b = (badgeText || "").toLowerCase();
   if (b.includes("важн") || b.includes("срочн") || b.includes("вниман")) {
-    return { cardCls: "pub-theme-urgent", badgeCls: "pub-badge-urgent" };
+    return {
+      key: "urgent",
+      label: "Важно",
+      cardCls: "pub-theme-urgent",
+      badgeCls: "pub-badge-urgent",
+      iconId: "ico-cat-urgent"
+    };
   }
-  if (b.includes("безопасн") || b.includes("памятк") || b.includes("пдд") || b.includes("мчс") || b.includes("профилакт")) {
-    return { cardCls: "pub-theme-safety", badgeCls: "pub-badge-safety" };
+  if (b.includes("здоров") || b.includes("профилакт") || b.includes("питан")) {
+    return {
+      key: "health",
+      label: "Профилактика и здоровье",
+      cardCls: "pub-theme-health",
+      badgeCls: "pub-badge-health",
+      iconId: "ico-cat-health"
+    };
+  }
+  if (b.includes("безопасн") || b.includes("пдд") || b.includes("мчс")) {
+    return {
+      key: "safety",
+      label: "Безопасность",
+      cardCls: "pub-theme-safety",
+      badgeCls: "pub-badge-safety",
+      iconId: "ico-cat-safety"
+    };
   }
   if (b.includes("праздник") || b.includes("событ") || b.includes("конкурс") || b.includes("побед")) {
-    return { cardCls: "pub-theme-event", badgeCls: "pub-badge-event" };
+    return {
+      key: "event",
+      label: "Праздник",
+      cardCls: "pub-theme-event",
+      badgeCls: "pub-badge-event",
+      iconId: "ico-cat-holiday"
+    };
   }
-  return { cardCls: "", badgeCls: "" };
+  if (b.includes("памятк") || b.includes("родител")) {
+    return {
+      key: "memo",
+      label: "Памятка родителям",
+      cardCls: "",
+      badgeCls: "",
+      iconId: "ico-cat-memo"
+    };
+  }
+  return {
+    key: "info",
+    label: "Информация",
+    cardCls: "",
+    badgeCls: "",
+    iconId: "ico-doc-pdf"
+  };
 }
 
 function openPublicationModal(pubItem, updateUrlHash = true) {
@@ -1404,7 +1667,7 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
         img.height = 375;
         img.alt = `${pubItem.title || "Фото материала"} — изображение ${idx + 1}`;
 
-        const resolved = resolveImageLinkSource(rawUrl, fallbackSvg);
+        const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1400);
         let triedAlt = false;
         img.onerror = () => {
           if (!triedAlt && resolved.altTry) {
@@ -1429,6 +1692,7 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
   if (docLinkEl) {
     if (pubItem.docUrl) {
       docLinkEl.href = pubItem.docUrl;
+      docLinkEl.setAttribute("rel", "noopener noreferrer ugc");
       docLinkEl.classList.remove("hidden");
     } else {
       docLinkEl.href = "#";
@@ -1518,7 +1782,7 @@ function initPublicationModalEvents() {
       const copied = await copyTextToClipboard(directUrl);
       showDynamicIslandToast(
         copied
-          ? "✓ Прямая ссылка на материал скопирована"
+          ? "Прямая ссылка на материал скопирована"
           : "Не удалось скопировать ссылку — скопируйте её из адресной строки"
       );
     });
@@ -1530,10 +1794,250 @@ function initPublicationModalEvents() {
       if (!fullText) return;
       const copied = await copyTextToClipboard(fullText);
       showDynamicIslandToast(
-        copied ? "✓ Текст публикации скопирован" : "Не удалось скопировать — выделите текст вручную"
+        copied ? "Текст публикации скопирован" : "Не удалось скопировать — выделите текст вручную"
       );
     });
   }
+}
+
+function renderPublicationFilters(publications) {
+  const bar = document.getElementById("pub-filters-bar");
+  if (!bar) return;
+
+  const categoriesMap = new Map();
+  publications.forEach((pub) => {
+    const theme = classifyPublicationBadgeTheme(pub.badge);
+    if (!categoriesMap.has(theme.key)) {
+      categoriesMap.set(theme.key, { ...theme, count: 0 });
+    }
+    categoriesMap.get(theme.key).count += 1;
+  });
+
+  if (categoriesMap.size <= 1) {
+    bar.replaceChildren();
+    bar.classList.add("hidden");
+    activePubFilterKey = "all";
+    return;
+  }
+
+  if (activePubFilterKey !== "all" && !categoriesMap.has(activePubFilterKey)) {
+    activePubFilterKey = "all";
+  }
+
+  bar.replaceChildren();
+
+  const makeChip = (key, label, count, iconId) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    const isActive = activePubFilterKey === key;
+    btn.className = isActive ? "pub-filter-chip active" : "pub-filter-chip";
+    btn.setAttribute("aria-pressed", String(isActive));
+
+    if (iconId) btn.appendChild(createSpriteIcon(iconId, "", 15));
+    const txt = document.createElement("span");
+    txt.textContent = `${label} (${count})`;
+    btn.appendChild(txt);
+
+    btn.addEventListener("click", () => {
+      if (activePubFilterKey === key) return;
+      activePubFilterKey = key;
+      runViewTransition(() => {
+        renderPublicationCards(activePublicationsCache);
+        renderPublicationFilters(activePublicationsCache);
+      });
+    });
+    return btn;
+  };
+
+  bar.appendChild(makeChip("all", "Все материалы", publications.length, "ico-board"));
+  categoriesMap.forEach((cat) => {
+    bar.appendChild(makeChip(cat.key, cat.label, cat.count, cat.iconId));
+  });
+
+  bar.classList.remove("hidden");
+}
+
+function renderPublicationCards(publications) {
+  const gridEl = document.getElementById("publications-grid");
+  if (!gridEl) return;
+
+  gridEl.replaceChildren();
+
+  const filtered =
+    activePubFilterKey === "all"
+      ? publications
+      : publications.filter((p) => classifyPublicationBadgeTheme(p.badge).key === activePubFilterKey);
+
+  filtered.forEach((pub) => {
+    const theme = classifyPublicationBadgeTheme(pub.badge);
+    const card = document.createElement("article");
+    card.id = `pub-${pub.id}`;
+    card.className = `pub-card surface-card elevate-card reveal visible ${theme.cardCls}`.trim();
+
+    if (pub.photos.length > 0) {
+      const mediaWrap = document.createElement("div");
+      mediaWrap.className = "pub-card-media";
+      mediaWrap.setAttribute("title", "Нажмите, чтобы открыть материал полностью");
+
+      const img = document.createElement("img");
+      img.className = "pub-card-img";
+      img.setAttribute("referrerpolicy", "no-referrer");
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.width = 600;
+      img.height = 375;
+      img.alt = pub.title;
+
+      const fallbackSvg = buildPublicationFallbackSvg(pub.title);
+      const resolved = resolveImageLinkSource(pub.photos[0], fallbackSvg, 640);
+      let triedAlt = false;
+      img.onerror = () => {
+        if (!triedAlt && resolved.altTry) {
+          triedAlt = true;
+          img.src = resolved.altTry;
+        } else {
+          img.onerror = null;
+          img.src = resolved.fallback;
+        }
+      };
+      img.src = resolved.src;
+      mediaWrap.appendChild(img);
+
+      if (pub.photos.length > 1) {
+        const multiBadge = document.createElement("span");
+        multiBadge.className = "pub-multi-badge";
+        multiBadge.appendChild(createSpriteIcon("ico-gallery", "", 14));
+        const multiText = document.createElement("span");
+        multiText.textContent = `${pub.photos.length} фото`;
+        multiBadge.appendChild(multiText);
+        mediaWrap.appendChild(multiBadge);
+      }
+
+      mediaWrap.addEventListener("click", () => openPublicationModal(pub, true));
+      card.appendChild(mediaWrap);
+    }
+
+    const content = document.createElement("div");
+    content.className = "pub-card-content";
+
+    const metaRow = document.createElement("div");
+    metaRow.className = "pub-card-meta";
+
+    const badgeSpan = document.createElement("span");
+    badgeSpan.className = `pub-badge ${theme.badgeCls}`.trim();
+    badgeSpan.appendChild(createSpriteIcon(theme.iconId, "", 14));
+    const badgeLabel = document.createElement("span");
+    badgeLabel.textContent = pub.badge;
+    badgeSpan.appendChild(badgeLabel);
+    metaRow.appendChild(badgeSpan);
+
+    if (pub.dateDisplay) {
+      const dateSpan = document.createElement("span");
+      dateSpan.className = "pub-date-text";
+      dateSpan.appendChild(createSpriteIcon("ico-calendar", "", 13));
+      const dTxt = document.createElement("span");
+      dTxt.textContent = pub.dateDisplay;
+      dateSpan.appendChild(dTxt);
+      metaRow.appendChild(dateSpan);
+    }
+
+    content.appendChild(metaRow);
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "pub-card-title";
+    titleEl.textContent = pub.title;
+    content.appendChild(titleEl);
+
+    const splitText = truncateAtWordBoundary(pub.text, 220);
+    let expandWrap = null;
+    let excerptEl = null;
+
+    if (pub.text) {
+      excerptEl = document.createElement("p");
+      excerptEl.className = splitText.isTruncated
+        ? "pub-card-excerpt pub-excerpt-masked"
+        : "pub-card-excerpt";
+      excerptEl.textContent = splitText.isTruncated ? `${splitText.short}...` : pub.text;
+      content.appendChild(excerptEl);
+
+      if (splitText.isTruncated) {
+        expandWrap = document.createElement("div");
+        expandWrap.className = "pub-expand-wrap";
+        const expandInner = document.createElement("div");
+        expandInner.className = "pub-expand-inner";
+        const restP = document.createElement("p");
+        restP.className = "pub-card-excerpt";
+        restP.textContent = pub.text;
+        expandInner.appendChild(restP);
+        expandWrap.appendChild(expandInner);
+        content.appendChild(expandWrap);
+      }
+    }
+
+    const footer = document.createElement("div");
+    footer.className = "pub-card-footer";
+
+    if (splitText.isTruncated && expandWrap && excerptEl) {
+      const toggleExpandBtn = document.createElement("button");
+      toggleExpandBtn.type = "button";
+      toggleExpandBtn.className = "btn-pub-action";
+      toggleExpandBtn.setAttribute("aria-expanded", "false");
+      toggleExpandBtn.appendChild(createSpriteIcon("ico-cat-memo", "ui-ico--book", 15));
+      const toggleLabel = document.createElement("span");
+      toggleLabel.textContent = "Читать полностью";
+      toggleExpandBtn.appendChild(toggleLabel);
+
+      toggleExpandBtn.addEventListener("click", () => {
+        const nextOpen = !expandWrap.classList.contains("is-open");
+        expandWrap.classList.toggle("is-open", nextOpen);
+        excerptEl.classList.toggle("hidden", nextOpen);
+        toggleExpandBtn.setAttribute("aria-expanded", String(nextOpen));
+        toggleLabel.textContent = nextOpen ? "Свернуть текст" : "Читать полностью";
+      });
+      footer.appendChild(toggleExpandBtn);
+    }
+
+    if (pub.photos.length > 0 || splitText.isTruncated) {
+      const modalBtn = document.createElement("button");
+      modalBtn.type = "button";
+      modalBtn.className = splitText.isTruncated ? "btn-pub-action btn-pub-doc" : "btn-pub-action";
+      modalBtn.appendChild(
+        createSpriteIcon(pub.photos.length > 0 ? "ico-gallery" : "ico-link", "", 15)
+      );
+      const modalLabel = document.createElement("span");
+      modalLabel.textContent =
+        pub.photos.length > 1
+          ? `Открыть (${pub.photos.length} фото)`
+          : pub.photos.length === 1
+          ? "Открыть с фото"
+          : "Окно / ссылка";
+      modalBtn.appendChild(modalLabel);
+      modalBtn.addEventListener("click", () => openPublicationModal(pub, true));
+      footer.appendChild(modalBtn);
+    }
+
+    if (pub.docUrl) {
+      const docLink = document.createElement("a");
+      docLink.href = pub.docUrl;
+      docLink.target = "_blank";
+      docLink.rel = "noopener noreferrer ugc";
+      docLink.className = "btn-pub-action btn-pub-doc";
+      docLink.appendChild(createSpriteIcon("ico-doc-pdf", "", 15));
+      const docSpan = document.createElement("span");
+      docSpan.textContent = "Документ ↗";
+      docLink.appendChild(docSpan);
+      footer.appendChild(docLink);
+    }
+
+    if (footer.children.length > 0) {
+      content.appendChild(footer);
+    }
+
+    card.appendChild(content);
+    gridEl.appendChild(card);
+  });
+
+  bindTiltToSelector("#publications-grid .pub-card");
 }
 
 function renderSheet3Publications(rowsArray, forceRender = false) {
@@ -1590,9 +2094,9 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
     return;
   }
   lastRenderedPublicationsSignature = nextSignature;
-  gridEl.replaceChildren();
 
   if (activePublications.length === 0) {
+    gridEl.replaceChildren();
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
     if (navLinkEl) navLinkEl.classList.add("hidden");
@@ -1607,114 +2111,8 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
     navLinkEl.classList.remove("hidden");
   }
 
-  activePublications.forEach((pub) => {
-    const theme = classifyPublicationBadgeTheme(pub.badge);
-    const card = document.createElement("article");
-    card.id = `pub-${pub.id}`;
-    card.className = `pub-card surface-card elevate-card reveal visible ${theme.cardCls}`.trim();
-
-    if (pub.photos.length > 0) {
-      const mediaWrap = document.createElement("div");
-      mediaWrap.className = "pub-card-media";
-      mediaWrap.setAttribute("title", "Нажмите, чтобы открыть материал полностью");
-
-      const img = document.createElement("img");
-      img.className = "pub-card-img";
-      img.setAttribute("referrerpolicy", "no-referrer");
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.width = 600;
-      img.height = 375;
-      img.alt = pub.title;
-
-      const fallbackSvg = buildPublicationFallbackSvg(pub.title);
-      const resolved = resolveImageLinkSource(pub.photos[0], fallbackSvg);
-      let triedAlt = false;
-      img.onerror = () => {
-        if (!triedAlt && resolved.altTry) {
-          triedAlt = true;
-          img.src = resolved.altTry;
-        } else {
-          img.onerror = null;
-          img.src = resolved.fallback;
-        }
-      };
-      img.src = resolved.src;
-      mediaWrap.appendChild(img);
-
-      if (pub.photos.length > 1) {
-        const multiBadge = document.createElement("span");
-        multiBadge.className = "pub-multi-badge";
-        multiBadge.textContent = `📷 ${pub.photos.length} фото`;
-        mediaWrap.appendChild(multiBadge);
-      }
-
-      mediaWrap.addEventListener("click", () => openPublicationModal(pub, true));
-      card.appendChild(mediaWrap);
-    }
-
-    const content = document.createElement("div");
-    content.className = "pub-card-content";
-
-    const metaRow = document.createElement("div");
-    metaRow.className = "pub-card-meta";
-
-    const badgeSpan = document.createElement("span");
-    badgeSpan.className = `pub-badge ${theme.badgeCls}`.trim();
-    badgeSpan.textContent = pub.badge;
-    metaRow.appendChild(badgeSpan);
-
-    if (pub.dateDisplay) {
-      const dateSpan = document.createElement("span");
-      dateSpan.className = "pub-date-text";
-      dateSpan.textContent = `📅 ${pub.dateDisplay}`;
-      metaRow.appendChild(dateSpan);
-    }
-
-    content.appendChild(metaRow);
-
-    const titleEl = document.createElement("h3");
-    titleEl.className = "pub-card-title";
-    titleEl.textContent = pub.title;
-    content.appendChild(titleEl);
-
-    const isLongText = pub.text.length > 220;
-    if (pub.text) {
-      const excerptEl = document.createElement("p");
-      excerptEl.className = "pub-card-excerpt";
-      excerptEl.textContent = isLongText ? `${pub.text.slice(0, 220).trim()}...` : pub.text;
-      content.appendChild(excerptEl);
-    }
-
-    const footer = document.createElement("div");
-    footer.className = "pub-card-footer";
-
-    if (isLongText || pub.photos.length > 0) {
-      const readBtn = document.createElement("button");
-      readBtn.type = "button";
-      readBtn.className = "btn-pub-action";
-      readBtn.textContent = pub.photos.length > 1 ? `📖 Открыть (${pub.photos.length} фото)` : "📖 Читать полностью";
-      readBtn.addEventListener("click", () => openPublicationModal(pub, true));
-      footer.appendChild(readBtn);
-    }
-
-    if (pub.docUrl) {
-      const docLink = document.createElement("a");
-      docLink.href = pub.docUrl;
-      docLink.target = "_blank";
-      docLink.rel = "noopener noreferrer";
-      docLink.className = "btn-pub-action btn-pub-doc";
-      docLink.textContent = "📎 Документ ↗";
-      footer.appendChild(docLink);
-    }
-
-    if (footer.children.length > 0) {
-      content.appendChild(footer);
-    }
-
-    card.appendChild(content);
-    gridEl.appendChild(card);
-  });
+  renderPublicationFilters(activePublications);
+  renderPublicationCards(activePublications);
 
   if (!hasCheckedInitialPubHash) {
     hasCheckedInitialPubHash = true;
@@ -1726,11 +2124,25 @@ async function loadSheet3PublicationsData() {
   const sectionEl = document.getElementById("school-publications");
   if (!sectionEl) return;
 
+  // Stale-While-Revalidate: мгновенно поднимаем кэш, не ожидая сеть
   try {
-    const response = await fetch(SHEET3_CSV_URL, { cache: "no-store" });
+    const rawCache = localStorage.getItem(SHEET3_CACHE_KEY);
+    if (rawCache) {
+      const cachedRows = JSON.parse(rawCache);
+      latestRawSheet3Rows = cachedRows;
+      renderSheet3Publications(cachedRows, false);
+    }
+  } catch (_) {}
+
+  try {
+    const response = await fetchWithTimeout(SHEET3_CSV_URL, { cache: "no-store" }, 6500);
     if (!response.ok) throw new Error(`Sheet3 HTTP ${response.status}`);
 
     const csvText = await response.text();
+    if (!isValidCsvResponse(csvText)) {
+      throw new Error("Invalid Sheet3 CSV payload");
+    }
+
     const rows = parseCSVPreserveRowIndex(csvText);
     latestRawSheet3Rows = rows;
     renderSheet3Publications(rows, false);
@@ -1738,20 +2150,11 @@ async function loadSheet3PublicationsData() {
     try {
       localStorage.setItem(SHEET3_CACHE_KEY, JSON.stringify(rows));
     } catch (_) {}
-  } catch (_) {
-    try {
-      const rawCache = localStorage.getItem(SHEET3_CACHE_KEY);
-      if (rawCache) {
-        const cachedRows = JSON.parse(rawCache);
-        latestRawSheet3Rows = cachedRows;
-        renderSheet3Publications(cachedRows, false);
-      }
-    } catch (_) {}
-  }
+  } catch (_) {}
 }
 
 setInterval(() => {
-  if (latestRawSheet3Rows && document.getElementById("school-publications")) {
+  if (!document.hidden && latestRawSheet3Rows && document.getElementById("school-publications")) {
     renderSheet3Publications(latestRawSheet3Rows, false);
   }
 }, 60000);
@@ -1776,7 +2179,10 @@ function createGalleryFigureElement() {
   const zoomBadge = document.createElement("span");
   zoomBadge.className = "gallery-zoom-badge";
   zoomBadge.setAttribute("aria-hidden", "true");
-  zoomBadge.textContent = "🔍 Увеличить";
+  zoomBadge.appendChild(createSpriteIcon("ico-zoom", "", 13));
+  const zoomText = document.createElement("span");
+  zoomText.textContent = "Увеличить";
+  zoomBadge.appendChild(zoomText);
 
   imgWrap.appendChild(img);
   imgWrap.appendChild(zoomBadge);
@@ -1821,18 +2227,21 @@ function updateGalleryFromSheetRows(galleryArray) {
     if (capEl && itemData.title) capEl.textContent = itemData.title;
 
     if (imgEl && itemData.url) {
-      const resolved = resolveImageLinkSource(itemData.url, defaultSvg);
+      const resolvedThumb = resolveImageLinkSource(itemData.url, defaultSvg, 640);
+      const resolvedFull = resolveImageLinkSource(itemData.url, defaultSvg, 1400);
+      figure.setAttribute("data-full-src", resolvedFull.src);
+
       let triedAlt = false;
       imgEl.onerror = () => {
-        if (!triedAlt && resolved.altTry) {
+        if (!triedAlt && resolvedThumb.altTry) {
           triedAlt = true;
-          imgEl.src = resolved.altTry;
+          imgEl.src = resolvedThumb.altTry;
         } else {
           imgEl.onerror = null;
-          imgEl.src = resolved.fallback;
+          imgEl.src = resolvedThumb.fallback;
         }
       };
-      imgEl.src = resolved.src;
+      imgEl.src = resolvedThumb.src;
       imgEl.alt = newTitle;
     }
   });
@@ -1852,6 +2261,7 @@ function initGalleryLightbox() {
   if (!grid || !lightbox || !lbImg) return;
 
   let currentSlideIdx = 0;
+  let touchStartX = 0;
 
   const getFigures = () => Array.from(grid.querySelectorAll(".gallery-item"));
 
@@ -1862,8 +2272,13 @@ function initGalleryLightbox() {
     currentSlideIdx = (idx + figures.length) % figures.length;
     const fig = figures[currentSlideIdx];
     const imgEl = fig.querySelector(".gallery-img");
+    const fullSrc = fig.getAttribute("data-full-src");
 
-    lbImg.src = imgEl ? imgEl.src : "";
+    lbImg.onerror = () => {
+      lbImg.onerror = null;
+      if (imgEl) lbImg.src = imgEl.src;
+    };
+    lbImg.src = fullSrc || (imgEl ? imgEl.src : "");
     lbImg.alt = fig.getAttribute("data-caption") || "";
     if (lbTitle) lbTitle.textContent = fig.getAttribute("data-caption") || "";
     if (lbDesc) lbDesc.textContent = fig.getAttribute("data-desc") || "";
@@ -1908,6 +2323,30 @@ function initGalleryLightbox() {
   lightbox.addEventListener("click", (e) => {
     if (e.target === lightbox) closeLightbox();
   });
+
+  // Свайп пальцем влево/вправо на сенсорных экранах
+  lightbox.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.changedTouches && e.changedTouches[0]) {
+        touchStartX = e.changedTouches[0].clientX;
+      }
+    },
+    { passive: true }
+  );
+
+  lightbox.addEventListener(
+    "touchend",
+    (e) => {
+      if (!e.changedTouches || !e.changedTouches[0]) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 48) {
+        if (dx > 0) openLightboxAt(currentSlideIdx - 1, true);
+        else openLightboxAt(currentSlideIdx + 1, true);
+      }
+    },
+    { passive: true }
+  );
 
   document.addEventListener("keydown", (e) => {
     if (lightbox.classList.contains("hidden")) return;
@@ -2061,6 +2500,38 @@ function updateTeachersFromSheetRows(teachersDataArray) {
   }
 }
 
+function refreshAllGlidePills() {
+  glidePillRefreshers.forEach((fn) => fn());
+}
+
+function initGlidePills() {
+  const groups = document.querySelectorAll("#schedule-weekday-pills, #menu-weekday-pills, #menu-week-pills");
+  groups.forEach((group) => {
+    if (group.querySelector(".pill-glide-indicator")) return;
+    const indicator = document.createElement("span");
+    indicator.className = "pill-glide-indicator";
+    indicator.setAttribute("aria-hidden", "true");
+    group.prepend(indicator);
+
+    const updateIndicator = () => {
+      const active = group.querySelector(".day-pill.active");
+      if (!active || isReducedMotionPreferred() || group.classList.contains("hidden") || active.offsetWidth === 0) {
+        group.classList.remove("has-glide");
+        indicator.style.opacity = "0";
+        return;
+      }
+      group.classList.add("has-glide");
+      indicator.style.opacity = "1";
+      indicator.style.width = `${active.offsetWidth}px`;
+      indicator.style.transform = `translate3d(${active.offsetLeft}px, 0, 0)`;
+    };
+
+    glidePillRefreshers.push(updateIndicator);
+    window.addEventListener("resize", updateIndicator, { passive: true });
+    requestAnimationFrame(updateIndicator);
+  });
+}
+
 function initWeekdayAndGradeSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill[data-day]");
   const allGradePills = document.querySelectorAll(".grade-pill");
@@ -2150,6 +2621,8 @@ function syncDayAndGradeUI(dayNum, gradeNum) {
     const baseMenuLabel = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
     menuDayLabel.textContent = hasWeek2 ? `${baseMenuLabel} • ${currentSelectedMenuWeek} нед.` : baseMenuLabel;
   }
+
+  requestAnimationFrame(refreshAllGlidePills);
 }
 
 function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1, skipAnimation = false) {
@@ -2179,6 +2652,7 @@ function renderDaySpecificScheduleAndMenu(dataObj, dayNum, gradeNum = 1, skipAni
 
   if (menuWeekPills) {
     menuWeekPills.classList.toggle("hidden", !hasWeek2);
+    requestAnimationFrame(refreshAllGlidePills);
   }
   if (!hasWeek2 && currentSelectedMenuWeek !== 1) {
     currentSelectedMenuWeek = 1;
@@ -2229,14 +2703,14 @@ function detectWeekdayIndexFromCell(cellString) {
 
 function detectGradeNumberFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
-  const match = s.match(/^([1-9])\s*(класс|кл\.?|кл)$/i);
+  const match = s.match(/^([1-9])(?:\s*[-–]?\s*[йя])?\s*(?:класс|кл\.?)$/i);
   if (match && match[1]) return parseInt(match[1], 10);
   return 0;
 }
 
 function detectBellLessonNumberFromCell(cellString) {
   const s = (cellString || "").toLowerCase().trim();
-  const match = s.match(/^([0-8])\s*(урок|ур\.?)$/i);
+  const match = s.match(/^([0-8])(?:\s*[-–]?\s*[йя])?\s*(?:урок|ур\.?)$/i);
   if (match && match[1] !== undefined) return parseInt(match[1], 10);
   return -1;
 }
@@ -2264,7 +2738,9 @@ function initLiveSheetWidgetAndMenu() {
     [newsEl, importantEl].forEach((el) => {
       el.classList.remove("is-loading-shimmer", "flash-updated");
       void el.offsetWidth;
-      el.classList.add("flash-updated");
+      if (!isFromCache && !isReducedMotionPreferred()) {
+        el.classList.add("flash-updated");
+      }
     });
     scheduleEl.classList.remove("is-loading-shimmer");
 
@@ -2276,7 +2752,7 @@ function initLiveSheetWidgetAndMenu() {
     }
 
     syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
-    renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday, currentSelectedGrade);
+    renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday, currentSelectedGrade, isFromCache);
 
     if (Array.isArray(dataObj.teachers) && dataObj.teachers.some(Boolean)) {
       updateTeachersFromSheetRows(dataObj.teachers);
@@ -2288,26 +2764,45 @@ function initLiveSheetWidgetAndMenu() {
 
     if (statusEl) {
       statusEl.textContent = isFromCache
-        ? `Офлайн-копия (${dataObj.timeLabel || "сохранено"})`
+        ? `Сохранённая копия (${dataObj.timeLabel || "офлайн"})`
         : `Обновлено в ${dataObj.timeLabel}`;
     }
   };
 
-  const loadSheetData = async () => {
+  // Stale-While-Revalidate: мгновенный рендер кэша до сетевого запроса
+  let hasHydratedCache = false;
+  try {
+    const rawCache = localStorage.getItem(SHEET_CACHE_KEY);
+    if (rawCache) {
+      const cached = JSON.parse(rawCache);
+      renderWidgetData(cached, true);
+      hasHydratedCache = true;
+    }
+  } catch (_) {}
+
+  const loadSheetData = async (isManualRefresh = false) => {
     if (refreshBtn) {
       refreshBtn.classList.add("loading");
       refreshBtn.disabled = true;
     }
-    [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.add("is-loading-shimmer"));
+    if (!hasHydratedCache && !isManualRefresh) {
+      renderScheduleSkeleton(scheduleEl);
+    } else {
+      [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.add("is-loading-shimmer"));
+    }
     if (statusEl) statusEl.textContent = "Синхронизация...";
 
     loadSheet3PublicationsData();
 
     try {
-      const response = await fetch(SHEET_CSV_URL, { cache: "no-store" });
+      const response = await fetchWithTimeout(SHEET_CSV_URL, { cache: "no-store" }, 6500);
       if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
 
       const csvText = await response.text();
+      if (!isValidCsvResponse(csvText, ["новости", "расписание", "класс", "табло", "меню"])) {
+        throw new Error("Некорректный формат CSV");
+      }
+
       const rows = parseCSVPreserveRowIndex(csvText);
 
       const scheduleByGradeAndDay = {};
@@ -2503,21 +2998,19 @@ function initLiveSheetWidgetAndMenu() {
       };
 
       renderWidgetData(parsedData, false);
+      hasHydratedCache = true;
 
       try {
         localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify(parsedData));
       } catch (_) {}
     } catch (_) {
-      let cached = null;
-      try {
-        const rawCache = localStorage.getItem(SHEET_CACHE_KEY);
-        if (rawCache) cached = JSON.parse(rawCache);
-      } catch (_) {}
+      [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
 
-      if (cached) {
-        renderWidgetData(cached, true);
+      if (hasHydratedCache && latestParsedSheetData) {
+        if (statusEl) {
+          statusEl.textContent = `Офлайн-копия (${latestParsedSheetData.timeLabel || "сохранено"})`;
+        }
       } else {
-        [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
         newsEl.textContent = "Информация обновляется";
         renderDiaryLessonCards(scheduleEl, "", currentSelectedWeekday, false, true);
         importantEl.textContent = "Желаем хорошего дня!";
@@ -2533,12 +3026,12 @@ function initLiveSheetWidgetAndMenu() {
 
   if (refreshBtn) {
     refreshBtn.addEventListener("click", () => {
-      loadSheetData();
+      loadSheetData(true);
       showDynamicIslandToast("Данные расписания, материалов и табло обновлены");
     });
   }
 
-  loadSheetData();
+  loadSheetData(false);
 }
 
 function initCopyButtons() {
@@ -2549,7 +3042,7 @@ function initCopyButtons() {
       if (!textToCopy) return;
       const copied = await copyTextToClipboard(textToCopy);
       showDynamicIslandToast(
-        copied ? `✓ Скопировано: ${textToCopy}` : "Не удалось скопировать — выделите текст вручную"
+        copied ? `Скопировано: ${textToCopy}` : "Не удалось скопировать — выделите текст вручную"
       );
     });
   });
@@ -2562,8 +3055,10 @@ function initScrollSpyAndProgressRing() {
   if (!scrollTopBtn && spyLinks.length === 0) return;
 
   const circumference = 119.38;
+  let rafId = 0;
 
-  const onScroll = () => {
+  const updateScrollUI = () => {
+    rafId = 0;
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
@@ -2593,8 +3088,12 @@ function initScrollSpyAndProgressRing() {
     }
   };
 
+  const onScroll = () => {
+    if (!rafId) rafId = requestAnimationFrame(updateScrollUI);
+  };
+
   window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  updateScrollUI();
 
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener("click", () => {
@@ -2611,19 +3110,21 @@ function initDigitalNavigatorTabs() {
   const activateTab = (targetBtn, moveFocus = false) => {
     const targetId = targetBtn.getAttribute("data-dtab");
 
-    tabBtns.forEach((b) => {
-      const isCurrent = b === targetBtn;
-      b.classList.toggle("active", isCurrent);
-      b.setAttribute("aria-selected", String(isCurrent));
-      b.setAttribute("tabindex", isCurrent ? "0" : "-1");
-    });
+    runViewTransition(() => {
+      tabBtns.forEach((b) => {
+        const isCurrent = b === targetBtn;
+        b.classList.toggle("active", isCurrent);
+        b.setAttribute("aria-selected", String(isCurrent));
+        b.setAttribute("tabindex", isCurrent ? "0" : "-1");
+      });
 
-    panels.forEach((panel) => {
-      const isMatch = panel.id === targetId;
-      panel.classList.toggle("hidden", !isMatch);
-      panel.classList.toggle("active", isMatch);
-      if (isMatch) panel.removeAttribute("hidden");
-      else panel.setAttribute("hidden", "");
+      panels.forEach((panel) => {
+        const isMatch = panel.id === targetId;
+        panel.classList.toggle("hidden", !isMatch);
+        panel.classList.toggle("active", isMatch);
+        if (isMatch) panel.removeAttribute("hidden");
+        else panel.setAttribute("hidden", "");
+      });
     });
 
     if (moveFocus) targetBtn.focus();
@@ -2773,7 +3274,7 @@ function initFeedbackForm() {
       stepsProgressBar.classList.add("is-complete");
     }
 
-    showDynamicIslandToast("✓ Согласие 152-ФЗ подтверждено");
+    showDynamicIslandToast("Согласие подтверждено — форма открыта");
     fioInput.focus();
   });
 
@@ -2792,7 +3293,7 @@ function initFeedbackForm() {
       fioHint.textContent = "Введите минимум 2 слова (только буквы, дефис и пробелы)";
       fioHint.className = "field-hint error-text";
     } else if (isValid) {
-      fioHint.textContent = "✓ ФИО заполнено корректно";
+      fioHint.textContent = "ФИО заполнено корректно";
       fioHint.className = "field-hint valid-text";
     } else {
       fioHint.textContent = "Только буквы и пробелы, минимум 2 слова";
@@ -2816,10 +3317,10 @@ function initFeedbackForm() {
     contactInput.setAttribute("aria-invalid", String(isInvalidShown));
 
     if (isEmail) {
-      contactHint.textContent = "✓ Распознан адрес электронной почты (Email)";
+      contactHint.textContent = "Распознан адрес электронной почты (Email)";
       contactHint.className = "field-hint valid-text";
     } else if (isPhone) {
-      contactHint.textContent = "✓ Распознан контактный номер телефона";
+      contactHint.textContent = "Распознан контактный номер телефона";
       contactHint.className = "field-hint valid-text";
     } else if (isInvalidShown) {
       contactHint.textContent = "Введите корректный телефон (+7 900 123-45-67) или Email";
@@ -2849,7 +3350,7 @@ function initFeedbackForm() {
       commentHint.textContent = "Слишком короткое сообщение (минимум 5 символов)";
       commentHint.className = "field-hint error-text";
     } else if (isValid) {
-      commentHint.textContent = "✓ Текст сообщения заполнен";
+      commentHint.textContent = "Текст сообщения заполнен";
       commentHint.className = "field-hint valid-text";
     } else {
       commentHint.textContent = "Пожалуйста, напишите ваше сообщение (от 5 до 2000 символов)";
@@ -2918,18 +3419,19 @@ function initFeedbackForm() {
     formDataParams.append("fio", neutralizeSpreadsheetFormula(sanitizedFio));
     formDataParams.append("contact", neutralizeSpreadsheetFormula(sanitizedContact));
     formDataParams.append("comment", neutralizeSpreadsheetFormula(sanitizedComment));
-    formDataParams.append("ticket", fallbackTicketNum);
+    formDataParams.append("ticket", neutralizeSpreadsheetFormula(fallbackTicketNum));
     formDataParams.append("consent_152fz", "confirmed");
     formDataParams.append("website_hp", hpInput ? hpInput.value : "");
-    
-    // НОВАЯ СТРОКА: Передаем секретный пароль на сервер Apps Script
-    formDataParams.append("api_token", API_SECRET_TOKEN);
 
     try {
-      const response = await fetch(FEEDBACK_POST_URL, {
-        method: "POST",
-        body: formDataParams
-      });
+      const response = await fetchWithTimeout(
+        FEEDBACK_POST_URL,
+        {
+          method: "POST",
+          body: formDataParams
+        },
+        12000
+      );
 
       if (!response.ok) {
         throw new Error(`Ошибка сервера: ${response.status}`);
@@ -2965,15 +3467,18 @@ function initFeedbackForm() {
         formResponse.classList.remove("hidden");
       }
 
-      showDynamicIslandToast("✓ Обращение отправлено в школу");
+      showDynamicIslandToast("Обращение отправлено в школу");
       form.reset();
       if (charCounter) charCounter.textContent = "0 / 2000";
       [fioInput, contactInput, commentInput].forEach((el) => {
         el.classList.remove("is-valid", "is-invalid");
         el.setAttribute("aria-invalid", "false");
       });
-    } catch (_) {
-      formResponse.textContent = "Не удалось отправить сообщение. Проверьте подключение к интернету и попробуйте снова.";
+    } catch (err) {
+      formResponse.textContent =
+        err && err.message && err.message.includes("повтор")
+          ? err.message
+          : "Не удалось отправить сообщение. Проверьте подключение к интернету и попробуйте снова.";
       formResponse.className = "form-response error";
       formResponse.classList.remove("hidden");
     } finally {
@@ -2988,7 +3493,7 @@ function initFeedbackForm() {
       const receiptText = `${receiptMeta ? receiptMeta.textContent : ""}\nФИО: ${receiptFio ? receiptFio.textContent : ""}\nКонтакт: ${receiptContact ? receiptContact.textContent : ""}\nТекст: ${receiptComment ? receiptComment.textContent : ""}`;
       const copied = await copyTextToClipboard(receiptText);
       showDynamicIslandToast(
-        copied ? "✓ Текст квитанции скопирован" : "Не удалось скопировать — выделите текст вручную"
+        copied ? "Текст квитанции скопирован" : "Не удалось скопировать — выделите текст вручную"
       );
     });
   }
@@ -3002,15 +3507,76 @@ function initFeedbackForm() {
   }
 }
 
+function bindTiltToSelector(selector) {
+  if (!isDesktopHoverPointer()) return;
+  document.querySelectorAll(selector).forEach((card) => {
+    if (card.dataset.tiltBound === "1") return;
+    card.dataset.tiltBound = "1";
+    card.classList.add("tilt-card");
+
+    let rafId = 0;
+
+    card.addEventListener("pointermove", (e) => {
+      if (isReducedMotionPreferred()) return;
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const rx = ((y / rect.height) - 0.5) * -6.5;
+      const ry = ((x / rect.width) - 0.5) * 6.5;
+
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        card.style.setProperty("--mx", `${x.toFixed(1)}px`);
+        card.style.setProperty("--my", `${y.toFixed(1)}px`);
+        card.style.setProperty("--rx", `${rx.toFixed(2)}deg`);
+        card.style.setProperty("--ry", `${ry.toFixed(2)}deg`);
+      });
+    });
+
+    card.addEventListener("pointerleave", () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      card.style.setProperty("--rx", "0deg");
+      card.style.setProperty("--ry", "0deg");
+    });
+  });
+}
+
+function initMotionTiltAndParallax() {
+  bindTiltToSelector(".fact-card, .success-card, .pillar-card");
+
+  const hero = document.getElementById("hero-ambient");
+  if (!hero) return;
+
+  let isHeroVisible = true;
+  let rafId = 0;
+
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(
+      (entries) => {
+        isHeroVisible = Boolean(entries[0] && entries[0].isIntersecting);
+      },
+      { threshold: 0 }
+    ).observe(hero);
+  }
+
+  const onScroll = () => {
+    if (!isHeroVisible || document.hidden || isReducedMotionPreferred()) return;
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      const offset = Math.min(window.scrollY * 0.14, 48);
+      hero.style.setProperty("--hero-parallax", `${offset.toFixed(1)}px`);
+      rafId = 0;
+    });
+  };
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+}
+
 function initScrollRevealAndCounters() {
   const revealElements = document.querySelectorAll(".reveal");
   const counters = document.querySelectorAll("[data-target]");
 
-  if (
-    !("IntersectionObserver" in window) ||
-    document.body.classList.contains("visually-impaired") ||
-    isReducedMotionPreferred()
-  ) {
+  if (!("IntersectionObserver" in window) || isReducedMotionPreferred()) {
     revealElements.forEach((el) => {
       el.classList.remove("reveal-pending");
       el.classList.add("visible");
