@@ -1,0 +1,73 @@
+{
+  "id": "./",
+  "name": "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
+  "short_name": "Школа Ямбирно",
+  "description": "Информационный портал Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»: расписание 1–9 классов, меню питания, новости, цифровой навигатор и электронная приёмная.",
+  "lang": "ru-RU",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e40af",
+  "categories": [
+    "education",
+    "government"
+  ],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Расписание уроков",
+      "short_name": "Расписание",
+      "description": "Онлайн-табло и расписание для 1–9 классов",
+      "url": "./#live-widget-card",
+      "icons": [
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Дневник и Учи.ру",
+      "short_name": "Навигатор",
+      "description": "Пошаговый гид по Госуслугам, Дневнику и Учи.ру",
+      "url": "./#digital-guide",
+      "icons": [
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Написать в школу",
+      "short_name": "Обращение",
+      "description": "Электронная приёмная руководителя филиала",
+      "url": "./feedback.html",
+      "icons": [
+        {
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
