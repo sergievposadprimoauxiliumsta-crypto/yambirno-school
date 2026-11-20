@@ -3,9 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#1e40af">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;">
+
   <title>Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
-  <meta name="description" content="Электронная приёмная Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»: отправьте благодарность учителю, предложение или вопрос руководителю школы в соответствии с 152-ФЗ.">
+  <meta name="description" content="Электронная приёмная Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»: отправьте благодарность учителю, предложение или вопрос руководителю школы.">
   <link rel="canonical" href="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E">
 
   <link rel="preconnect" href="https://script.google.com" crossorigin>
@@ -18,7 +23,49 @@
   <meta property="og:title" content="Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
   <meta property="og:description" content="Поблагодарите педагога, предложите идею или задайте вопрос администрации Ямбирнского филиала МОУ «Лесно-Конобеевская СШ».">
   <meta property="og:image" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Электронная приёмная Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
+  <meta name="twitter:description" content="Отправьте благодарность педагогу, идею или вопрос руководителю Ямбирнского филиала.">
+  <meta name="twitter:image" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ContactPage",
+        "@id": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html#contactpage",
+        "url": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html",
+        "name": "Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
+        "description": "Электронная приёмная для направления вопросов, предложений и благодарностей руководителю Ямбирнского филиала МОУ «Лесно-Конобеевская СШ».",
+        "inLanguage": "ru-RU",
+        "isPartOf": {
+          "@id": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/#website"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Главная",
+            "item": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Обратная связь",
+            "item": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
@@ -39,7 +86,7 @@
           <span class="utility-icon" aria-hidden="true">🗓️</span>
           <span id="live-date-display" class="utility-date-text">Загрузка даты...</span>
           <span class="utility-sep" aria-hidden="true">|</span>
-          <span id="live-time-display" class="live-clock-digits">--:--:--</span>
+          <span id="live-time-display" class="live-clock-digits" aria-label="Текущее время">--:--:--</span>
           <span class="school-status-pill">Электронная приёмная 24/7</span>
         </div>
 
@@ -91,9 +138,9 @@
     </div>
 
     <div class="container header-main-inner">
-      <a href="index.html" class="brand" aria-label="Вернуться на главную страницу школы">
+      <a href="./" class="brand" aria-label="Вернуться на главную страницу школы">
         <img
-          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
           alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
           class="logo-img"
           width="58"
@@ -109,7 +156,7 @@
       </a>
 
       <div class="header-actions">
-        <a href="index.html" class="btn btn-secondary">← Вернуться на главную</a>
+        <a href="./" class="btn btn-secondary">← Вернуться на главную</a>
       </div>
     </div>
   </header>
@@ -118,6 +165,10 @@
     <div class="container feedback-container">
 
       <h1 class="page-main-title">Электронное обращение в школу</h1>
+
+      <div id="frame-guard-banner" class="frame-guard-banner hidden" role="alert" hidden>
+        В целях безопасности отправка обращений внутри стороннего окна (iframe) заблокирована. Пожалуйста, откройте страницу электронной приёмной напрямую в отдельной вкладке браузера.
+      </div>
 
       <div class="recipient-ticket surface-card">
         <div class="director-avatar-badge" aria-hidden="true">ЕА</div>
@@ -140,8 +191,15 @@
         <div class="law-badge">Федеральный закон № 152-ФЗ</div>
         <h2 id="consent-title" class="feedback-title">Согласие на обработку персональных данных</h2>
         <p class="consent-text">
-          В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», нажимая кнопку ниже, я подтверждаю ознакомление с правилами приёма обращений и даю согласие Администрации школы на обработку моих персональных данных (ФИО, телефон или адрес электронной почты) для рассмотрения обращения, предложения или отзыва. Согласие действует до момента его отзыва.
+          В соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», нажимая кнопку ниже, я подтверждаю ознакомление с <a href="privacy.html" class="consent-policy-link">Политикой обработки персональных данных</a> и правилами приёма обращений, а также даю согласие оператору на обработку моих персональных данных (ФИО, телефон или адрес электронной почты, текст обращения) для рассмотрения обращения, предложения или благодарности. Согласие действует до достижения целей обработки или до момента его отзыва.
         </p>
+
+        <div class="consent-operator-meta">
+          <span><strong>Оператор:</strong> Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» (головное учреждение — МОУ «Лесно-Конобеевская СШ»)</span>
+          <span><strong>Адрес:</strong> 391573, Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11</span>
+          <span><strong>Отзыв согласия:</strong> по почте <a href="mailto:yambirno-school@yandex.ru">yambirno-school@yandex.ru</a> или тел. <a href="tel:+74914726368">8 (49147) 2-63-68</a></span>
+        </div>
+
         <div class="consent-actions">
           <button type="button" id="accept-consent-btn" class="btn btn-primary btn-full">
             Подтверждаю ознакомление и даю согласие
@@ -166,9 +224,9 @@
             <div class="form-group">
               <span class="form-label">Повод обращения:</span>
               <div class="topic-selector" role="group" aria-label="Выберите повод обращения">
-                <button type="button" class="topic-chip active" data-topic-theme="question" data-topic-prefix="[Вопрос руководителю] ">❓ Вопрос</button>
-                <button type="button" class="topic-chip" data-topic-theme="thanks" data-topic-prefix="[Благодарность учителю] ">❤️ Благодарность</button>
-                <button type="button" class="topic-chip" data-topic-theme="idea" data-topic-prefix="[Предложение / Идея] ">💡 Идея / Предложение</button>
+                <button type="button" class="topic-chip active" data-topic-theme="question" data-topic-prefix="[Вопрос руководителю] " aria-pressed="true">❓ Вопрос</button>
+                <button type="button" class="topic-chip" data-topic-theme="thanks" data-topic-prefix="[Благодарность учителю] " aria-pressed="false">❤️ Благодарность</button>
+                <button type="button" class="topic-chip" data-topic-theme="idea" data-topic-prefix="[Предложение / Идея] " aria-pressed="false">💡 Идея / Предложение</button>
               </div>
             </div>
 
@@ -182,6 +240,8 @@
                 placeholder="Например: Иванова Мария Ивановна"
                 maxlength="120"
                 autocomplete="name"
+                aria-describedby="fio-hint"
+                aria-invalid="false"
                 required
               >
               <span id="fio-hint" class="field-hint">Только буквы и пробелы, минимум 2 слова</span>
@@ -196,6 +256,8 @@
                 class="form-control"
                 placeholder="+7 (900) 000-00-00 или example@yandex.ru"
                 maxlength="100"
+                aria-describedby="contact-hint"
+                aria-invalid="false"
                 required
               >
               <span id="contact-hint" class="field-hint">Укажите удобный номер телефона или адрес электронной почты</span>
@@ -213,13 +275,15 @@
                 class="form-control"
                 placeholder="Напишите здесь ваш вопрос, слова благодарности педагогу или предложение..."
                 maxlength="2000"
+                aria-describedby="comment-hint"
+                aria-invalid="false"
                 required
               ></textarea>
               <span id="comment-hint" class="field-hint">Пожалуйста, напишите ваше сообщение (от 5 до 2000 символов)</span>
             </div>
 
             <div class="consent-confirmed-note">
-              ✓ Условия обработки персональных данных (152-ФЗ) приняты
+              ✓ Условия <a href="privacy.html" class="consent-policy-link">Политики обработки персональных данных</a> (152-ФЗ) приняты
             </div>
 
             <button type="submit" id="submit-btn" class="btn btn-primary btn-full" disabled>
@@ -235,7 +299,7 @@
           <div class="receipt-header">
             <span class="receipt-check-icon" aria-hidden="true">✓</span>
             <div>
-              <h3>Обращение успешно зарегистрировано!</h3>
+              <h3 id="receipt-heading" class="receipt-heading" tabindex="-1">Обращение успешно зарегистрировано!</h3>
               <span id="receipt-meta" class="receipt-meta">Талон № ...</span>
             </div>
           </div>
@@ -266,7 +330,10 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</p>
-      <p><a href="index.html" class="footer-link">Вернуться на главную страницу</a></p>
+      <p>
+        <a href="privacy.html" class="footer-link">Политика ПДн</a> •
+        <a href="./" class="footer-link">Вернуться на главную страницу</a>
+      </p>
     </div>
   </footer>
 
