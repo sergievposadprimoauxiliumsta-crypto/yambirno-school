@@ -11,6 +11,7 @@
   <meta name="description" content="Политика обработки персональных данных посетителей информационного портала и электронной приёмной Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (152-ФЗ).">
   <link rel="canonical" href="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/privacy.html">
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E">
 
   <meta property="og:type" content="website">
@@ -69,6 +70,47 @@
 </head>
 <body class="paper-texture">
 
+  <!-- Авторский многослойный SVG-спрайт страницы политики ПДн -->
+  <svg id="yambirno-icon-sprite" class="hp-field" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
+    <defs>
+      <linearGradient id="yamb-pr-sapphire" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3b82f6"/>
+        <stop offset="100%" stop-color="#1e3a8a"/>
+      </linearGradient>
+      <linearGradient id="yamb-pr-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fbbf24"/>
+        <stop offset="100%" stop-color="#d97706"/>
+      </linearGradient>
+      <linearGradient id="yamb-pr-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#34d399"/>
+        <stop offset="100%" stop-color="#15803d"/>
+      </linearGradient>
+    </defs>
+
+    <symbol id="ico-calendar" viewBox="0 0 24 24">
+      <rect class="ico-base" x="3" y="5" width="18" height="16" rx="3" fill="url(#yamb-pr-sapphire)" opacity="0.2"/>
+      <rect class="ico-accent" x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="url(#yamb-pr-sapphire)" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M3 10h18M8 3v4M16 3v4" stroke="url(#yamb-pr-amber)" stroke-width="1.8" stroke-linecap="round"/>
+      <rect class="ico-part-moving" x="7.5" y="13" width="3.5" height="3.5" rx="0.8" fill="url(#yamb-pr-amber)"/>
+    </symbol>
+
+    <symbol id="ico-cat-safety" viewBox="0 0 24 24">
+      <path class="ico-base" d="M12 3 5 6v5.8c0 4.6 3 8.1 7 9.7 4-1.6 7-5.1 7-9.7V6l-7-3Z" fill="url(#yamb-pr-emerald)" opacity="0.22"/>
+      <path class="ico-accent" d="M12 3 5 6v5.8c0 4.6 3 8.1 7 9.7 4-1.6 7-5.1 7-9.7V6l-7-3Z" fill="none" stroke="url(#yamb-pr-emerald)" stroke-width="1.8" stroke-linejoin="round"/>
+      <path class="ico-part-moving" d="m9 12 2.1 2.1 4.2-4.2" fill="none" stroke="url(#yamb-pr-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ico-eye" viewBox="0 0 24 24">
+      <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12s-4 7.5-10.5 7.5S1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="ico-send" viewBox="0 0 24 24">
+      <path class="ico-base" d="m20.5 3.8-8.2 16.5-2.6-6.2-6.2-2.6L20.5 3.8Z" fill="currentColor" opacity="0.2"/>
+      <path class="ico-accent ico-part-moving" d="m20.5 3.8-8.2 16.5-2.6-6.2-6.2-2.6L20.5 3.8Zm0 0-10.8 10.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
+
   <a href="#policy-main" class="skip-link">Перейти к тексту политики</a>
 
   <div id="dynamic-island-toast" class="dynamic-island" role="status" aria-live="polite" aria-hidden="true">
@@ -80,11 +122,16 @@
     <div class="top-utility-bar" role="region" aria-label="Панель текущего времени и специальных возможностей">
       <div class="container utility-inner">
         <div class="utility-datetime">
-          <span class="utility-icon" aria-hidden="true">🗓️</span>
+          <span class="utility-icon" aria-hidden="true">
+            <svg class="ui-ico" width="16" height="16"><use href="#ico-calendar"></use></svg>
+          </span>
           <span id="live-date-display" class="utility-date-text">Загрузка даты...</span>
           <span class="utility-sep" aria-hidden="true">|</span>
           <span id="live-time-display" class="live-clock-digits" aria-label="Текущее время">--:--:--</span>
-          <span class="school-status-pill">Документы и защита данных</span>
+          <span class="school-status-pill">
+            <svg class="ui-ico ui-ico--shield" width="14" height="14" aria-hidden="true"><use href="#ico-cat-safety"></use></svg>
+            <span>Документы и защита данных</span>
+          </span>
         </div>
 
         <div class="utility-a11y-slot">
@@ -96,17 +143,14 @@
             aria-pressed="false"
             aria-controls="a11y-panel"
           >
-            <svg class="icon-eye" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
+            <svg class="icon-eye ui-ico" width="20" height="20" aria-hidden="true"><use href="#ico-eye"></use></svg>
             <span class="a11y-btn-text">Версия для слабовидящих</span>
           </button>
         </div>
       </div>
     </div>
 
-    <div id="a11y-panel" class="a11y-panel hidden" role="region" aria-label="Настройки версии для слабовидящих" hidden>
+    <div id="a11y-panel" class="a11y-panel hidden" role="region" aria-label="Настройки версии для слабовидящих по ГОСТ Р 52872-2019" hidden>
       <div class="container a11y-panel-inner">
         <div class="a11y-group" role="group" aria-label="Размер шрифта">
           <span class="a11y-group-label">Шрифт:</span>
@@ -119,12 +163,24 @@
           <button type="button" class="a11y-opt-btn" data-a11y-theme="yellow" aria-pressed="true">Ж/Ч</button>
           <button type="button" class="a11y-opt-btn" data-a11y-theme="white" aria-pressed="false">Ч/Б</button>
           <button type="button" class="a11y-opt-btn" data-a11y-theme="black" aria-pressed="false">Б/Ч</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="blue" aria-pressed="false">С/Г</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Гарнитура шрифта">
+          <span class="a11y-group-label">Гарнитура:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-font="sans" aria-pressed="true">Без засечек</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-font="serif" aria-pressed="false">С засечками</button>
         </div>
         <div class="a11y-group" role="group" aria-label="Интервал между буквами">
-          <span class="a11y-group-label">Интервал:</span>
+          <span class="a11y-group-label">Кернинг:</span>
           <button type="button" class="a11y-opt-btn" data-a11y-spacing="normal" aria-pressed="true">1x</button>
           <button type="button" class="a11y-opt-btn" data-a11y-spacing="medium" aria-pressed="false">1.5x</button>
           <button type="button" class="a11y-opt-btn" data-a11y-spacing="large" aria-pressed="false">2x</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Межстрочный интервал">
+          <span class="a11y-group-label">Строки:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="normal" aria-pressed="true">1.5</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="medium" aria-pressed="false">1.9</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="large" aria-pressed="false">2.2</button>
         </div>
         <div class="a11y-group" role="group" aria-label="Изображения">
           <span class="a11y-group-label">Фото:</span>
@@ -137,7 +193,7 @@
     <div class="container header-main-inner">
       <a href="./" class="brand" aria-label="Вернуться на главную страницу школы">
         <img
-          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E"
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
           alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
           class="logo-img"
           width="58"
@@ -261,7 +317,10 @@
         </section>
 
         <div class="policy-back-actions">
-          <a href="feedback.html" class="btn btn-primary">Перейти к форме обращения</a>
+          <a href="feedback.html" class="btn btn-primary">
+            <svg class="ui-ico ui-ico--send" width="17" height="17" aria-hidden="true"><use href="#ico-send"></use></svg>
+            <span>Перейти к форме обращения</span>
+          </a>
           <a href="./" class="btn btn-secondary">← Вернуться на главную страницу</a>
         </div>
       </article>
