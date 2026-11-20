@@ -52,6 +52,10 @@ body {
   word-wrap: break-word;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
@@ -1156,11 +1160,13 @@ img {
   margin-bottom: 8px;
 }
 
+/* Резерв высоты снижает CLS при асинхронной загрузке расписания */
 .diary-lessons-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: 6px;
+  min-height: 240px;
 }
 
 .diary-lesson-row {
@@ -1180,6 +1186,12 @@ img {
   transform: translateY(8px);
   animation: springCascadeIn 0.42s var(--spring-ease) forwards;
   animation-delay: calc(var(--step, 0) * 35ms);
+}
+
+.diary-lesson-row.no-cascade {
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 .diary-lesson-row.lesson-active-now {
@@ -1300,6 +1312,7 @@ img {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 112px;
   position: relative;
   overflow: hidden;
 }
@@ -1403,6 +1416,13 @@ img {
   margin-bottom: 8px;
 }
 
+.menu-controls-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .schedule-title-line {
   display: flex;
   align-items: center;
@@ -1422,6 +1442,10 @@ img {
   background: #e2e8f0;
   padding: 3px;
   border-radius: 8px;
+}
+
+.week-pills-group {
+  background: #dbeafe;
 }
 
 .day-pill {
@@ -2083,6 +2107,12 @@ img {
   border-radius: 999px;
 }
 
+/* Классы вместо инлайн-стилей для строгого CSP */
+.stat-fill-72 { width: 72%; }
+.stat-fill-28 { width: 28%; }
+.stat-fill-43 { width: 43.2%; }
+.stat-fill-100 { width: 100%; }
+
 .subsection-title {
   text-align: center;
   font-size: 1.35rem;
@@ -2164,7 +2194,7 @@ img {
 .live-menu-title {
   font-weight: 800;
   font-size: 0.92rem;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   color: var(--text-main);
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -2597,6 +2627,10 @@ img {
   color: #fbbf24;
 }
 
+.footer-link:hover {
+  text-decoration: underline;
+}
+
 .feedback-main {
   padding: 40px 0 56px;
   flex: 1;
@@ -2737,8 +2771,46 @@ img {
   border-left: 4px solid var(--primary);
   padding: 16px;
   border-radius: var(--radius-md);
-  margin-bottom: 22px;
+  margin-bottom: 16px;
   font-size: 0.98rem;
+}
+
+.consent-operator-meta {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.consent-operator-meta strong {
+  color: var(--text-main);
+}
+
+.consent-policy-link {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.consent-policy-link:hover {
+  color: var(--primary-hover);
+}
+
+.frame-guard-banner {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border: 2px solid #dc2626;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-size: 0.94rem;
 }
 
 .topic-selector {
@@ -2811,12 +2883,13 @@ img {
   border-radius: var(--radius-md);
   background-color: #ffffff;
   color: var(--text-main);
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .form-control:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.18);
 }
 
 .form-control.is-valid {
@@ -2895,6 +2968,12 @@ img {
   margin-bottom: 14px;
 }
 
+.receipt-heading:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 .receipt-check-icon {
   width: 38px;
   height: 38px;
@@ -2942,10 +3021,102 @@ img {
   flex-wrap: wrap;
 }
 
+/* Страница политики обработки персональных данных (privacy.html) */
+.policy-main {
+  padding: 40px 0 64px;
+  flex: 1;
+}
+
+.policy-container {
+  max-width: 860px;
+}
+
+.policy-card {
+  padding: 36px 32px;
+  border-top: 5px solid var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.policy-header-block {
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.policy-updated-note {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.policy-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.policy-meta-item {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 0.9rem;
+}
+
+.policy-meta-item strong {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.policy-section {
+  margin-bottom: 24px;
+}
+
+.policy-section h2 {
+  font-size: 1.2rem;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+
+.policy-section p {
+  font-size: 0.96rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.policy-list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.policy-back-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+/* Прогрессивное появление: контент видим без JS и не блокирует LCP */
 .reveal {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.reveal.reveal-pending {
   opacity: 0;
   transform: translateY(18px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
 .reveal.visible {
@@ -3004,6 +3175,18 @@ body.visually-impaired *::after {
   text-shadow: none !important;
 }
 
+body.visually-impaired .stat-progress-track,
+body.visually-impaired .steps-progress-track {
+  border: 1px solid var(--a11y-fg) !important;
+}
+
+body.visually-impaired .stat-progress-fill,
+body.visually-impaired .steps-progress-bar,
+body.visually-impaired .island-dot,
+body.visually-impaired .radar-core {
+  background-color: var(--a11y-fg) !important;
+}
+
 body.visually-impaired .utility-inner {
   flex-wrap: nowrap !important;
 }
@@ -3031,6 +3214,11 @@ body.visually-impaired .form-control {
   border: 2px solid var(--a11y-fg) !important;
   caret-color: var(--a11y-fg) !important;
   font-size: 1.15rem !important;
+}
+
+body.visually-impaired .form-control:focus {
+  outline: 3px solid var(--a11y-fg) !important;
+  outline-offset: 2px;
 }
 
 body.visually-impaired input::placeholder,
@@ -3082,12 +3270,16 @@ body.visually-impaired .btn-pub-action {
 body.visually-impaired .digital-tab-btn.active,
 body.visually-impaired .topic-chip.active,
 body.visually-impaired .day-pill.active,
-body.visually-impaired .grade-pill.active {
+body.visually-impaired .grade-pill.active,
+body.visually-impaired .week-pill.active {
+  background-color: var(--a11y-fg) !important;
+  color: var(--a11y-bg) !important;
   outline: 3px solid var(--a11y-fg) !important;
   text-decoration: underline;
 }
 
-body.visually-impaired .reveal {
+body.visually-impaired .reveal,
+body.visually-impaired .reveal.reveal-pending {
   opacity: 1 !important;
   transform: none !important;
   transition: none !important;
@@ -3151,7 +3343,8 @@ body.visually-impaired .reveal {
   .stats-banner,
   .gallery-grid,
   .cta-reasons-grid,
-  .publications-grid {
+  .publications-grid,
+  .policy-meta-grid {
     grid-template-columns: 1fr;
   }
 
@@ -3173,7 +3366,8 @@ body.visually-impaired .reveal {
   .hero-actions,
   .digital-quick-links,
   .receipt-actions,
-  .pub-modal-footer {
+  .pub-modal-footer,
+  .policy-back-actions {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
@@ -3183,7 +3377,8 @@ body.visually-impaired .reveal {
   .digital-tab-btn,
   .digital-quick-links .btn,
   .receipt-actions .btn,
-  .pub-modal-footer .btn {
+  .pub-modal-footer .btn,
+  .policy-back-actions .btn {
     width: 100%;
     text-align: center;
   }
@@ -3191,7 +3386,8 @@ body.visually-impaired .reveal {
   .feedback-card,
   .digital-panel,
   .cta-card,
-  .pub-modal-scroll-area {
+  .pub-modal-scroll-area,
+  .policy-card {
     padding: 20px 16px;
   }
 }
@@ -3244,7 +3440,8 @@ body.visually-impaired .reveal {
   .contact-card,
   .feedback-card,
   .digital-panel,
-  .pub-card-content {
+  .pub-card-content,
+  .policy-card {
     padding: 16px 12px;
   }
 
