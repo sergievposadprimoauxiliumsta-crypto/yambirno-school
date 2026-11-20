@@ -1,6 +1,7 @@
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const SHEET3_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?gid=809598510&single=true&output=csv";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
+const API_SECRET_TOKEN = "SI28082026";
 
 const YAMBIRNO_LAT = 54.1286;
 const YAMBIRNO_LON = 41.9708;
@@ -2920,6 +2921,9 @@ function initFeedbackForm() {
     formDataParams.append("ticket", fallbackTicketNum);
     formDataParams.append("consent_152fz", "confirmed");
     formDataParams.append("website_hp", hpInput ? hpInput.value : "");
+    
+    // НОВАЯ СТРОКА: Передаем секретный пароль на сервер Apps Script
+    formDataParams.append("api_token", API_SECRET_TOKEN);
 
     try {
       const response = await fetch(FEEDBACK_POST_URL, {
