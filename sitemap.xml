@@ -1,21 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
   <url>
     <loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png</image:loc>
+      <image:title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</image:title>
+      <image:caption>Информационный портал Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (с. Ямбирно, Шацкий район Рязанской области)</image:caption>
+    </image:image>
   </url>
+
   <url>
     <loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/privacy.html</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
 </urlset>
