@@ -1,5 +1,5 @@
-// Контракт имени кэша и списка обязательных ассетов
-const CACHE_NAME = "yambirno-school-v8";
+// Контракт имени кэша и списка обязательных ассетов (подняли версию до v9)
+const CACHE_NAME = "yambirno-school-v9";
 const NETWORK_TIMEOUT_MS = 4000;
 
 const ASSETS_TO_CACHE = [
@@ -10,7 +10,6 @@ const ASSETS_TO_CACHE = [
   "./script.js"
 ];
 
-// Дополнительные файлы кэшируются мягко (не ломают install, если ещё не загружены)
 const OPTIONAL_ASSETS = [
   "./privacy.html",
   "./manifest.json"
@@ -35,6 +34,7 @@ function fetchWithTimeout(request, timeoutMs) {
   });
 }
 
+// Возвращаем промис, чтобы event.waitUntil корректно его подхватил
 function putInCacheSafe(request, response) {
   if (!isCacheableResponse(response)) return Promise.resolve();
   const cloned = response.clone();
@@ -84,7 +84,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Строгая проверка origin (защита от префиксного обхода CWE-20)
+  // Строгая проверка origin
   if (requestUrl.origin !== self.location.origin) return;
 
   // Не перехватываем файл самого Service Worker
@@ -94,13 +94,14 @@ self.addEventListener("fetch", (event) => {
     event.request.mode === "navigate" ||
     (event.request.headers.get("accept") || "").includes("text/html");
 
-  // Для статики (CSS, JS, иконки, манифест): Stale-While-Revalidate
+  // 1. Для статики (CSS, JS, иконки): Stale-While-Revalidate
   if (!isNavigation && STATIC_ASSET_REGEX.test(requestUrl.pathname)) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         const networkUpdate = fetch(event.request)
           .then((networkResponse) => {
             if (isCacheableResponse(networkResponse)) {
+              // Передаем промис в event.waitUntil для надежности
               event.waitUntil(putInCacheSafe(event.request, networkResponse));
             }
             return networkResponse;
@@ -121,7 +122,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Для HTML-страниц: Network-First с таймаутом 4 сек + офлайн-фоллбэк с ignoreSearch
+  // 2. Для HTML-страниц: Network-First с таймаутом
   event.respondWith(
     fetchWithTimeout(event.request, NETWORK_TIMEOUT_MS)
       .then((networkResponse) => {
@@ -131,9 +132,15 @@ self.addEventListener("fetch", (event) => {
         return networkResponse;
       })
       .catch(async () => {
-        const cachedExact = await caches.match(event.request, { ignoreSearch: true });
+        // Сначала ищем точное совпадение (с учетом ?utm_source и т.д.)
+        const cachedExact = await caches.match(event.request);
         if (cachedExact) return cachedExact;
 
+        // Если точного нет, ищем без учета параметров (для офлайна)
+        const cachedIgnoreSearch = await caches.match(event.request, { ignoreSearch: true });
+        if (cachedIgnoreSearch) return cachedIgnoreSearch;
+
+        // Если совсем беда - отдаем главную
         if (isNavigation) {
           const fallbackIndex = await caches.match("./index.html");
           if (fallbackIndex) return fallbackIndex;
