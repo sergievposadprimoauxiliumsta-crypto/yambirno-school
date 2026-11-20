@@ -3,13 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#1e40af">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com https://skrinshoter.ru https://*.skrinshoter.ru https://*.userapi.com https://*.yandex.net; connect-src 'self' https://docs.google.com https://*.googleusercontent.com https://api.open-meteo.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;">
+
   <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Информационный портал</title>
   <meta name="description" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» (с. Ямбирно, Шацкий район): расписание 1–9 классов, меню питания, педагоги, новости и гид по Дневнику и Учи.ру.">
   <link rel="canonical" href="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E">
 
   <link rel="preconnect" href="https://docs.google.com" crossorigin>
   <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+  <link rel="dns-prefetch" href="https://drive.google.com">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
@@ -18,32 +24,65 @@
   <meta property="og:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
   <meta property="og:description" content="Небольшая школа — большие возможности: обучение, воспитание и единство. Расписание 1–9 классов, официальные материалы, погода в с. Ямбирно, навигатор по Дневнику и Учи.ру.">
   <meta property="og:image" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Информационный портал Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
+  <meta name="twitter:description" content="Расписание 1–9 классов, меню питания, новости школы, погода в с. Ямбирно и цифровой навигатор по Дневнику и Учи.ру.">
+  <meta name="twitter:image" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png">
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "School",
-    "name": "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
-    "url": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/",
-    "telephone": "+7-49147-2-63-68",
-    "email": "yambirno-school@yandex.ru",
-    "address": {
-      "@type": "PostalAddress",
-      "postalCode": "391573",
-      "addressRegion": "Рязанская область",
-      "addressLocality": "с. Ямбирно",
-      "streetAddress": "ул. Школьная, д. 11",
-      "addressCountry": "RU"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 54.1286,
-      "longitude": 41.9708
-    },
-    "sameAs": [
-      "https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/",
-      "https://vk.ru/public216706445"
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/#website",
+        "url": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/",
+        "name": "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
+        "inLanguage": "ru-RU"
+      },
+      {
+        "@type": "School",
+        "@id": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/#school",
+        "name": "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
+        "description": "Общеобразовательная школа в с. Ямбирно Шацкого района Рязанской области: обучение 1–9 классов, индивидуальное сопровождение, горячее питание, внеурочная деятельность.",
+        "url": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/",
+        "image": "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png",
+        "telephone": "+7-49147-2-63-68",
+        "email": "yambirno-school@yandex.ru",
+        "parentOrganization": {
+          "@type": "EducationalOrganization",
+          "name": "МОУ «Лесно-Конобеевская средняя школа»",
+          "url": "https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/"
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "postalCode": "391573",
+          "addressRegion": "Рязанская область",
+          "addressLocality": "с. Ямбирно",
+          "streetAddress": "ул. Школьная, д. 11",
+          "addressCountry": "RU"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 54.1286,
+          "longitude": 41.9708
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "08:00",
+            "closes": "17:00"
+          }
+        ],
+        "sameAs": [
+          "https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/",
+          "https://vk.ru/public216706445"
+        ]
+      }
     ]
   }
   </script>
@@ -120,7 +159,7 @@
     </div>
 
     <div class="container header-main-inner">
-      <a href="index.html" class="brand" aria-label="Ямбирнский филиал МОУ Лесно-Конобеевская СШ — на главную">
+      <a href="./" class="brand" aria-label="Ямбирнский филиал МОУ Лесно-Конобеевская СШ — на главную">
         <img
           src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
           alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
@@ -156,7 +195,7 @@
     <section class="hero-section" id="hero-ambient">
       <div class="container hero-grid">
 
-        <div class="hero-content reveal">
+        <div class="hero-content">
           <span class="badge">Рязанская область • Шацкий район • с. Ямбирно</span>
           <h1 class="hero-title">Небольшая школа — большие возможности: обучение, воспитание и единство</h1>
           <p class="hero-lead">
@@ -219,7 +258,7 @@
           </div>
         </div>
 
-        <aside class="live-widget surface-card reveal" id="live-widget-card" aria-labelledby="live-widget-title">
+        <aside class="live-widget surface-card" id="live-widget-card" aria-labelledby="live-widget-title">
           <div class="widget-header">
             <div class="live-badge-capsule">
               <span class="radar-dot-wrap" aria-hidden="true">
@@ -289,25 +328,25 @@
                     📤 В чат
                   </button>
                   <div class="weekday-pills" id="schedule-weekday-pills" role="group" aria-label="Выбор дня недели для расписания">
-                    <button type="button" class="day-pill" data-day="1" title="Понедельник">Пн</button>
-                    <button type="button" class="day-pill" data-day="2" title="Вторник">Вт</button>
-                    <button type="button" class="day-pill" data-day="3" title="Среда">Ср</button>
-                    <button type="button" class="day-pill" data-day="4" title="Четверг">Чт</button>
-                    <button type="button" class="day-pill" data-day="5" title="Пятница">Пт</button>
+                    <button type="button" class="day-pill" data-day="1" aria-pressed="false" title="Понедельник">Пн</button>
+                    <button type="button" class="day-pill" data-day="2" aria-pressed="false" title="Вторник">Вт</button>
+                    <button type="button" class="day-pill" data-day="3" aria-pressed="false" title="Среда">Ср</button>
+                    <button type="button" class="day-pill" data-day="4" aria-pressed="false" title="Четверг">Чт</button>
+                    <button type="button" class="day-pill" data-day="5" aria-pressed="false" title="Пятница">Пт</button>
                   </div>
                 </div>
               </div>
 
               <div class="grade-selector-bar" id="schedule-grade-pills" role="group" aria-label="Выберите класс (с 1 по 9)">
-                <button type="button" class="grade-pill active" data-grade="1">1 кл</button>
-                <button type="button" class="grade-pill" data-grade="2">2 кл</button>
-                <button type="button" class="grade-pill" data-grade="3">3 кл</button>
-                <button type="button" class="grade-pill" data-grade="4">4 кл</button>
-                <button type="button" class="grade-pill" data-grade="5">5 кл</button>
-                <button type="button" class="grade-pill" data-grade="6">6 кл</button>
-                <button type="button" class="grade-pill" data-grade="7">7 кл</button>
-                <button type="button" class="grade-pill" data-grade="8">8 кл</button>
-                <button type="button" class="grade-pill" data-grade="9">9 кл</button>
+                <button type="button" class="grade-pill active" data-grade="1" aria-pressed="true">1 кл</button>
+                <button type="button" class="grade-pill" data-grade="2" aria-pressed="false">2 кл</button>
+                <button type="button" class="grade-pill" data-grade="3" aria-pressed="false">3 кл</button>
+                <button type="button" class="grade-pill" data-grade="4" aria-pressed="false">4 кл</button>
+                <button type="button" class="grade-pill" data-grade="5" aria-pressed="false">5 кл</button>
+                <button type="button" class="grade-pill" data-grade="6" aria-pressed="false">6 кл</button>
+                <button type="button" class="grade-pill" data-grade="7" aria-pressed="false">7 кл</button>
+                <button type="button" class="grade-pill" data-grade="8" aria-pressed="false">8 кл</button>
+                <button type="button" class="grade-pill" data-grade="9" aria-pressed="false">9 кл</button>
               </div>
 
               <div id="bell-shift-warning" class="bell-shift-banner hidden" role="status">
@@ -409,16 +448,16 @@
 
         <div class="digital-tabs reveal" role="tablist" aria-label="Подробные инструкции для родителей">
           <button type="button" id="btn-tab-gosuslugi" class="digital-tab-btn active" data-dtab="tab-gosuslugi" role="tab" aria-selected="true" aria-controls="tab-gosuslugi">
-1. Как зарегистрировать Госуслуги (себе и ребёнку)
+            1. Как зарегистрировать Госуслуги (себе и ребёнку)
           </button>
           <button type="button" id="btn-tab-diary" class="digital-tab-btn" data-dtab="tab-diary" role="tab" aria-selected="false" aria-controls="tab-diary" tabindex="-1">
-2. 📘 Как войти в Электронный дневник («Моя школа»)
+            2. 📘 Как войти в Электронный дневник («Моя школа»)
           </button>
           <button type="button" id="btn-tab-uchiru-cdz" class="digital-tab-btn" data-dtab="tab-uchiru-cdz" role="tab" aria-selected="false" aria-controls="tab-uchiru-cdz" tabindex="-1">
-3. 💻 «Учи.ру»: как найти и сделать ЦДЗ
+            3. 💻 «Учи.ру»: как найти и сделать ЦДЗ
           </button>
           <button type="button" id="btn-tab-uchiru-olymp" class="digital-tab-btn" data-dtab="tab-uchiru-olymp" role="tab" aria-selected="false" aria-controls="tab-uchiru-olymp" tabindex="-1">
-4. 🏆 Олимпиады на «Учи.ру» и дипломы
+            4. 🏆 Олимпиады на «Учи.ру» и дипломы
           </button>
         </div>
 
@@ -799,28 +838,28 @@
             <span class="stat-val" data-target="72" data-suffix="%">72%</span>
             <span class="stat-label">выпускников поступают в колледжи</span>
             <div class="stat-progress-track" aria-hidden="true">
-              <div class="stat-progress-fill" style="width: 72%"></div>
+              <div class="stat-progress-fill stat-fill-72"></div>
             </div>
           </div>
           <div class="stat-item">
             <span class="stat-val" data-target="28" data-suffix="%">28%</span>
             <span class="stat-label">продолжают обучение в 10 классе</span>
             <div class="stat-progress-track" aria-hidden="true">
-              <div class="stat-progress-fill" style="width: 28%"></div>
+              <div class="stat-progress-fill stat-fill-28"></div>
             </div>
           </div>
           <div class="stat-item">
             <span class="stat-val" data-target="43.2" data-decimals="1" data-suffix="%">43.2%</span>
             <span class="stat-label">учеников учатся на «4» и «5»</span>
             <div class="stat-progress-track" aria-hidden="true">
-              <div class="stat-progress-fill" style="width: 43.2%"></div>
+              <div class="stat-progress-fill stat-fill-43"></div>
             </div>
           </div>
           <div class="stat-item">
             <span class="stat-val" data-target="12" data-suffix="">12</span>
             <span class="stat-label">призовых мест в конкурсах</span>
             <div class="stat-progress-track" aria-hidden="true">
-              <div class="stat-progress-fill" style="width: 100%"></div>
+              <div class="stat-progress-fill stat-fill-100"></div>
             </div>
           </div>
         </div>
@@ -862,16 +901,22 @@
             <div class="live-menu-box">
               <div class="live-menu-head">
                 <div class="live-menu-title">🍽️ Рацион питания: <span id="menu-day-label" class="day-accent-label">Сегодня</span></div>
-                <div class="weekday-pills" id="menu-weekday-pills" role="group" aria-label="Выбор дня недели для меню питания">
-                  <button type="button" class="day-pill" data-day="1" title="Понедельник">Пн</button>
-                  <button type="button" class="day-pill" data-day="2" title="Вторник">Вт</button>
-                  <button type="button" class="day-pill" data-day="3" title="Среда">Ср</button>
-                  <button type="button" class="day-pill" data-day="4" title="Четверг">Чт</button>
-                  <button type="button" class="day-pill" data-day="5" title="Пятница">Пт</button>
+                <div class="menu-controls-wrap">
+                  <div class="weekday-pills week-pills-group hidden" id="menu-week-pills" role="group" aria-label="Выбор недели цикличного меню">
+                    <button type="button" class="day-pill week-pill active" data-week="1" aria-pressed="true" title="Первая неделя меню">1 нед.</button>
+                    <button type="button" class="day-pill week-pill" data-week="2" aria-pressed="false" title="Вторая неделя меню">2 нед.</button>
+                  </div>
+                  <div class="weekday-pills" id="menu-weekday-pills" role="group" aria-label="Выбор дня недели для меню питания">
+                    <button type="button" class="day-pill" data-day="1" aria-pressed="false" title="Понедельник">Пн</button>
+                    <button type="button" class="day-pill" data-day="2" aria-pressed="false" title="Вторник">Вт</button>
+                    <button type="button" class="day-pill" data-day="3" aria-pressed="false" title="Среда">Ср</button>
+                    <button type="button" class="day-pill" data-day="4" aria-pressed="false" title="Четверг">Чт</button>
+                    <button type="button" class="day-pill" data-day="5" aria-pressed="false" title="Пятница">Пт</button>
+                  </div>
                 </div>
               </div>
               <div class="live-menu-grid">
-                <div class="menu-slot">
+                <div id="menu-breakfast-slot" class="menu-slot">
                   <span class="menu-slot-label">Завтрак:</span>
                   <span id="menu-breakfast" class="menu-slot-val">Горячее блюдо, витаминизированный горячий напиток, хлебобулочное/молочное изделие согласно утверждённому 10-дневному цикличному меню.</span>
                 </div>
@@ -1116,6 +1161,9 @@
         <a id="pub-modal-doc-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary hidden">
           📎 Открыть / Скачать прикреплённый документ ↗
         </a>
+        <button type="button" id="pub-modal-link-btn" class="btn btn-secondary">
+          🔗 Скопировать ссылку
+        </button>
         <button type="button" id="pub-modal-copy-btn" class="btn btn-secondary">
           📋 Скопировать текст
         </button>
@@ -1154,7 +1202,11 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11.</p>
-      <p>Заведующий филиалом: Попихина Елена Александровна • <a href="https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/" target="_blank" rel="noopener noreferrer" class="footer-link">Сведения об ОО (Госвеб) ↗</a></p>
+      <p>
+        Заведующий филиалом: Попихина Елена Александровна •
+        <a href="privacy.html" class="footer-link">Политика ПДн</a> •
+        <a href="https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/" target="_blank" rel="noopener noreferrer" class="footer-link">Сведения об ОО (Госвеб) ↗</a>
+      </p>
     </div>
   </footer>
 
