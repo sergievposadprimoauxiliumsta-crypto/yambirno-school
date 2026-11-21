@@ -1,10 +1,19 @@
+/* =========================================================================
+ * Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Основная таблица стилей
+ * Visual Bible: «Сапфировый Дневник и Тёплый Янтарь» (свет 45° сверху слева)
+ * Кроссплатформенность: iOS Safari 15+, Яндекс, Samsung Internet, WebView TG/VK,
+ * школьные ПК 1280×1024 (Windows / Astra Linux / РЕД ОС), экраны 320–2560px
+ * ========================================================================= */
+
 :root {
+  color-scheme: light;
+
   /* Поверхности и стекло */
   --bg-main: #f8fafc;
   --bg-card: #ffffff;
   --bg-alt: #f1f5f9;
   --bg-warm: #fdfbf7;
-  --glass-bg: rgba(255, 255, 255, 0.86);
+  --glass-bg: rgba(255, 255, 255, 0.88);
   --glass-border: rgba(255, 255, 255, 0.65);
 
   /* Чернила и типографика */
@@ -31,7 +40,7 @@
   --shadow-md: 0 4px 10px rgba(15, 23, 42, 0.05), 0 14px 32px rgba(30, 64, 175, 0.10);
   --shadow-lg: 0 8px 18px rgba(15, 23, 42, 0.06), 0 24px 48px rgba(30, 64, 175, 0.16);
 
-  /* Геометрия и пружинная физика */
+  /* Геометрия и пружинная физика (базовый fallback для iOS Safari 15–17.1 и WebView) */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;
@@ -39,16 +48,29 @@
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --spring-snappy: linear(
-    0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
-    1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
-    1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
-    0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1
-  );
+  --spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-micro: 180ms;
   --dur-ui: 320ms;
   --dur-enter: 450ms;
   --transition: 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Безопасные отступы вырезов iPhone / Android */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Прогрессивное улучшение пружины через linear() только в поддерживающих браузерах */
+@supports (animation-timing-function: linear(0, 1)) {
+  :root {
+    --spring-snappy: linear(
+      0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
+      1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
+      1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
+      0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1
+    );
+  }
 }
 
 *,
@@ -62,12 +84,19 @@
 html {
   width: 100%;
   max-width: 100%;
-  overflow-x: clip;
   scroll-behavior: smooth;
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+/* overflow-x: clip не ломает position: sticky в iOS Safari; для старых браузеров обрезка задаётся на секциях */
+@supports (overflow-x: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
 }
 
 html.modal-open,
@@ -78,12 +107,12 @@ body.modal-open {
 body {
   width: 100%;
   max-width: 100%;
-  overflow-x: clip;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: var(--bg-main);
   color: var(--text-main);
   line-height: 1.65;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-wrap: break-word;
@@ -93,6 +122,17 @@ body {
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Убираем 300ms задержку двойного тапа на тач-экранах и в WebView */
+a,
+button,
+input,
+textarea,
+select,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(30, 64, 175, 0.14);
 }
 
 body.paper-texture {
@@ -133,6 +173,14 @@ section,
   max-width: 100%;
 }
 
+/* Защита от горизонтального скролла в браузерах без overflow-x: clip без поломки sticky-шапки */
+main,
+section,
+.site-footer {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 /* Компенсация высоты липкой шапки на ПК при переходе по якорным ссылкам */
 section[id],
 #live-widget-card {
@@ -144,10 +192,11 @@ section[id],
   max-width: 1220px;
   min-width: 0;
   margin: 0 auto;
-  padding: 0 20px;
+  padding-left: max(20px, var(--safe-left));
+  padding-right: max(20px, var(--safe-right));
 }
 
-/* Защита всех CSS Grid-сеток от распирания ширины на мобильных */
+/* Защита всех CSS Grid-сеток от распирания ширины на узких экранах (320px+) */
 .hero-grid > *,
 .info-blocks-grid > *,
 .steps-guide-grid > *,
@@ -177,7 +226,15 @@ section[id],
   pointer-events: none;
 }
 
-/* ===== БАЗОВЫЕ КАРТОЧКИ И 60 FPS ТЕНЬ/3D-TILT ===== */
+/* Пауза бесконечных ambient/pulse анимаций вне вьюпорта или при скрытой вкладке */
+.ambient-paused,
+.ambient-paused *,
+.ambient-paused *::before,
+.ambient-paused *::after {
+  animation-play-state: paused !important;
+}
+
+/* ===== БАЗОВЫЕ КАРТОЧКИ И 60 FPS ТЕНЬ / 3D-TILT ===== */
 .surface-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -337,12 +394,12 @@ section[id],
 }
 
 .skip-link:focus {
-  top: 12px;
+  top: calc(12px + var(--safe-top));
 }
 
 .dynamic-island {
   position: fixed;
-  top: 14px;
+  top: calc(14px + var(--safe-top));
   left: 50%;
   transform: translate3d(-50%, -140%, 0) scale(0.92);
   background: rgba(15, 23, 42, 0.94);
@@ -388,19 +445,28 @@ section[id],
   position: sticky;
   top: 0;
   z-index: 100;
+  overflow-x: hidden;
   overflow-x: clip;
+  background: rgba(255, 255, 255, 0.97);
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), var(--shadow-sm);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header {
+    background: #ffffff;
+  }
 }
 
 .top-utility-bar {
   background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
   color: #f8fafc;
   font-size: 0.84rem;
-  padding: 7px 0;
+  padding-top: calc(7px + var(--safe-top));
+  padding-bottom: 7px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -619,7 +685,22 @@ section[id],
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease;
 }
 
-.nav-link:hover,
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover {
+    color: var(--primary);
+    background: var(--primary-soft);
+  }
+
+  .nav-link-accent:hover {
+    background: #dbeafe;
+  }
+
+  .nav-link-live:hover {
+    background: #fde68a;
+    color: #78350f;
+  }
+}
+
 .nav-link:focus-visible,
 .nav-link.spy-active {
   color: var(--primary);
@@ -634,10 +715,6 @@ section[id],
   font-weight: 700;
 }
 
-.nav-link-accent:hover {
-  background: #dbeafe;
-}
-
 .nav-link-live {
   display: inline-flex;
   align-items: center;
@@ -650,7 +727,6 @@ section[id],
   font-weight: 800;
 }
 
-.nav-link-live:hover,
 .nav-link-live.spy-active {
   background: #fde68a;
   color: #78350f;
@@ -707,7 +783,8 @@ section[id],
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 13px 24px;
+  min-height: 44px;
+  padding: 12px 24px;
   border-radius: var(--radius-md);
   font-weight: 700;
   font-size: 0.98rem;
@@ -736,6 +813,15 @@ section[id],
   .btn:hover:not(:disabled)::after {
     transform: translateX(130%);
   }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    color: #ffffff;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--primary-soft);
+  }
 }
 
 .btn:disabled {
@@ -748,19 +834,10 @@ section[id],
   color: #ffffff;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-  color: #ffffff;
-}
-
 .btn-secondary {
   background-color: #ffffff;
   color: var(--primary);
   border-color: var(--primary);
-}
-
-.btn-secondary:hover {
-  background-color: var(--primary-soft);
 }
 
 .btn-full {
@@ -834,6 +911,37 @@ section[id],
   min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* Быстрый переход к расписанию и погоде — виден только на мобильных/планшетах (< 992px) */
+.mobile-schedule-jump {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #93c5fd;
+  color: var(--primary-hover);
+  font-weight: 800;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.mobile-schedule-jump-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mobile-schedule-jump-arrow {
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .badge {
@@ -985,15 +1093,17 @@ section[id],
   color: #f1f5f9;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  font-size: 0.74rem;
+  padding: 5px 10px;
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease;
 }
 
-.chalk-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
+@media (hover: hover) and (pointer: fine) {
+  .chalk-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
 }
 
 .chalk-btn[aria-pressed="true"] {
@@ -1091,6 +1201,7 @@ section[id],
 
 .chalk-reveal-btn {
   margin-top: 10px;
+  min-height: 38px;
   background: rgba(253, 224, 71, 0.2);
   color: #fde047;
   border: 1px dashed #fde047;
@@ -1101,8 +1212,10 @@ section[id],
   cursor: pointer;
 }
 
-.chalk-reveal-btn:hover {
-  background: rgba(253, 224, 71, 0.32);
+@media (hover: hover) and (pointer: fine) {
+  .chalk-reveal-btn:hover {
+    background: rgba(253, 224, 71, 0.32);
+  }
 }
 
 .chalkboard-wet-wipe {
@@ -1292,8 +1405,16 @@ section[id],
 .widget-status {
   font-size: 0.78rem;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.widget-status.is-snapshot {
+  color: #0369a1;
+}
+
+.widget-status.is-offline {
+  color: #92400e;
 }
 
 .btn-refresh {
@@ -1311,8 +1432,10 @@ section[id],
   transition: background-color var(--dur-micro) ease, transform var(--dur-micro) ease;
 }
 
-.btn-refresh:hover:not(:disabled) {
-  background: #e2e8f0;
+@media (hover: hover) and (pointer: fine) {
+  .btn-refresh:hover:not(:disabled) {
+    background: #e2e8f0;
+  }
 }
 
 .btn-refresh.loading .icon-refresh {
@@ -1492,10 +1615,12 @@ section[id],
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease, border-color var(--dur-micro) ease;
 }
 
-.btn-share-chat:hover {
-  background: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
+@media (hover: hover) and (pointer: fine) {
+  .btn-share-chat:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+  }
 }
 
 .bell-shift-banner {
@@ -1775,7 +1900,7 @@ section[id],
   border-left-color: #2563eb;
 }
 
-/* ===== ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ И КЛАССОВ (СКОЛЬЗЯЩАЯ FLIP-КАПСУЛА) ===== */
+/* ===== ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ И КЛАССОВ (СКОЛЬЗЯЩАЯ GPU-КАПСУЛА) ===== */
 .widget-schedule-head,
 .live-menu-head {
   display: flex;
@@ -1821,6 +1946,7 @@ section[id],
   background: #dbeafe;
 }
 
+/* Анимируются строго GPU-свойства transform и opacity (без layout-анимации width) */
 .pill-glide-indicator {
   position: absolute;
   top: 3px;
@@ -1832,7 +1958,8 @@ section[id],
   z-index: 0;
   pointer-events: none;
   opacity: 0;
-  transition: transform 340ms var(--spring-snappy), width 260ms var(--ease-out-expo), opacity 180ms ease;
+  transform-origin: left center;
+  transition: transform 340ms var(--spring-snappy), opacity 180ms ease;
 }
 
 .day-pill {
@@ -1843,14 +1970,16 @@ section[id],
   color: var(--text-main);
   font-size: 0.74rem;
   font-weight: 700;
-  padding: 3px 7px;
+  padding: 4px 8px;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease;
 }
 
-.day-pill:hover {
-  background: rgba(255, 255, 255, 0.65);
+@media (hover: hover) and (pointer: fine) {
+  .day-pill:hover {
+    background: rgba(255, 255, 255, 0.65);
+  }
 }
 
 .day-pill.active {
@@ -1878,7 +2007,7 @@ section[id],
   font-size: 0.72rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  padding: 5px 2px;
+  padding: 6px 2px;
   border-radius: 6px;
   cursor: pointer;
   text-align: center;
@@ -1886,9 +2015,11 @@ section[id],
   transition: border-color var(--dur-micro) ease, color var(--dur-micro) ease, background-color var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
 }
 
-.grade-pill:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+@media (hover: hover) and (pointer: fine) {
+  .grade-pill:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
 }
 
 .grade-pill.active {
@@ -1896,6 +2027,13 @@ section[id],
   border-color: var(--primary);
   color: #ffffff;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 2px 6px rgba(30, 64, 175, 0.22);
+}
+
+.grade-auto-hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  line-height: 1.35;
 }
 
 /* ===== ЛЕНТА ПУБЛИКАЦИЙ, ФИЛЬТРЫ РУБРИК И ПЛАВНОЕ РАСКРЫТИЕ ===== */
@@ -1923,9 +2061,11 @@ section[id],
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease, border-color var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
 }
 
-.pub-filter-chip:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+@media (hover: hover) and (pointer: fine) {
+  .pub-filter-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
 }
 
 .pub-filter-chip.active {
@@ -1970,6 +2110,11 @@ section[id],
   border-bottom: 1px solid var(--border);
 }
 
+.pub-card-media:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+
 .pub-card-img {
   width: 100%;
   height: 100%;
@@ -1990,17 +2135,58 @@ section[id],
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(15, 23, 42, 0.84);
+  background: rgba(15, 23, 42, 0.86);
   color: #ffffff;
   font-size: 0.75rem;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
+/* Компактная полоса миниатюр для новостей с 2–4 фото */
+.pub-card-thumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pub-card-thumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.pub-card-thumb-btn {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e2e8f0;
+  cursor: pointer;
+  transition: border-color var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pub-card-thumb-btn:hover {
+    border-color: var(--primary);
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+.pub-card-thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .pub-card-content {
-  padding: 22px 20px;
+  padding: 20px 20px 22px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -2105,27 +2291,30 @@ section[id],
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease, border-color var(--dur-micro) ease;
 }
 
-.btn-pub-action:hover {
-  background: var(--primary);
-  color: #ffffff;
-}
-
 .btn-pub-doc {
   background: #ffffff;
   border-color: var(--border);
   color: var(--text-main);
 }
 
-.btn-pub-doc:hover {
-  background: var(--bg-alt);
-  color: var(--primary);
-  border-color: var(--primary);
+@media (hover: hover) and (pointer: fine) {
+  .btn-pub-action:hover {
+    background: var(--primary);
+    color: #ffffff;
+  }
+
+  .btn-pub-doc:hover {
+    background: var(--bg-alt);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
 }
 
 /* ===== МОДАЛЬНОЕ ОКНО ПУБЛИКАЦИИ ===== */
 .pub-modal-dialog {
   width: 100%;
   max-width: min(840px, 100%);
+  max-height: 90vh;
   max-height: 90dvh;
   min-width: 0;
   display: flex;
@@ -2172,15 +2361,18 @@ section[id],
   flex-shrink: 0;
 }
 
-.pub-modal-close-btn:hover {
-  background: var(--danger-soft);
-  color: var(--danger);
-  border-color: #fca5a5;
+@media (hover: hover) and (pointer: fine) {
+  .pub-modal-close-btn:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: #fca5a5;
+  }
 }
 
 .pub-modal-scroll-area {
   padding: 24px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   flex: 1;
 }
 
@@ -2296,6 +2488,7 @@ section[id],
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  min-height: 44px;
   padding: 14px 16px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border);
@@ -2310,12 +2503,19 @@ section[id],
   min-width: 0;
 }
 
-.digital-tab-btn.active,
-.digital-tab-btn:hover {
+.digital-tab-btn.active {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
-  transform: translate3d(0, -2px, 0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .digital-tab-btn:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    transform: translate3d(0, -2px, 0);
+  }
 }
 
 .digital-panel {
@@ -2774,6 +2974,11 @@ section[id],
   .gallery-item:hover .gallery-img {
     transform: scale(1.06);
   }
+
+  .gallery-item:hover .gallery-zoom-badge {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .gallery-zoom-badge {
@@ -2794,7 +2999,6 @@ section[id],
   transition: opacity var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
 }
 
-.gallery-item:hover .gallery-zoom-badge,
 .gallery-item:focus-visible .gallery-zoom-badge {
   opacity: 1;
   transform: translate3d(0, 0, 0);
@@ -2808,7 +3012,7 @@ section[id],
   color: var(--text-main);
 }
 
-/* ===== LIGHTBOX (ПОВЕРХ МОДАЛОК + БЕЗ ВЫДЕЛЕНИЯ ПРИ DRAG) ===== */
+/* ===== LIGHTBOX (ПОВЕРХ МОДАЛОК + SAFE AREA + СВАЙП) ===== */
 .lightbox-backdrop {
   position: fixed;
   inset: 0;
@@ -2816,14 +3020,24 @@ section[id],
   max-width: 100vw;
   overflow: hidden;
   overscroll-behavior: contain;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(10px);
+  background: rgba(15, 23, 42, 0.94);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   z-index: 1500;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding:
+    max(20px, var(--safe-top))
+    max(20px, var(--safe-right))
+    max(20px, var(--safe-bottom))
+    max(20px, var(--safe-left));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lightbox-backdrop {
+    background: rgba(15, 23, 42, 0.97);
+  }
 }
 
 #gallery-lightbox {
@@ -2833,6 +3047,7 @@ section[id],
 .lightbox-dialog {
   width: 100%;
   max-width: min(920px, 100%);
+  max-height: calc(100vh - 32px);
   max-height: calc(100dvh - 32px);
   min-width: 0;
   display: flex;
@@ -2871,8 +3086,11 @@ section[id],
   flex-shrink: 0;
 }
 
-.lightbox-close-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
+@media (hover: hover) and (pointer: fine) {
+  .lightbox-close-btn:hover,
+  .lightbox-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+  }
 }
 
 .lightbox-stage {
@@ -2892,6 +3110,7 @@ section[id],
   min-width: 0;
   width: 100%;
   max-width: 100%;
+  max-height: 64vh;
   max-height: 64dvh;
   display: flex;
   align-items: center;
@@ -2903,6 +3122,7 @@ section[id],
 }
 
 .lightbox-main-img {
+  max-height: 64vh;
   max-height: 64dvh;
   width: auto;
   max-width: 100%;
@@ -2910,6 +3130,11 @@ section[id],
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
+  transition: transform 240ms var(--ease-out-expo);
+}
+
+.lightbox-main-img.is-dragging {
+  transition: none;
 }
 
 .lightbox-nav-btn {
@@ -2928,10 +3153,6 @@ section[id],
   justify-content: center;
   user-select: none;
   -webkit-user-select: none;
-}
-
-.lightbox-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
 }
 
 .lightbox-meta {
@@ -2998,10 +3219,12 @@ section[id],
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease, border-color var(--dur-micro) ease;
 }
 
-.btn-copy-mini:hover {
-  background: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
+@media (hover: hover) and (pointer: fine) {
+  .btn-copy-mini:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+  }
 }
 
 .contact-value {
@@ -3019,8 +3242,8 @@ section[id],
 
 .scroll-top-btn {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: calc(20px + var(--safe-right));
+  bottom: calc(20px + var(--safe-bottom));
   width: 46px;
   height: 46px;
   border-radius: 50%;
@@ -3134,6 +3357,11 @@ section[id],
     transform: translate3d(0, -4px, 0);
     color: #ffffff;
   }
+
+  .btn-cta:hover {
+    background: #f59e0b;
+    color: #0f172a;
+  }
 }
 
 .cta-reason-icon {
@@ -3174,11 +3402,6 @@ section[id],
   border-radius: 999px;
 }
 
-.btn-cta:hover {
-  background: #f59e0b;
-  color: #0f172a;
-}
-
 .cta-security-note {
   display: inline-flex;
   align-items: center;
@@ -3192,7 +3415,8 @@ section[id],
   margin-top: auto;
   background: #0f172a;
   color: #cbd5e1;
-  padding: 26px 0;
+  padding-top: 26px;
+  padding-bottom: calc(26px + var(--safe-bottom));
   font-size: 0.9rem;
 }
 
@@ -3385,7 +3609,8 @@ section[id],
   color: var(--primary-hover);
 }
 
-.frame-guard-banner {
+.frame-guard-banner,
+.noscript-banner {
   background: var(--danger-soft);
   color: #7f1d1d;
   border: 2px solid #dc2626;
@@ -3394,6 +3619,12 @@ section[id],
   margin-bottom: 20px;
   font-weight: 700;
   font-size: 0.94rem;
+}
+
+.noscript-banner {
+  background: var(--accent-light);
+  color: #78350f;
+  border-color: var(--accent);
 }
 
 .topic-selector {
@@ -3409,6 +3640,7 @@ section[id],
   justify-content: center;
   gap: 7px;
   flex: 1 1 160px;
+  min-height: 44px;
   padding: 10px 14px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border);
@@ -3420,11 +3652,18 @@ section[id],
   transition: background-color var(--dur-micro) ease, border-color var(--dur-micro) ease, color var(--dur-micro) ease;
 }
 
-.topic-chip.active,
-.topic-chip:hover {
+.topic-chip.active {
   background: var(--primary-soft);
   border-color: var(--primary);
   color: var(--primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .topic-chip:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
 }
 
 .form-group {
@@ -3460,9 +3699,11 @@ section[id],
   color: var(--danger);
 }
 
+/* Строго 16px, чтобы iOS Safari не зумил страницу при фокусе в поле */
 .form-control {
   width: 100%;
   max-width: 100%;
+  min-height: 46px;
   padding: 12px 14px;
   font-size: 16px;
   font-family: inherit;
@@ -3730,6 +3971,7 @@ section[id],
 
 /* ===== ВЕРСИЯ ДЛЯ СЛАБОВИДЯЩИХ (ГОСТ Р 52872-2019 — ЖЁСТКИЙ РУБИЛЬНИК) ===== */
 body.visually-impaired {
+  color-scheme: dark;
   --a11y-bg: #000000;
   --a11y-fg: #ffff00;
   --a11y-placeholder: #cccc00;
@@ -3742,18 +3984,21 @@ body.visually-impaired {
 }
 
 body.visually-impaired.a11y-theme-white {
+  color-scheme: light;
   --a11y-bg: #ffffff;
   --a11y-fg: #000000;
   --a11y-placeholder: #333333;
 }
 
 body.visually-impaired.a11y-theme-black {
+  color-scheme: dark;
   --a11y-bg: #000000;
   --a11y-fg: #ffffff;
   --a11y-placeholder: #cccccc;
 }
 
 body.visually-impaired.a11y-theme-blue {
+  color-scheme: light;
   --a11y-bg: #9dd1ff;
   --a11y-fg: #063462;
   --a11y-placeholder: #134a80;
@@ -3813,6 +4058,8 @@ body.visually-impaired *::after {
   transform: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
 }
 
 /* Перекраска многослойного SVG-спрайта в высококонтрастный цвет (и инверсия в активных кнопках) */
@@ -3932,6 +4179,7 @@ body.visually-impaired:not(.a11y-show-images) .teacher-photo-wrap,
 body.visually-impaired:not(.a11y-show-images) .radar-dot-wrap,
 body.visually-impaired:not(.a11y-show-images) .gallery-img-wrap,
 body.visually-impaired:not(.a11y-show-images) .pub-card-media,
+body.visually-impaired:not(.a11y-show-images) .pub-card-thumbs,
 body.visually-impaired:not(.a11y-show-images) .pub-modal-gallery,
 body.visually-impaired:not(.a11y-show-images) .chalk-pieces {
   display: none !important;
@@ -3950,7 +4198,8 @@ body.visually-impaired .grade-pill,
 body.visually-impaired .diary-lesson-row,
 body.visually-impaired .chalk-btn,
 body.visually-impaired .btn-pub-action,
-body.visually-impaired .pub-filter-chip {
+body.visually-impaired .pub-filter-chip,
+body.visually-impaired .mobile-schedule-jump {
   border: 2px solid var(--a11y-fg) !important;
   font-size: 1.05rem !important;
   opacity: 1 !important;
@@ -3984,9 +4233,53 @@ body.visually-impaired .reveal.reveal-pending {
   opacity: 1 !important;
 }
 
-/* ===== АДАПТИВНЫЕ БРЕЙКПОИНТЫ ===== */
+/* ===== ТАКТИЛЬНЫЕ ТАП-ЗОНЫ >= 44x44px НА СЕНСОРНЫХ ЭКРАНАХ ===== */
+@media (pointer: coarse) {
+  .btn-a11y,
+  .btn-refresh,
+  .btn-share-chat,
+  .btn-copy-mini,
+  .btn-pub-action,
+  .pub-filter-chip,
+  .chalk-btn,
+  .chalk-reveal-btn,
+  .a11y-opt-btn,
+  .nav-link,
+  .nav-cta-btn,
+  .pub-modal-close-btn,
+  .lightbox-close-btn {
+    min-height: 44px;
+  }
 
-/* Компактная шапка на ноутбуках и небольших мониторах без переноса «Обращения» на 2 строку */
+  .day-pill {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 6px;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .grade-pill {
+    min-height: 44px;
+    padding: 6px 2px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pub-card-thumb-btn {
+    flex: 0 0 60px;
+    width: 60px;
+    height: 44px;
+  }
+}
+
+/* ===== АДАПТИВНЫЕ БРЕЙКПОИНТЫ (320px — 2560px) ===== */
+
+/* Компактная шапка на школьных мониторах 1280×1024 и ноутбуках без переноса «Обращения» */
 @media (max-width: 1220px) and (min-width: 769px) {
   .header-main-inner {
     gap: 10px;
@@ -4036,6 +4329,10 @@ body.visually-impaired .reveal.reveal-pending {
   .hero-grid,
   .info-blocks-grid {
     grid-template-columns: 1fr;
+  }
+
+  .mobile-schedule-jump {
+    display: flex;
   }
 
   .hero-backdrop-img {
@@ -4199,7 +4496,11 @@ body.visually-impaired .reveal.reveal-pending {
 
   /* Компактный Lightbox на смартфонах: фото 100% ширины, стрелки поверх краёв */
   .lightbox-backdrop {
-    padding: 12px;
+    padding:
+      max(12px, var(--safe-top))
+      max(12px, var(--safe-right))
+      max(12px, var(--safe-bottom))
+      max(12px, var(--safe-left));
   }
 
   .lightbox-stage {
@@ -4209,6 +4510,7 @@ body.visually-impaired .reveal.reveal-pending {
 
   .lightbox-img-container,
   .lightbox-main-img {
+    max-height: 58vh;
     max-height: 58dvh;
   }
 
@@ -4217,8 +4519,8 @@ body.visually-impaired .reveal.reveal-pending {
     top: 50%;
     transform: translateY(-50%);
     z-index: 5;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     font-size: 1.4rem;
     background: rgba(15, 23, 42, 0.72);
     border-color: rgba(255, 255, 255, 0.4);
@@ -4261,7 +4563,8 @@ body.visually-impaired .reveal.reveal-pending {
 
 @media (max-width: 360px) {
   .container {
-    padding: 0 12px;
+    padding-left: max(12px, var(--safe-left));
+    padding-right: max(12px, var(--safe-right));
   }
 
   .brand-title {
@@ -4289,6 +4592,16 @@ body.visually-impaired .reveal.reveal-pending {
   .pub-card-content,
   .policy-card {
     padding: 16px 12px;
+  }
+
+  .weekday-pills {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .day-pill {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .btn,
