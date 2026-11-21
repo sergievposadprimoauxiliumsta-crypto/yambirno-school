@@ -2,17 +2,188 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#1e40af">
   <meta name="robots" content="noindex, follow">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;">
-  <title>Страница не найдена — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
-  <link rel="icon" type="image/svg+xml" href="/yambirno-school/icon.svg">
+
+  <title>Страница не найдена (404) — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
+  <meta name="description" content="Запрошенная страница не найдена. Быстрый переход на главную, расписание 1–9 классов, цифровой навигатор и электронную приёмную Ямбирнского филиала МОУ «Лесно-Конобеевская СШ».">
+  <link rel="manifest" href="/yambirno-school/manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="/yambirno-school/assets/img/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E">
+
   <link rel="stylesheet" href="/yambirno-school/styles.css">
+  <script src="/yambirno-school/script.js" defer></script>
 </head>
 <body class="paper-texture">
-  <main class="feedback-main">
+
+  <!-- Авторский многослойный SVG-спрайт страницы 404 -->
+  <svg id="yambirno-icon-sprite" class="hp-field" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
+    <defs>
+      <linearGradient id="yamb-404-sapphire" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3b82f6"/>
+        <stop offset="100%" stop-color="#1e3a8a"/>
+      </linearGradient>
+      <linearGradient id="yamb-404-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fbbf24"/>
+        <stop offset="100%" stop-color="#d97706"/>
+      </linearGradient>
+      <linearGradient id="yamb-404-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#34d399"/>
+        <stop offset="100%" stop-color="#15803d"/>
+      </linearGradient>
+    </defs>
+
+    <symbol id="ico-calendar" viewBox="0 0 24 24">
+      <rect class="ico-base" x="3" y="5" width="18" height="16" rx="3" fill="url(#yamb-404-sapphire)" opacity="0.2"/>
+      <rect class="ico-accent" x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="url(#yamb-404-sapphire)" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M3 10h18M8 3v4M16 3v4" stroke="url(#yamb-404-amber)" stroke-width="1.8" stroke-linecap="round"/>
+      <rect class="ico-part-moving" x="7.5" y="13" width="3.5" height="3.5" rx="0.8" fill="url(#yamb-404-amber)"/>
+    </symbol>
+
+    <symbol id="ico-eye" viewBox="0 0 24 24">
+      <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12s-4 7.5-10.5 7.5S1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="ico-board" viewBox="0 0 24 24">
+      <rect class="ico-base" x="2.5" y="4" width="19" height="14" rx="3.5" fill="currentColor" opacity="0.2"/>
+      <rect class="ico-accent" x="2.5" y="4" width="19" height="14" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path class="ico-part-moving" d="M6.5 12h2.4l1.6-3.2 2.5 5.4 1.8-2.2h2.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8.5 21h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="ico-schedule" viewBox="0 0 24 24">
+      <circle class="ico-base" cx="12" cy="12" r="9" fill="url(#yamb-404-sapphire)" opacity="0.18"/>
+      <circle class="ico-accent" cx="12" cy="12" r="9" fill="none" stroke="url(#yamb-404-sapphire)" stroke-width="1.8"/>
+      <path class="ico-part-moving" d="M12 7.5V12l3.2 2" fill="none" stroke="url(#yamb-404-amber)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ico-cat-memo" viewBox="0 0 24 24">
+      <path class="ico-base" d="M3.5 6.5c2.8-1 5.8-.5 8.5 1.3 2.7-1.8 5.7-2.3 8.5-1.3v11.8c-2.8-1-5.8-.5-8.5 1.2-2.7-1.7-5.7-2.2-8.5-1.2V6.5Z" fill="url(#yamb-404-sapphire)" opacity="0.18"/>
+      <path class="ico-accent" d="M3.5 6.5c2.8-1 5.8-.5 8.5 1.3 2.7-1.8 5.7-2.3 8.5-1.3v11.8c-2.8-1-5.8-.5-8.5 1.2-2.7-1.7-5.7-2.2-8.5-1.2V6.5Z" fill="none" stroke="url(#yamb-404-sapphire)" stroke-width="1.8" stroke-linejoin="round"/>
+      <path class="ico-part-moving" d="M12 7.8v11.7M15 10.5h3M15 13.8h2.4" stroke="url(#yamb-404-amber)" stroke-width="1.7" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="ico-send" viewBox="0 0 24 24">
+      <path class="ico-base" d="m20.5 3.8-8.2 16.5-2.6-6.2-6.2-2.6L20.5 3.8Z" fill="url(#yamb-404-sapphire)" opacity="0.22"/>
+      <path class="ico-accent ico-part-moving" d="m20.5 3.8-8.2 16.5-2.6-6.2-6.2-2.6L20.5 3.8Zm0 0-10.8 10.3" fill="none" stroke="url(#yamb-404-sapphire)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ico-compass" viewBox="0 0 24 24">
+      <circle class="ico-base" cx="12" cy="12" r="9" fill="url(#yamb-404-amber)" opacity="0.22"/>
+      <circle class="ico-accent" cx="12" cy="12" r="9" fill="none" stroke="url(#yamb-404-amber)" stroke-width="1.8"/>
+      <polygon class="ico-part-moving" points="15.5,8.5 13.3,13.3 8.5,15.5 10.7,10.7" fill="url(#yamb-404-emerald)" stroke="url(#yamb-404-emerald)" stroke-width="1.2" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
+
+  <a href="#error-main" class="skip-link">Перейти к навигации по сайту</a>
+
+  <div id="dynamic-island-toast" class="dynamic-island" role="status" aria-live="polite" aria-hidden="true">
+    <span class="island-dot" aria-hidden="true"></span>
+    <span id="dynamic-island-text" class="island-text">Готово</span>
+  </div>
+
+  <header class="site-header">
+    <div class="top-utility-bar" role="region" aria-label="Панель текущего времени и специальных возможностей">
+      <div class="container utility-inner">
+        <div class="utility-datetime">
+          <span class="utility-icon" aria-hidden="true">
+            <svg class="ui-ico" width="16" height="16"><use href="#ico-calendar"></use></svg>
+          </span>
+          <span id="live-date-display" class="utility-date-text">Загрузка даты...</span>
+          <span class="utility-sep" aria-hidden="true">|</span>
+          <span id="live-time-display" class="live-clock-digits" aria-label="Текущее время">--:--:--</span>
+          <span class="school-status-pill">
+            <svg class="ui-ico" width="14" height="14" aria-hidden="true"><use href="#ico-compass"></use></svg>
+            <span>Навигация по порталу</span>
+          </span>
+        </div>
+
+        <div class="utility-a11y-slot">
+          <button
+            type="button"
+            id="a11y-toggle"
+            class="btn-a11y"
+            aria-label="Версия для слабовидящих"
+            aria-pressed="false"
+            aria-controls="a11y-panel"
+          >
+            <svg class="icon-eye ui-ico" width="20" height="20" aria-hidden="true"><use href="#ico-eye"></use></svg>
+            <span class="a11y-btn-text">Версия для слабовидящих</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="a11y-panel" class="a11y-panel hidden" role="region" aria-label="Настройки версии для слабовидящих по ГОСТ Р 52872-2019" hidden>
+      <div class="container a11y-panel-inner">
+        <div class="a11y-group" role="group" aria-label="Размер шрифта">
+          <span class="a11y-group-label">Шрифт:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="normal" aria-pressed="true">А</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="large" aria-pressed="false">А+</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="xlarge" aria-pressed="false">А++</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Цветовая схема">
+          <span class="a11y-group-label">Цвета:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="yellow" aria-pressed="true">Ж/Ч</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="white" aria-pressed="false">Ч/Б</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="black" aria-pressed="false">Б/Ч</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="blue" aria-pressed="false">С/Г</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Гарнитура шрифта">
+          <span class="a11y-group-label">Гарнитура:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-font="sans" aria-pressed="true">Без засечек</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-font="serif" aria-pressed="false">С засечками</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Интервал между буквами">
+          <span class="a11y-group-label">Кернинг:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="normal" aria-pressed="true">1x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="medium" aria-pressed="false">1.5x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="large" aria-pressed="false">2x</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Межстрочный интервал">
+          <span class="a11y-group-label">Строки:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="normal" aria-pressed="true">1.5</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="medium" aria-pressed="false">1.9</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="large" aria-pressed="false">2.2</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Изображения">
+          <span class="a11y-group-label">Фото:</span>
+          <button type="button" class="a11y-opt-btn" id="a11y-images-toggle" aria-pressed="false">Скрыты</button>
+        </div>
+        <button type="button" class="a11y-opt-btn a11y-reset-btn" id="a11y-reset-btn">Сбросить</button>
+      </div>
+    </div>
+
+    <div class="container header-main-inner">
+      <a href="/yambirno-school/" class="brand" aria-label="Вернуться на главную страницу школы">
+        <img
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
+          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
+          class="logo-img"
+          width="58"
+          height="58"
+          fetchpriority="high"
+          decoding="async"
+        >
+        <div class="brand-text">
+          <span class="brand-sub">Шацкий муниципальный район Рязанской области</span>
+          <span class="brand-title">Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</span>
+          <span class="brand-motto">Небольшая школа — большие возможности</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <a href="/yambirno-school/" class="btn btn-secondary">← На главную</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="error-main" class="feedback-main">
     <div class="container feedback-container">
       <article class="feedback-card surface-card">
         <span class="law-badge">Ошибка 404</span>
@@ -20,13 +191,45 @@
         <p class="feedback-subtitle">
           Возможно, ссылка устарела или адрес введён с опечаткой. Воспользуйтесь быстрым переходом на нужный раздел портала Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»:
         </p>
+
+        <div class="consent-operator-meta">
+          <span><strong>Приёмная школы:</strong> <a href="tel:+74914726368">8 (49147) 2-63-68</a> (Пн–Пт с 08:00 до 17:00)</span>
+          <span><strong>Электронная почта:</strong> <a href="mailto:yambirno-school@yandex.ru">yambirno-school@yandex.ru</a></span>
+          <span><strong>Адрес:</strong> 391573, Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11</span>
+        </div>
+
         <div class="policy-back-actions">
-          <a href="/yambirno-school/" class="btn btn-primary">На главную страницу</a>
-          <a href="/yambirno-school/#live-widget-card" class="btn btn-secondary">Расписание 1–9 классов</a>
-          <a href="/yambirno-school/feedback.html" class="btn btn-secondary">Написать обращение</a>
+          <a href="/yambirno-school/" class="btn btn-primary">
+            <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-board"></use></svg>
+            <span>На главную страницу</span>
+          </a>
+          <a href="/yambirno-school/#live-widget-card" class="btn btn-secondary">
+            <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-schedule"></use></svg>
+            <span>Расписание 1–9 классов</span>
+          </a>
+          <a href="/yambirno-school/#digital-guide" class="btn btn-secondary">
+            <svg class="ui-ico ui-ico--book" width="17" height="17" aria-hidden="true"><use href="#ico-cat-memo"></use></svg>
+            <span>Дневник и Учи.ру</span>
+          </a>
+          <a href="/yambirno-school/feedback.html" class="btn btn-secondary">
+            <svg class="ui-ico ui-ico--send" width="17" height="17" aria-hidden="true"><use href="#ico-send"></use></svg>
+            <span>Написать обращение</span>
+          </a>
         </div>
       </article>
     </div>
   </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11.</p>
+      <p>
+        <a href="/yambirno-school/privacy.html" class="footer-link">Политика ПДн</a> •
+        <a href="/yambirno-school/feedback.html" class="footer-link">Электронная приёмная</a> •
+        <a href="/yambirno-school/" class="footer-link">На главную</a>
+      </p>
+    </div>
+  </footer>
+
 </body>
 </html>
