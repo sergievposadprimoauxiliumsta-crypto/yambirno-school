@@ -8,26 +8,27 @@
 
   <url>
     <loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/</loc>
-    <lastmod>2026-11-20</lastmod>
+    <lastmod>2026-11-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png</image:loc>
-      <image:title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</image:title>
-      <image:caption>Информационный портал Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» (с. Ямбирно, Шацкий район Рязанской области)</image:caption>
     </image:image>
   </url>
 
   <url>
     <loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html</loc>
-    <lastmod>2026-11-20</lastmod>
+    <lastmod>2026-11-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/og-cover.png</image:loc>
+    </image:image>
   </url>
 
   <url>
     <loc>https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/privacy.html</loc>
-    <lastmod>2026-11-20</lastmod>
+    <lastmod>2026-11-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
