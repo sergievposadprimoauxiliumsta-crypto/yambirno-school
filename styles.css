@@ -61,11 +61,18 @@
 
 html {
   width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
   scroll-behavior: smooth;
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+html.modal-open,
+body.modal-open {
+  overflow: hidden;
 }
 
 body {
@@ -81,10 +88,6 @@ body {
   flex-direction: column;
   overflow-wrap: break-word;
   word-wrap: break-word;
-}
-
-body.modal-open {
-  overflow: hidden;
 }
 
 :focus-visible {
@@ -122,11 +125,36 @@ img {
   display: block;
 }
 
+.site-header,
+main,
+section,
+.site-footer {
+  width: 100%;
+  max-width: 100%;
+}
+
 .container {
   width: 100%;
   max-width: 1220px;
+  min-width: 0;
   margin: 0 auto;
   padding: 0 20px;
+}
+
+/* Защита всех CSS Grid-сеток от распирания ширины на мобильных */
+.hero-grid > *,
+.info-blocks-grid > *,
+.steps-guide-grid > *,
+.facts-grid > *,
+.pillars-grid > *,
+.teachers-grid > *,
+.success-grid > *,
+.contacts-grid > *,
+.publications-grid > *,
+.gallery-grid > *,
+.cta-reasons-grid > *,
+.policy-meta-grid > * {
+  min-width: 0;
 }
 
 .hidden {
@@ -150,6 +178,7 @@ img {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   min-width: 0;
+  max-width: 100%;
 }
 
 .elevate-card {
@@ -353,6 +382,7 @@ img {
   position: sticky;
   top: 0;
   z-index: 100;
+  overflow-x: clip;
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -502,7 +532,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
   padding-top: 12px;
   padding-bottom: 12px;
   flex-wrap: wrap;
@@ -514,6 +544,7 @@ img {
   gap: 14px;
   color: var(--text-main);
   min-width: 0;
+  max-width: 100%;
   flex: 1 1 280px;
 }
 
@@ -535,6 +566,7 @@ img {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .brand-sub {
@@ -563,6 +595,8 @@ img {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .nav-link {
@@ -761,12 +795,12 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 75% center;
+  object-position: 72% center;
   transform: scale(1.05) translate3d(0, var(--hero-parallax, 0px), 0);
   will-change: transform;
 }
 
-/* Градиентная вуаль гарантирует контраст текста >= 7:1 поверх фото */
+/* Градиентная вуаль сохраняет контраст текста >= 7:1 и открывает фото школы справа */
 .hero-scrim {
   position: absolute;
   inset: 0;
@@ -774,10 +808,10 @@ img {
   pointer-events: none;
   background: linear-gradient(
     102deg,
-    rgba(248, 250, 252, 0.96) 0%,
-    rgba(248, 250, 252, 0.88) 46%,
-    rgba(239, 246, 255, 0.56) 74%,
-    rgba(30, 58, 138, 0.16) 100%
+    rgba(248, 250, 252, 0.94) 0%,
+    rgba(248, 250, 252, 0.84) 44%,
+    rgba(239, 246, 255, 0.42) 72%,
+    rgba(30, 58, 138, 0.12) 100%
   );
 }
 
@@ -806,6 +840,7 @@ img {
   border-radius: 999px;
   margin-bottom: 14px;
   align-self: flex-start;
+  max-width: 100%;
 }
 
 .hero-title {
@@ -877,6 +912,8 @@ img {
   flex-direction: column;
   justify-content: space-between;
   min-height: 220px;
+  min-width: 0;
+  max-width: 100%;
   border-radius: var(--radius-lg);
   background:
     radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.06) 0%, transparent 55%),
@@ -1134,6 +1171,8 @@ img {
   border: 2px solid #bfdbfe;
   position: relative;
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   background: rgba(255, 255, 255, 0.96);
 }
 
@@ -1166,6 +1205,7 @@ img {
   border: 1px solid #86efac;
   padding: 5px 12px;
   border-radius: 999px;
+  max-width: 100%;
 }
 
 .radar-dot-wrap {
@@ -1175,6 +1215,7 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .radar-core {
@@ -1209,6 +1250,7 @@ img {
   background: #16a34a;
   padding: 2px 7px;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 .live-badge-capsule h2 {
@@ -1277,6 +1319,7 @@ img {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
 .widget-block {
@@ -1285,6 +1328,8 @@ img {
   border-radius: var(--radius-md);
   border-left: 4px solid #94a3b8;
   transition: border-color 0.25s ease;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .widget-block-diary {
@@ -1761,6 +1806,7 @@ img {
   background: #e2e8f0;
   padding: 3px;
   border-radius: var(--radius-sm);
+  max-width: 100%;
 }
 
 .week-pills-group {
@@ -1805,7 +1851,6 @@ img {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-/* Когда активен FLIP-индикатор, фон самой кнопки прозрачен, чтобы капсула плавно ехала под ней */
 .weekday-pills.has-glide .day-pill.active {
   background: transparent;
   box-shadow: none;
@@ -2000,7 +2045,6 @@ img {
   flex: 1;
 }
 
-/* Плавное раскрытие длинного текста прямо в карточке (CSS Grid 0fr -> 1fr) */
 .pub-excerpt-masked {
   -webkit-mask-image: linear-gradient(180deg, #000 58%, transparent 100%);
   mask-image: linear-gradient(180deg, #000 58%, transparent 100%);
@@ -2023,7 +2067,7 @@ img {
 .pub-card-footer {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   padding-top: 14px;
   border-top: 1px solid var(--border);
@@ -2035,9 +2079,9 @@ img {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 7px 12px;
   border-radius: var(--radius-sm);
-  font-size: 0.85rem;
+  font-size: 0.83rem;
   font-weight: 700;
   cursor: pointer;
   border: 1px solid var(--primary);
@@ -2066,8 +2110,9 @@ img {
 /* ===== МОДАЛЬНОЕ ОКНО ПУБЛИКАЦИИ ===== */
 .pub-modal-dialog {
   width: 100%;
-  max-width: 840px;
-  max-height: 90vh;
+  max-width: min(840px, 100%);
+  max-height: 90dvh;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
@@ -2098,6 +2143,7 @@ img {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .pub-modal-close-btn {
@@ -2108,6 +2154,7 @@ img {
   border-radius: 999px;
   font-weight: 700;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .pub-modal-close-btn:hover {
@@ -2131,7 +2178,7 @@ img {
 
 .pub-modal-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
   margin-bottom: 20px;
 }
@@ -2220,6 +2267,7 @@ img {
   cursor: pointer;
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease, border-color var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
   text-align: left;
+  min-width: 0;
 }
 
 .digital-tab-btn.active,
@@ -2244,6 +2292,11 @@ img {
   padding-bottom: 20px;
   margin-bottom: 22px;
   border-bottom: 1px solid var(--border);
+}
+
+.digital-panel-header > div {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .digital-panel-header h3 {
@@ -2284,6 +2337,7 @@ img {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 20px 18px;
+  min-width: 0;
 }
 
 .guide-step-num {
@@ -2324,6 +2378,7 @@ img {
   border-radius: 4px;
   font-weight: 700;
   color: var(--primary);
+  overflow-wrap: anywhere;
 }
 
 /* ===== ФАКТЫ, ПЕДАГОГИ, ДОСТИЖЕНИЯ, КОНТАКТЫ ===== */
@@ -2489,6 +2544,7 @@ img {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .stat-val {
@@ -2609,6 +2665,8 @@ img {
   border-radius: var(--radius-md);
   padding: 16px;
   margin-top: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .live-menu-title {
@@ -2710,10 +2768,14 @@ img {
   color: var(--text-main);
 }
 
-/* ===== LIGHTBOX ===== */
+/* ===== LIGHTBOX (ИСПРАВЛЕНО ПЕРЕПОЛНЕНИЕ НА МОБИЛЬНЫХ) ===== */
 .lightbox-backdrop {
   position: fixed;
   inset: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+  overscroll-behavior: contain;
   background: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -2726,10 +2788,12 @@ img {
 
 .lightbox-dialog {
   width: 100%;
-  max-width: 920px;
+  max-width: min(920px, 100%);
+  max-height: calc(100dvh - 32px);
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   color: #ffffff;
   animation: modalSpringIn 340ms var(--ease-out-expo);
 }
@@ -2738,6 +2802,9 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
 }
 
 .lightbox-counter {
@@ -2757,6 +2824,7 @@ img {
   border-radius: 999px;
   font-weight: 700;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .lightbox-close-btn:hover {
@@ -2764,15 +2832,21 @@ img {
 }
 
 .lightbox-stage {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  width: 100%;
+  min-width: 0;
 }
 
 .lightbox-img-container {
-  flex: 1;
-  max-height: 68vh;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 64dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2783,7 +2857,7 @@ img {
 }
 
 .lightbox-main-img {
-  max-height: 68vh;
+  max-height: 64dvh;
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -2793,8 +2867,8 @@ img {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
   font-size: 1.6rem;
   font-weight: 700;
@@ -2810,21 +2884,26 @@ img {
 }
 
 .lightbox-meta {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   text-align: center;
   background: rgba(255, 255, 255, 0.08);
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-radius: var(--radius-md);
+  overflow-wrap: break-word;
 }
 
 .lightbox-caption-title {
-  font-size: 1.15rem;
+  font-size: 1.08rem;
   margin-bottom: 4px;
   color: #fbbf24;
 }
 
 .lightbox-caption-desc {
-  font-size: 0.92rem;
-  opacity: 0.9;
+  font-size: 0.9rem;
+  opacity: 0.92;
+  line-height: 1.45;
 }
 
 /* ===== КОНТАКТЫ И КНОПКА НАВЕРХ ===== */
@@ -3038,8 +3117,8 @@ img {
 .btn-cta {
   background: #fbbf24;
   color: #0f172a;
-  font-size: 1.08rem;
-  padding: 16px 36px;
+  font-size: 1.04rem;
+  padding: 15px 30px;
   font-weight: 800;
   border-radius: 999px;
 }
@@ -3052,6 +3131,7 @@ img {
 .cta-security-note {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 0.82rem;
   opacity: 0.88;
@@ -3178,6 +3258,7 @@ img {
   padding: 32px 28px;
   box-shadow: var(--shadow-md);
   border-top: 5px solid var(--primary);
+  scroll-margin-top: 64px;
   transition: border-color 300ms ease, transform 340ms var(--ease-out-expo), opacity 280ms ease;
 }
 
@@ -3372,10 +3453,18 @@ img {
 }
 
 .consent-confirmed-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
   font-size: 0.88rem;
   color: var(--success);
   font-weight: 700;
   margin-bottom: 18px;
+  line-height: 1.45;
+}
+
+.consent-confirmed-note .ui-ico {
+  margin-top: 3px;
 }
 
 .spinner {
@@ -3643,7 +3732,6 @@ body.visually-impaired.a11y-lh-large {
   line-height: 2.25 !important;
 }
 
-/* Отключение липкой шапки, блюра, параллаксов и всех анимаций в ГОСТ-режиме */
 body.visually-impaired .site-header {
   position: static !important;
   backdrop-filter: none !important;
@@ -3790,12 +3878,16 @@ body.visually-impaired .reveal.reveal-pending {
     grid-template-columns: 1fr;
   }
 
+  .hero-backdrop-img {
+    object-position: 62% center;
+  }
+
   .hero-scrim {
     background: linear-gradient(
       180deg,
-      rgba(248, 250, 252, 0.94) 0%,
-      rgba(248, 250, 252, 0.86) 55%,
-      rgba(239, 246, 255, 0.82) 100%
+      rgba(248, 250, 252, 0.90) 0%,
+      rgba(248, 250, 252, 0.78) 52%,
+      rgba(239, 246, 255, 0.68) 100%
     );
   }
 
@@ -3817,13 +3909,30 @@ body.visually-impaired .reveal.reveal-pending {
   }
 }
 
-/* На планшетах и смартфонах шапка не перекрывает экран при скролле */
+/* На планшетах и смартфонах: без липкой шапки и строго без горизонтального переполнения */
 @media (max-width: 768px) {
   .site-header {
     position: static;
   }
 
+  .header-main-inner {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .brand {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .main-nav {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     flex-wrap: nowrap;
     overflow-x: auto;
     justify-content: flex-start;
@@ -3882,15 +3991,6 @@ body.visually-impaired .reveal.reveal-pending {
     grid-template-columns: 1fr;
   }
 
-  .header-main-inner {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .brand {
-    flex: 1 1 auto;
-  }
-
   .header-actions,
   .hero-actions,
   .digital-quick-links,
@@ -3918,6 +4018,46 @@ body.visually-impaired .reveal.reveal-pending {
   .pub-modal-scroll-area,
   .policy-card {
     padding: 20px 16px;
+  }
+
+  /* Компактный Lightbox на смартфонах: фото 100% ширины, стрелки поверх краёв */
+  .lightbox-backdrop {
+    padding: 12px;
+  }
+
+  .lightbox-stage {
+    display: block;
+    position: relative;
+  }
+
+  .lightbox-img-container,
+  .lightbox-main-img {
+    max-height: 58dvh;
+  }
+
+  .lightbox-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 38px;
+    height: 38px;
+    font-size: 1.4rem;
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  #lightbox-prev {
+    left: 8px;
+  }
+
+  #lightbox-next {
+    right: 8px;
+  }
+
+  .pub-modal-header,
+  .pub-modal-footer {
+    padding: 12px 16px;
   }
 }
 
