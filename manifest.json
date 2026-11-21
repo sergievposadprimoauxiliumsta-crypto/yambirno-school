@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
   "short_name": "Школа Ямбирно",
-  "description": "Информационный портал Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»: расписание 1–9 классов, меню питания, новости, цифровой навигатор и электронная приёмная.",
+  "description": "Информационный портал Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»: расписание 1–9 классов, погода в с. Ямбирно, меню питания, новости, цифровой навигатор и электронная приёмная.",
   "lang": "ru-RU",
   "dir": "ltr",
   "start_url": "./",
@@ -10,8 +10,15 @@
   "display": "standalone",
   "display_override": [
     "standalone",
-    "minimal-ui"
+    "minimal-ui",
+    "browser"
   ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
   "orientation": "any",
   "background_color": "#f8fafc",
   "theme_color": "#1e40af",
@@ -44,19 +51,13 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Расписание уроков",
       "short_name": "Расписание",
-      "description": "Онлайн-табло и расписание для 1–9 классов",
+      "description": "Онлайн-табло, погода и расписание для 1–9 классов",
       "url": "./#live-widget-card",
       "icons": [
         {
