@@ -68,7 +68,8 @@ const DEFAULT_BELL_TIMES = {
   4: { start: "11:10", end: "11:50", startMin: 670, endMin: 710 },
   5: { start: "12:10", end: "12:50", startMin: 730, endMin: 770 },
   6: { start: "13:00", end: "13:40", startMin: 780, endMin: 820 },
-  7: { start: "13:50", end: "14:30", startMin: 830, endMin: 870 }
+  7: { start: "13:50", end: "14:30", startMin: 830, endMin: 870 },
+  8: { start: "14:40", end: "15:20", startMin: 880, endMin: 920 }
 };
 
 let activeBellTimes = cloneDefaultBells();
@@ -177,6 +178,7 @@ let currentSelectedGrade = getSavedGradeSelection();
 let currentSelectedMenuWeek = 1;
 let toastTimeoutId = null;
 let lastModalTriggerEl = null;
+let openLightboxSlidesFn = null;
 const glidePillRefreshers = [];
 let chalkboardSyncCallback = null;
 
@@ -396,23 +398,37 @@ function handleModalFocusTrap(e, modalEl) {
   }
 }
 
-function lockPageScrollForModal() {
-  lastModalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+function lockPageScrollForModal(rememberTrigger = true) {
+  if (rememberTrigger) {
+    lastModalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }
   document.documentElement.classList.add("modal-open");
   document.body.classList.add("modal-open");
 }
 
-function unlockPageScrollAfterModal() {
-  document.documentElement.classList.remove("modal-open");
-  document.body.classList.remove("modal-open");
-  if (lastModalTriggerEl && document.contains(lastModalTriggerEl)) {
+function unlockPageScrollAfterModal(customFocusTarget = null) {
+  const pubModal = document.getElementById("publication-modal");
+  const lbModal = document.getElementById("gallery-lightbox");
+  const isAnyModalOpen =
+    Boolean(pubModal && !pubModal.classList.contains("hidden")) ||
+    Boolean(lbModal && !lbModal.classList.contains("hidden"));
+
+  if (!isAnyModalOpen) {
+    document.documentElement.classList.remove("modal-open");
+    document.body.classList.remove("modal-open");
+  }
+
+  const focusEl = customFocusTarget || lastModalTriggerEl;
+  if (focusEl && document.contains(focusEl)) {
     try {
-      lastModalTriggerEl.focus({ preventScroll: true });
+      focusEl.focus({ preventScroll: true });
     } catch (_) {
-      lastModalTriggerEl.focus();
+      focusEl.focus();
     }
   }
-  lastModalTriggerEl = null;
+  if (!customFocusTarget && !isAnyModalOpen) {
+    lastModalTriggerEl = null;
+  }
 }
 
 function showDynamicIslandToast(message) {
@@ -1019,7 +1035,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
         livePill.className = "lesson-live-pill";
         livePill.textContent = `● Идёт (ещё ${leftMin} мин)`;
         right.appendChild(livePill);
-      } else if (isTodaySelected && currentTotalMinutes > bell.endMin && currentTotalMinutes < 980) {
+      } else if (isTodaySelected && currentTotalMinutes > bell.endMin && currentTotalMinutes < 1020) {
         const donePill = document.createElement("span");
         donePill.className = "lesson-done-pill";
         donePill.textContent = "Прошёл";
@@ -1662,9 +1678,28 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
     galleryEl.replaceChildren();
     if (Array.isArray(pubItem.photos) && pubItem.photos.length > 0) {
       const fallbackSvg = buildPublicationFallbackSvg(pubItem.title);
+      const totalPhotos = pubItem.photos.length;
+      const pubSlides = pubItem.photos.map((rawUrl, idx) => {
+        const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1600);
+        return {
+          src: resolved.src,
+          altTry: resolved.altTry,
+          fallback: resolved.fallback,
+          title: pubItem.title || "Фото материала",
+          desc:
+            totalPhotos > 1
+              ? `Изображение ${idx + 1} из ${totalPhotos}${pubItem.dateDisplay ? ` • ${pubItem.dateDisplay}` : ""}`
+              : pubItem.dateDisplay || ""
+        };
+      });
+
       pubItem.photos.forEach((rawUrl, idx) => {
         const wrap = document.createElement("div");
         wrap.className = "pub-modal-photo-item";
+        wrap.setAttribute("tabindex", "0");
+        wrap.setAttribute("role", "button");
+        wrap.setAttribute("aria-label", `Увеличить изображение ${idx + 1} из ${totalPhotos}`);
+        wrap.setAttribute("title", "Нажмите, чтобы увеличить на весь экран");
 
         const img = document.createElement("img");
         img.setAttribute("referrerpolicy", "no-referrer");
@@ -1674,7 +1709,7 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
         img.height = 375;
         img.alt = `${pubItem.title || "Фото материала"} — изображение ${idx + 1}`;
 
-        const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1400);
+        const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1200);
         let triedAlt = false;
         img.onerror = () => {
           if (!triedAlt && resolved.altTry) {
@@ -1687,7 +1722,30 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
         };
         img.src = resolved.src;
 
+        const zoomHint = document.createElement("span");
+        zoomHint.className = "pub-modal-photo-zoom";
+        zoomHint.setAttribute("aria-hidden", "true");
+        zoomHint.appendChild(createSpriteIcon("ico-zoom", "", 13));
+        const zoomTxt = document.createElement("span");
+        zoomTxt.textContent = "Увеличить";
+        zoomHint.appendChild(zoomTxt);
+
+        const openZoom = () => {
+          if (typeof openLightboxSlidesFn === "function") {
+            openLightboxSlidesFn(pubSlides, idx);
+          }
+        };
+
+        wrap.addEventListener("click", openZoom);
+        wrap.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openZoom();
+          }
+        });
+
         wrap.appendChild(img);
+        wrap.appendChild(zoomHint);
         galleryEl.appendChild(wrap);
       });
       galleryEl.classList.remove("hidden");
@@ -1713,7 +1771,7 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
     } catch (_) {}
   }
 
-  lockPageScrollForModal();
+  lockPageScrollForModal(true);
   modal.classList.remove("hidden");
   modal.removeAttribute("hidden");
   if (closeBtn) closeBtn.focus();
@@ -1767,6 +1825,9 @@ function initPublicationModalEvents() {
 
   document.addEventListener("keydown", (e) => {
     if (modal.classList.contains("hidden")) return;
+    const lb = document.getElementById("gallery-lightbox");
+    if (lb && !lb.classList.contains("hidden")) return;
+
     if (e.key === "Escape") {
       closeModal();
       return;
@@ -1874,6 +1935,8 @@ function renderPublicationCards(publications) {
     activePubFilterKey === "all"
       ? publications
       : publications.filter((p) => classifyPublicationBadgeTheme(p.badge).key === activePubFilterKey);
+
+  gridEl.classList.toggle("is-single-item", filtered.length === 1);
 
   filtered.forEach((pub) => {
     const theme = classifyPublicationBadgeTheme(pub.badge);
@@ -2235,7 +2298,7 @@ function updateGalleryFromSheetRows(galleryArray) {
 
     if (imgEl && itemData.url) {
       const resolvedThumb = resolveImageLinkSource(itemData.url, defaultSvg, 640);
-      const resolvedFull = resolveImageLinkSource(itemData.url, defaultSvg, 1400);
+      const resolvedFull = resolveImageLinkSource(itemData.url, defaultSvg, 1600);
       figure.setAttribute("data-full-src", resolvedFull.src);
 
       let triedAlt = false;
@@ -2265,67 +2328,106 @@ function initGalleryLightbox() {
   const prevBtn = document.getElementById("lightbox-prev");
   const nextBtn = document.getElementById("lightbox-next");
 
-  if (!grid || !lightbox || !lbImg) return;
+  if (!lightbox || !lbImg) return;
 
+  let activeSlides = [];
   let currentSlideIdx = 0;
   let touchStartX = 0;
+  let lbTriggerEl = null;
 
-  const getFigures = () => Array.from(grid.querySelectorAll(".gallery-item"));
+  const renderSlideAt = (idx) => {
+    if (activeSlides.length === 0) return;
 
-  const openLightboxAt = (idx, isNavigation = false) => {
-    const figures = getFigures();
-    if (figures.length === 0) return;
+    currentSlideIdx = (idx + activeSlides.length) % activeSlides.length;
+    const slide = activeSlides[currentSlideIdx];
 
-    currentSlideIdx = (idx + figures.length) % figures.length;
-    const fig = figures[currentSlideIdx];
-    const imgEl = fig.querySelector(".gallery-img");
-    const fullSrc = fig.getAttribute("data-full-src");
-
+    let triedAlt = false;
     lbImg.onerror = () => {
-      lbImg.onerror = null;
-      if (imgEl) lbImg.src = imgEl.src;
+      if (!triedAlt && slide.altTry) {
+        triedAlt = true;
+        lbImg.src = slide.altTry;
+      } else {
+        lbImg.onerror = null;
+        if (slide.fallback) lbImg.src = slide.fallback;
+      }
     };
-    lbImg.src = fullSrc || (imgEl ? imgEl.src : "");
-    lbImg.alt = fig.getAttribute("data-caption") || "";
-    if (lbTitle) lbTitle.textContent = fig.getAttribute("data-caption") || "";
-    if (lbDesc) lbDesc.textContent = fig.getAttribute("data-desc") || "";
-    if (lbCounter) lbCounter.textContent = `${currentSlideIdx + 1} / ${figures.length}`;
+    lbImg.src = slide.src || slide.fallback || "";
+    lbImg.alt = slide.title || "";
 
-    if (!isNavigation) {
-      lockPageScrollForModal();
-      lightbox.classList.remove("hidden");
-      lightbox.removeAttribute("hidden");
-      if (closeBtn) closeBtn.focus();
+    if (lbTitle) lbTitle.textContent = slide.title || "";
+    if (lbDesc) {
+      lbDesc.textContent = slide.desc || "";
+      lbDesc.classList.toggle("hidden", !slide.desc);
     }
+    if (lbCounter) lbCounter.textContent = `${currentSlideIdx + 1} / ${activeSlides.length}`;
+
+    const hasMultiple = activeSlides.length > 1;
+    if (prevBtn) prevBtn.classList.toggle("hidden", !hasMultiple);
+    if (nextBtn) nextBtn.classList.toggle("hidden", !hasMultiple);
   };
+
+  const openLightboxWithSlides = (slides, startIdx = 0) => {
+    if (!Array.isArray(slides) || slides.length === 0) return;
+    activeSlides = slides;
+    lbTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    renderSlideAt(startIdx);
+    lockPageScrollForModal(false);
+    lightbox.classList.remove("hidden");
+    lightbox.removeAttribute("hidden");
+    if (closeBtn) closeBtn.focus();
+  };
+
+  openLightboxSlidesFn = openLightboxWithSlides;
 
   const closeLightbox = () => {
     if (lightbox.classList.contains("hidden")) return;
     lightbox.classList.add("hidden");
     lightbox.setAttribute("hidden", "");
-    unlockPageScrollAfterModal();
+    const returnEl = lbTriggerEl;
+    lbTriggerEl = null;
+    unlockPageScrollAfterModal(returnEl);
   };
 
-  grid.addEventListener("click", (e) => {
-    const fig = e.target.closest(".gallery-item");
-    if (!fig) return;
-    const idx = getFigures().indexOf(fig);
-    if (idx !== -1) openLightboxAt(idx, false);
-  });
+  if (grid) {
+    const getFigures = () => Array.from(grid.querySelectorAll(".gallery-item"));
+    const openFromGallery = (fig) => {
+      const figures = getFigures();
+      const idx = figures.indexOf(fig);
+      if (idx === -1) return;
 
-  grid.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
+      const slides = figures.map((item) => {
+        const imgEl = item.querySelector(".gallery-img");
+        const thumbSrc = imgEl ? imgEl.src : "";
+        return {
+          src: item.getAttribute("data-full-src") || thumbSrc,
+          altTry: null,
+          fallback: thumbSrc,
+          title: item.getAttribute("data-caption") || "",
+          desc: item.getAttribute("data-desc") || ""
+        };
+      });
+      openLightboxWithSlides(slides, idx);
+    };
+
+    grid.addEventListener("click", (e) => {
       const fig = e.target.closest(".gallery-item");
-      if (!fig) return;
-      e.preventDefault();
-      const idx = getFigures().indexOf(fig);
-      if (idx !== -1) openLightboxAt(idx, false);
-    }
-  });
+      if (fig) openFromGallery(fig);
+    });
+
+    grid.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        const fig = e.target.closest(".gallery-item");
+        if (!fig) return;
+        e.preventDefault();
+        openFromGallery(fig);
+      }
+    });
+  }
 
   if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
-  if (prevBtn) prevBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx - 1, true));
-  if (nextBtn) nextBtn.addEventListener("click", () => openLightboxAt(currentSlideIdx + 1, true));
+  if (prevBtn) prevBtn.addEventListener("click", () => renderSlideAt(currentSlideIdx - 1));
+  if (nextBtn) nextBtn.addEventListener("click", () => renderSlideAt(currentSlideIdx + 1));
 
   lightbox.addEventListener("click", (e) => {
     if (e.target === lightbox) closeLightbox();
@@ -2345,11 +2447,11 @@ function initGalleryLightbox() {
   lightbox.addEventListener(
     "touchend",
     (e) => {
-      if (!e.changedTouches || !e.changedTouches[0]) return;
+      if (activeSlides.length <= 1 || !e.changedTouches || !e.changedTouches[0]) return;
       const dx = e.changedTouches[0].clientX - touchStartX;
       if (Math.abs(dx) > 48) {
-        if (dx > 0) openLightboxAt(currentSlideIdx - 1, true);
-        else openLightboxAt(currentSlideIdx + 1, true);
+        if (dx > 0) renderSlideAt(currentSlideIdx - 1);
+        else renderSlideAt(currentSlideIdx + 1);
       }
     },
     { passive: true }
@@ -2361,12 +2463,12 @@ function initGalleryLightbox() {
       closeLightbox();
       return;
     }
-    if (e.key === "ArrowLeft") {
-      openLightboxAt(currentSlideIdx - 1, true);
+    if (e.key === "ArrowLeft" && activeSlides.length > 1) {
+      renderSlideAt(currentSlideIdx - 1);
       return;
     }
-    if (e.key === "ArrowRight") {
-      openLightboxAt(currentSlideIdx + 1, true);
+    if (e.key === "ArrowRight" && activeSlides.length > 1) {
+      renderSlideAt(currentSlideIdx + 1);
       return;
     }
     handleModalFocusTrap(e, lightbox);
@@ -2739,7 +2841,7 @@ function initLiveSheetWidgetAndMenu() {
   const renderWidgetData = (dataObj, isFromCache = false) => {
     latestParsedSheetData = dataObj;
 
-    activeBellTimes = dataObj.bellTimes || cloneDefaultBells();
+    activeBellTimes = { ...cloneDefaultBells(), ...(dataObj.bellTimes || {}) };
     isCustomBellScheduleActive = Boolean(dataObj.hasCustomBells);
 
     [newsEl, importantEl].forEach((el) => {
@@ -3222,6 +3324,31 @@ function initFeedbackForm() {
   formFieldset.disabled = true;
   submitBtn.disabled = true;
 
+  const resetFormValidationUI = () => {
+    [fioInput, contactInput, commentInput].forEach((el) => {
+      el.classList.remove("is-valid", "is-invalid");
+      el.setAttribute("aria-invalid", "false");
+    });
+    if (fioHint) {
+      fioHint.textContent = "Только буквы и пробелы, минимум 2 слова";
+      fioHint.className = "field-hint";
+    }
+    if (contactHint) {
+      contactHint.textContent = "Укажите удобный номер телефона или адрес электронной почты";
+      contactHint.className = "field-hint";
+    }
+    if (commentHint) {
+      commentHint.textContent = "Пожалуйста, напишите ваше сообщение (от 5 до 2000 символов)";
+      commentHint.className = "field-hint";
+    }
+    if (charCounter) {
+      charCounter.textContent = "0 / 2000";
+    }
+    if (formResponse) {
+      formResponse.classList.add("hidden");
+    }
+  };
+
   const setTopicByPrefix = (prefix, themeName, placeholderText) => {
     selectedTopicPrefix = prefix;
     formStep.classList.remove("topic-theme-question", "topic-theme-thanks", "topic-theme-idea");
@@ -3507,11 +3634,7 @@ function initFeedbackForm() {
 
       showDynamicIslandToast("Обращение отправлено в школу");
       form.reset();
-      if (charCounter) charCounter.textContent = "0 / 2000";
-      [fioInput, contactInput, commentInput].forEach((el) => {
-        el.classList.remove("is-valid", "is-invalid");
-        el.setAttribute("aria-invalid", "false");
-      });
+      resetFormValidationUI();
     } catch (err) {
       formResponse.textContent =
         err && err.message && err.message.includes("повтор")
@@ -3539,6 +3662,8 @@ function initFeedbackForm() {
   if (newFeedbackBtn && receiptBox) {
     newFeedbackBtn.addEventListener("click", () => {
       receiptBox.classList.add("hidden");
+      form.reset();
+      resetFormValidationUI();
       form.classList.remove("hidden");
       formStep.scrollIntoView({
         behavior: isReducedMotionPreferred() ? "auto" : "smooth",
