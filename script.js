@@ -1,5 +1,12 @@
+/* =========================================================================
+ * Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Основной скрипт портала
+ * Отказоустойчивость: live CSV -> localStorage -> data/school-snapshot.json
+ * Кроссплатформенность: iOS Safari 15+, Яндекс, Samsung Internet, WebView TG/VK
+ * ========================================================================= */
+
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const SHEET3_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?gid=809598510&single=true&output=csv";
+const SNAPSHOT_JSON_URL = "data/school-snapshot.json";
 const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
 
 const YAMBIRNO_LAT = 54.1286;
@@ -8,8 +15,8 @@ const YAMBIRNO_LON = 41.9708;
 const A11Y_STORAGE_KEY = "yambirno_visually_impaired";
 const A11Y_SETTINGS_KEY = "yambirno_a11y_settings_v2";
 const GRADE_STORAGE_KEY = "yambirno_selected_grade";
-const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v14";
-const SHEET3_CACHE_KEY = "yambirno_publications_cache_v2";
+const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v15";
+const SHEET3_CACHE_KEY = "yambirno_publications_cache_v3";
 const FEEDBACK_COOLDOWN_KEY = "yambirno_feedback_last_sent";
 const FEEDBACK_CONSENT_SESSION_KEY = "yambirno_feedback_consent_session_v1";
 
@@ -60,8 +67,23 @@ const DAY_NAMES_FULL = {
   5: "Пятница"
 };
 
+const RU_MONTHS_GENITIVE = [
+  "января",
+  "февраля",
+  "марта",
+  "апреля",
+  "мая",
+  "июня",
+  "июля",
+  "августа",
+  "сентября",
+  "октября",
+  "ноября",
+  "декабря"
+];
+
 const DEFAULT_BELL_TIMES = {
-  0: { start: "08:00", end: "08:25", startMin: 480, endMin: 505 },
+  0: null,
   1: { start: "08:30", end: "09:10", startMin: 510, endMin: 550 },
   2: { start: "09:20", end: "10:00", startMin: 560, endMin: 600 },
   3: { start: "10:10", end: "10:50", startMin: 610, endMin: 650 },
@@ -69,7 +91,7 @@ const DEFAULT_BELL_TIMES = {
   5: { start: "12:10", end: "12:50", startMin: 730, endMin: 770 },
   6: { start: "13:00", end: "13:40", startMin: 780, endMin: 820 },
   7: { start: "13:50", end: "14:30", startMin: 830, endMin: 870 },
-  8: { start: "14:40", end: "15:20", startMin: 880, endMin: 920 }
+  8: null
 };
 
 let activeBellTimes = cloneDefaultBells();
@@ -78,7 +100,8 @@ let isCustomBellScheduleActive = false;
 function cloneDefaultBells() {
   const copy = {};
   Object.keys(DEFAULT_BELL_TIMES).forEach((k) => {
-    copy[k] = { ...DEFAULT_BELL_TIMES[k] };
+    const val = DEFAULT_BELL_TIMES[k];
+    copy[k] = val ? { ...val } : null;
   });
   return copy;
 }
@@ -168,12 +191,14 @@ const DEFAULT_SANPIN_NOTE =
 let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
 let latestRawSheet3Rows = null;
+let latestSnapshotPromise = null;
 let activePublicationsCache = [];
 let activePublicationModalItem = null;
 let activePubFilterKey = "all";
 let lastRenderedPublicationsSignature = "";
 let hasCheckedInitialPubHash = false;
 let currentSelectedWeekday = getDefaultSchoolWeekday();
+let hasExplicitSavedGrade = false;
 let currentSelectedGrade = getSavedGradeSelection();
 let currentSelectedMenuWeek = 1;
 let toastTimeoutId = null;
@@ -181,6 +206,39 @@ let lastModalTriggerEl = null;
 let openLightboxSlidesFn = null;
 const glidePillRefreshers = [];
 let chalkboardSyncCallback = null;
+
+/* ==================== БАЗОВЫЕ УТИЛИТЫ И КРОССПЛАТФОРМЕННОСТЬ ==================== */
+
+function clearElement(el) {
+  if (!el) return;
+  if (typeof el.replaceChildren === "function") {
+    el.replaceChildren();
+    return;
+  }
+  while (el.firstChild) {
+    el.removeChild(el.firstChild);
+  }
+}
+
+function setElementChild(el, childNode) {
+  if (!el) return;
+  clearElement(el);
+  if (childNode) el.appendChild(childNode);
+}
+
+function safeStorageGet(storage, key) {
+  try {
+    return storage ? storage.getItem(key) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function safeStorageSet(storage, key, value) {
+  try {
+    if (storage) storage.setItem(key, value);
+  } catch (_) {}
+}
 
 function isReducedMotionPreferred() {
   const prefersReduced = Boolean(
@@ -243,6 +301,30 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 6500) {
   }
 }
 
+function fetchSchoolSnapshotOnce(forceReload = false) {
+  if (!forceReload && latestSnapshotPromise) {
+    return latestSnapshotPromise;
+  }
+  latestSnapshotPromise = (async () => {
+    try {
+      const response = await fetchWithTimeout(
+        SNAPSHOT_JSON_URL,
+        { cache: forceReload ? "no-store" : "default" },
+        4500
+      );
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (!data || typeof data !== "object" || !Array.isArray(data.panelRows)) {
+        return null;
+      }
+      return data;
+    } catch (_) {
+      return null;
+    }
+  })();
+  return latestSnapshotPromise;
+}
+
 function isValidCsvResponse(text, expectedMarkers = []) {
   if (typeof text !== "string" || text.trim().length < 15) return false;
   const head = text.slice(0, 320).trim().toLowerCase();
@@ -250,7 +332,8 @@ function isValidCsvResponse(text, expectedMarkers = []) {
     head.startsWith("<!doctype") ||
     head.startsWith("<html") ||
     head.startsWith("<head") ||
-    head.startsWith("<script")
+    head.startsWith("<script") ||
+    head.startsWith("{")
   ) {
     return false;
   }
@@ -276,10 +359,13 @@ function getDefaultSchoolWeekday() {
 }
 
 function getSavedGradeSelection() {
-  try {
-    const saved = parseInt(localStorage.getItem(GRADE_STORAGE_KEY) || "1", 10);
-    if (saved >= 1 && saved <= 9) return saved;
-  } catch (_) {}
+  const raw = safeStorageGet(window.localStorage, GRADE_STORAGE_KEY);
+  const saved = parseInt(raw || "", 10);
+  if (saved >= 1 && saved <= 9) {
+    hasExplicitSavedGrade = true;
+    return saved;
+  }
+  hasExplicitSavedGrade = false;
   return 1;
 }
 
@@ -296,24 +382,19 @@ function escapeXml(str) {
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, "")
     .replace(/[<>]/g, "")
     .replace(/javascript:|data:|vbscript:/gi, "")
     .trim()
     .slice(0, maxLength);
 }
 
-// Защита от Google Sheets / CSV Formula Injection (CWE-1236)
-function neutralizeSpreadsheetFormula(value) {
-  const str = String(value || "").trim();
-  if (/^[\s]*[=+\-@\t\r]/.test(str)) {
-    return `'${str}`;
-  }
-  return str;
-}
-
 function generateSecureTicketNumber() {
-  const datePart = new Date().toLocaleDateString("ru-RU").replace(/\./g, "");
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = String(now.getFullYear());
+  const datePart = `${dd}${mm}${yyyy}`;
   let randomPart;
   if (window.crypto && typeof window.crypto.getRandomValues === "function") {
     const buf = new Uint32Array(1);
@@ -339,8 +420,13 @@ async function copyTextToClipboard(text) {
     const helper = document.createElement("textarea");
     helper.value = text;
     helper.setAttribute("readonly", "");
-    helper.className = "hp-field";
+    helper.setAttribute("aria-hidden", "true");
+    helper.style.position = "fixed";
+    helper.style.top = "0";
+    helper.style.left = "-9999px";
+    helper.style.fontSize = "16px";
     document.body.appendChild(helper);
+    helper.focus({ preventScroll: true });
     helper.select();
     helper.setSelectionRange(0, helper.value.length);
     const ok = document.execCommand("copy");
@@ -469,7 +555,7 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
-// Строгая проверка изображений: только HTTPS с доверенных хостов или локальные пути, адаптивный размер Drive
+// Строгая проверка изображений + резервный хост lh3.googleusercontent.com против 429/403 Google Drive
 function resolveImageLinkSource(rawUrlCell, fallbackSvg, driveWidth = 640) {
   const cleaned = (rawUrlCell || "").trim();
   if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
@@ -503,9 +589,10 @@ function resolveImageLinkSource(rawUrlCell, fallbackSvg, driveWidth = 640) {
       parsed.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
       parsed.search.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (driveMatch && driveMatch[1]) {
+      const fileId = driveMatch[1];
       return {
-        src: `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w${driveWidth}`,
-        altTry: null,
+        src: `https://drive.google.com/thumbnail?id=${fileId}&sz=w${driveWidth}`,
+        altTry: `https://lh3.googleusercontent.com/d/${fileId}=w${driveWidth}`,
         fallback: fallbackSvg
       };
     }
@@ -559,6 +646,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initHeroBackdropFallback();
   initAccessibilityMode();
   initLiveDateTimeClockAndAmbient();
+  initAmbientAnimationPause();
   initYambirnoWeatherWidget();
   initChalkboardEngine();
   initScrollRevealAndCounters();
@@ -592,6 +680,43 @@ function initHeroBackdropFallback() {
   if (img.complete && img.naturalWidth === 0) {
     hideBackdrop();
   }
+}
+
+// Пауза бесконечных pulse/shimmer анимаций вне экрана и при скрытой вкладке (гигиена 60 FPS)
+function initAmbientAnimationPause() {
+  const targets = [
+    document.getElementById("live-widget-card"),
+    document.getElementById("hero-ambient")
+  ].filter(Boolean);
+
+  if (targets.length === 0) return;
+
+  const visibilityMap = new Map();
+  targets.forEach((el) => visibilityMap.set(el, true));
+
+  const syncPauseState = () => {
+    const tabHidden = Boolean(document.hidden);
+    targets.forEach((el) => {
+      const inView = visibilityMap.get(el) !== false;
+      el.classList.toggle("ambient-paused", tabHidden || !inView);
+    });
+  };
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          visibilityMap.set(entry.target, entry.isIntersecting);
+        });
+        syncPauseState();
+      },
+      { threshold: 0.01 }
+    );
+    targets.forEach((el) => observer.observe(el));
+  }
+
+  document.addEventListener("visibilitychange", syncPauseState);
+  syncPauseState();
 }
 
 function initChalkboardEngine() {
@@ -818,20 +943,36 @@ function initChalkboardEngine() {
   runStageLoop(runToken);
 }
 
+/* ==================== РАСПИСАНИЕ, ЗВОНКИ, ПОГОДА И ГОСТ ==================== */
+
 function parseBellTimeRangeString(rawRangeStr, lessonNum) {
   const fallback = DEFAULT_BELL_TIMES[lessonNum] || null;
   const cleaned = sanitizeInput(rawRangeStr || "", 40);
-  if (!cleaned) return fallback ? { ...fallback, isCustom: false } : null;
+
+  // Для 0-го и 8-го урока пустая ячейка означает «показывать без времени» (согласно памятке в таблице)
+  if (!cleaned) {
+    if (lessonNum === 0 || lessonNum === 8) {
+      return { bell: null, isCustom: false };
+    }
+    return { bell: fallback ? { ...fallback } : null, isCustom: false };
+  }
 
   const match = cleaned.match(/(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/);
-  if (!match) return fallback ? { ...fallback, isCustom: false } : null;
+  if (!match) {
+    if (lessonNum === 0 || lessonNum === 8) {
+      return { bell: null, isCustom: false };
+    }
+    return { bell: fallback ? { ...fallback } : null, isCustom: false };
+  }
 
   const sh = parseInt(match[1], 10);
   const sm = parseInt(match[2], 10);
   const eh = parseInt(match[3], 10);
   const em = parseInt(match[4], 10);
 
-  if (sh > 23 || sm > 59 || eh > 23 || em > 59) return fallback ? { ...fallback, isCustom: false } : null;
+  if (sh > 23 || sm > 59 || eh > 23 || em > 59) {
+    return { bell: fallback ? { ...fallback } : null, isCustom: false };
+  }
 
   const startFormatted = `${String(sh).padStart(2, "0")}:${String(sm).padStart(2, "0")}`;
   const endFormatted = `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
@@ -843,10 +984,12 @@ function parseBellTimeRangeString(rawRangeStr, lessonNum) {
     : false;
 
   return {
-    start: startFormatted,
-    end: endFormatted,
-    startMin,
-    endMin: endMin > startMin ? endMin : startMin + 40,
+    bell: {
+      start: startFormatted,
+      end: endFormatted,
+      startMin,
+      endMin: endMin > startMin ? endMin : startMin + 40
+    },
     isCustom: isDifferentFromDefault
   };
 }
@@ -926,7 +1069,7 @@ function parseRawScheduleIntoLessons(rawText) {
 
 function renderScheduleSkeleton(containerEl) {
   if (!containerEl) return;
-  containerEl.replaceChildren();
+  clearElement(containerEl);
   const stack = document.createElement("div");
   stack.className = "skeleton-stack";
   stack.setAttribute("aria-hidden", "true");
@@ -968,9 +1111,16 @@ function renderEmptyScheduleState(containerEl, isOfflineError = false) {
   containerEl.appendChild(box);
 }
 
+function getBellForLessonNumber(lessonNum) {
+  if (Object.prototype.hasOwnProperty.call(activeBellTimes, lessonNum)) {
+    return activeBellTimes[lessonNum];
+  }
+  return DEFAULT_BELL_TIMES[lessonNum] || null;
+}
+
 function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, skipAnimation = false, isOfflineError = false) {
   if (!containerEl) return;
-  containerEl.replaceChildren();
+  clearElement(containerEl);
 
   const shiftBanner = document.getElementById("bell-shift-warning");
   if (shiftBanner) {
@@ -1020,7 +1170,7 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
     const right = document.createElement("div");
     right.className = "diary-lesson-right";
 
-    const bell = activeBellTimes[lessonObj.num] || DEFAULT_BELL_TIMES[lessonObj.num];
+    const bell = getBellForLessonNumber(lessonObj.num);
     if (bell) {
       if (isTodaySelected && currentTotalMinutes >= bell.startMin && currentTotalMinutes <= bell.endMin) {
         const duration = Math.max(bell.endMin - bell.startMin, 1);
@@ -1078,7 +1228,7 @@ function initShareScheduleToChat() {
 
     const formattedLessons = lessons
       .map((l) => {
-        const bell = activeBellTimes[l.num] || DEFAULT_BELL_TIMES[l.num];
+        const bell = getBellForLessonNumber(l.num);
         const timeStr = bell ? ` (${bell.start}–${bell.end})` : "";
         return `${l.num}. ${l.title}${timeStr}`;
       })
@@ -1087,7 +1237,7 @@ function initShareScheduleToChat() {
     const tomTemp = document.getElementById("weather-tomorrow-temp");
     const advice = document.getElementById("weather-parent-advice");
     const weatherLine =
-      tomTemp && advice
+      tomTemp && advice && tomTemp.textContent.trim() !== "..."
         ? `\n\nПогода в с. Ямбирно к 1-му уроку: ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
         : "";
 
@@ -1215,14 +1365,16 @@ function decodeWmoWeather(code) {
   return { iconId: "ico-weather-sun", text: "Без осадков", rain: false, snow: false, sky: "clear" };
 }
 
+// Расчёт завтрашней даты по МСК (UTC+3) вручную без зависимости от локали "sv-SE" (Safari/WebView safe)
 function findTomorrowMorningWeatherIndex(hourlyTimes) {
   if (!Array.isArray(hourlyTimes) || hourlyTimes.length === 0) return 32;
-  try {
-    const tomorrow = new Date(Date.now() + 86400000);
-    const moscowDateIso = tomorrow.toLocaleDateString("sv-SE", { timeZone: "Europe/Moscow" });
-    const exactIdx = hourlyTimes.indexOf(`${moscowDateIso}T08:00`);
-    if (exactIdx !== -1) return exactIdx;
-  } catch (_) {}
+  const moscowTomorrow = new Date(Date.now() + 86400000 + 3 * 3600000);
+  const y = moscowTomorrow.getUTCFullYear();
+  const m = String(moscowTomorrow.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(moscowTomorrow.getUTCDate()).padStart(2, "0");
+  const targetKey = `${y}-${m}-${d}T08:00`;
+  const exactIdx = hourlyTimes.indexOf(targetKey);
+  if (exactIdx !== -1) return exactIdx;
   return hourlyTimes.length > 32 ? 32 : hourlyTimes.length - 1;
 }
 
@@ -1268,7 +1420,7 @@ async function initYambirnoWeatherWidget() {
     }
 
     if (nowIconEl) {
-      nowIconEl.replaceChildren(createSpriteIcon(curWmo.iconId, "", 22));
+      setElementChild(nowIconEl, createSpriteIcon(curWmo.iconId, "", 22));
     }
     if (nowTempEl) nowTempEl.textContent = curSign;
     if (nowDescEl) nowDescEl.textContent = `${curWmo.text}, ветер ${curWind} м/с`;
@@ -1291,7 +1443,8 @@ async function initYambirnoWeatherWidget() {
     const tomWmo = decodeWmoWeather(tomCode);
 
     if (tomTempEl) {
-      tomTempEl.replaceChildren(createSpriteIcon(tomWmo.iconId, "", 18));
+      clearElement(tomTempEl);
+      tomTempEl.appendChild(createSpriteIcon(tomWmo.iconId, "", 18));
       const valNode = document.createElement("span");
       valNode.textContent = tomSign;
       tomTempEl.appendChild(valNode);
@@ -1349,7 +1502,9 @@ function initAccessibilityMode() {
 
   let settings = { ...defaultSettings };
   try {
-    const rawSettings = localStorage.getItem(A11Y_SETTINGS_KEY) || localStorage.getItem("yambirno_a11y_settings_v1");
+    const rawSettings =
+      safeStorageGet(window.localStorage, A11Y_SETTINGS_KEY) ||
+      safeStorageGet(window.localStorage, "yambirno_a11y_settings_v1");
     if (rawSettings) {
       const parsed = JSON.parse(rawSettings);
       settings = { ...defaultSettings, ...parsed };
@@ -1357,9 +1512,7 @@ function initAccessibilityMode() {
   } catch (_) {}
 
   const saveSettings = () => {
-    try {
-      localStorage.setItem(A11Y_SETTINGS_KEY, JSON.stringify(settings));
-    } catch (_) {}
+    safeStorageSet(window.localStorage, A11Y_SETTINGS_KEY, JSON.stringify(settings));
   };
 
   const applySettings = () => {
@@ -1435,20 +1588,14 @@ function initAccessibilityMode() {
     }
   };
 
-  let savedState = false;
-  try {
-    savedState = localStorage.getItem(A11Y_STORAGE_KEY) === "true";
-  } catch (_) {}
-
+  const savedState = safeStorageGet(window.localStorage, A11Y_STORAGE_KEY) === "true";
   applySettings();
   applyMode(savedState, false);
 
   toggleBtn.addEventListener("click", () => {
     const nextState = !document.body.classList.contains("visually-impaired");
     applyMode(nextState, true);
-    try {
-      localStorage.setItem(A11Y_STORAGE_KEY, String(nextState));
-    } catch (_) {}
+    safeStorageSet(window.localStorage, A11Y_STORAGE_KEY, String(nextState));
   });
 
   sizeBtns.forEach((btn) => {
@@ -1508,6 +1655,7 @@ function initAccessibilityMode() {
     });
   }
 }
+/* ==================== ПАРСИНГ CSV, ПУБЛИКАЦИИ И ОТЛОЖЕННЫЕ ДАТЫ ==================== */
 
 function parseCSVPreserveRowIndex(csvText) {
   const rows = [];
@@ -1555,47 +1703,91 @@ function parseMultiplePhotoUrls(rawCell) {
     .filter((item) => item.length > 3);
 }
 
-// Парсинг даты публикации строго в часовом поясе Europe/Moscow (+03:00), включая DD.MM.YY
+// Строго ручной кроссбраузерный парсинг дат (МСК UTC+3) без передачи не-ISO строк в new Date() / Date.parse()
 function parseScheduleDateTime(rawDateStr) {
   const cleaned = sanitizeInput(rawDateStr || "", 60);
   if (!cleaned) {
     return { timestamp: 0, displayStr: "", isFuture: false };
   }
 
-  let parsedDate = null;
-  const ruMatch = cleaned.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})(?:\s+(\d{1,2})[:.](\d{2}))?/);
-  if (ruMatch) {
-    const day = String(parseInt(ruMatch[1], 10)).padStart(2, "0");
-    const month = String(parseInt(ruMatch[2], 10)).padStart(2, "0");
-    let yearNum = parseInt(ruMatch[3], 10);
-    if (yearNum < 100) yearNum += 2000;
-    const hours = ruMatch[4] !== undefined ? String(parseInt(ruMatch[4], 10)).padStart(2, "0") : "00";
-    const minutes = ruMatch[5] !== undefined ? String(parseInt(ruMatch[5], 10)).padStart(2, "0") : "00";
-    parsedDate = new Date(`${yearNum}-${month}-${day}T${hours}:${minutes}:00+03:00`);
-  } else {
-    const fallbackTimestamp = Date.parse(cleaned);
-    if (!Number.isNaN(fallbackTimestamp)) {
-      parsedDate = new Date(fallbackTimestamp);
-    }
-  }
+  let day = 0;
+  let month = 0;
+  let year = 0;
+  let hours = 0;
+  let minutes = 0;
+  let hasTimePart = false;
 
-  if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+  const ruMatch = cleaned.match(
+    /^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})(?:[T\s]+(\d{1,2})[:.](\d{2})(?:[:.]\d{2})?)?$/
+  );
+  const isoMatch = !ruMatch
+    ? cleaned.match(
+        /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s]+(\d{1,2})[:.](\d{2})(?:[:.]\d{2})?)?/
+      )
+    : null;
+
+  if (ruMatch) {
+    day = parseInt(ruMatch[1], 10);
+    month = parseInt(ruMatch[2], 10);
+    year = parseInt(ruMatch[3], 10);
+    if (year < 100) year += 2000;
+    if (ruMatch[4] !== undefined && ruMatch[5] !== undefined) {
+      hours = parseInt(ruMatch[4], 10);
+      minutes = parseInt(ruMatch[5], 10);
+      hasTimePart = true;
+    }
+  } else if (isoMatch) {
+    year = parseInt(isoMatch[1], 10);
+    month = parseInt(isoMatch[2], 10);
+    day = parseInt(isoMatch[3], 10);
+    if (isoMatch[4] !== undefined && isoMatch[5] !== undefined) {
+      hours = parseInt(isoMatch[4], 10);
+      minutes = parseInt(isoMatch[5], 10);
+      hasTimePart = true;
+    }
+  } else {
     return { timestamp: 0, displayStr: cleaned, isFuture: false };
   }
 
-  const nowMs = Date.now();
-  const targetMs = parsedDate.getTime();
-  const hasTimePart = /\d{1,2}[:.]\d{2}/.test(cleaned);
+  if (
+    year < 2000 ||
+    year > 2100 ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return { timestamp: 0, displayStr: cleaned, isFuture: false };
+  }
+
+  // Проверяем, что календарная дата не перекатилась (например, 31 февраля)
+  const checkDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  if (
+    checkDate.getUTCFullYear() !== year ||
+    checkDate.getUTCMonth() !== month - 1 ||
+    checkDate.getUTCDate() !== day
+  ) {
+    return { timestamp: 0, displayStr: cleaned, isFuture: false };
+  }
+
+  // Переводим время МСК (UTC+3) в UTC timestamp
+  const targetMs = Date.UTC(year, month - 1, day, hours - 3, minutes, 0);
+  const dd = String(day).padStart(2, "0");
+  const monthWord = RU_MONTHS_GENITIVE[month - 1] || String(month).padStart(2, "0");
+  const hh = String(hours).padStart(2, "0");
+  const mm = String(minutes).padStart(2, "0");
   const displayStr = hasTimePart
-    ? parsedDate.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Moscow" }) +
-      " в " +
-      parsedDate.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Moscow" })
-    : parsedDate.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Moscow" });
+    ? `${dd} ${monthWord} ${year} г. в ${hh}:${mm}`
+    : `${dd} ${monthWord} ${year} г.`;
 
   return {
     timestamp: targetMs,
     displayStr,
-    isFuture: targetMs > nowMs
+    isFuture: targetMs > Date.now()
   };
 }
 
@@ -1655,6 +1847,38 @@ function classifyPublicationBadgeTheme(badgeText) {
   };
 }
 
+function buildPublicationLightboxSlides(pubItem) {
+  const fallbackSvg = buildPublicationFallbackSvg(pubItem.title);
+  const totalPhotos = Array.isArray(pubItem.photos) ? pubItem.photos.length : 0;
+  return (pubItem.photos || []).map((rawUrl, idx) => {
+    const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1600);
+    return {
+      src: resolved.src,
+      altTry: resolved.altTry,
+      fallback: resolved.fallback,
+      title: pubItem.title || "Фото материала",
+      desc:
+        totalPhotos > 1
+          ? `Изображение ${idx + 1} из ${totalPhotos}${pubItem.dateDisplay ? ` • ${pubItem.dateDisplay}` : ""}`
+          : pubItem.dateDisplay || ""
+    };
+  });
+}
+
+function attachSafeImageFallback(imgEl, resolved) {
+  let triedAlt = false;
+  imgEl.onerror = () => {
+    if (!triedAlt && resolved.altTry) {
+      triedAlt = true;
+      imgEl.src = resolved.altTry;
+    } else {
+      imgEl.onerror = null;
+      imgEl.src = resolved.fallback;
+    }
+  };
+  imgEl.src = resolved.src;
+}
+
 function openPublicationModal(pubItem, updateUrlHash = true) {
   const modal = document.getElementById("publication-modal");
   const badgeEl = document.getElementById("pub-modal-badge");
@@ -1675,23 +1899,11 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
   bodyEl.textContent = pubItem.text || "";
 
   if (galleryEl) {
-    galleryEl.replaceChildren();
+    clearElement(galleryEl);
     if (Array.isArray(pubItem.photos) && pubItem.photos.length > 0) {
       const fallbackSvg = buildPublicationFallbackSvg(pubItem.title);
       const totalPhotos = pubItem.photos.length;
-      const pubSlides = pubItem.photos.map((rawUrl, idx) => {
-        const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1600);
-        return {
-          src: resolved.src,
-          altTry: resolved.altTry,
-          fallback: resolved.fallback,
-          title: pubItem.title || "Фото материала",
-          desc:
-            totalPhotos > 1
-              ? `Изображение ${idx + 1} из ${totalPhotos}${pubItem.dateDisplay ? ` • ${pubItem.dateDisplay}` : ""}`
-              : pubItem.dateDisplay || ""
-        };
-      });
+      const pubSlides = buildPublicationLightboxSlides(pubItem);
 
       pubItem.photos.forEach((rawUrl, idx) => {
         const wrap = document.createElement("div");
@@ -1710,17 +1922,7 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
         img.alt = `${pubItem.title || "Фото материала"} — изображение ${idx + 1}`;
 
         const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1200);
-        let triedAlt = false;
-        img.onerror = () => {
-          if (!triedAlt && resolved.altTry) {
-            triedAlt = true;
-            img.src = resolved.altTry;
-          } else {
-            img.onerror = null;
-            img.src = resolved.fallback;
-          }
-        };
-        img.src = resolved.src;
+        attachSafeImageFallback(img, resolved);
 
         const zoomHint = document.createElement("span");
         zoomHint.className = "pub-modal-photo-zoom";
@@ -1882,7 +2084,7 @@ function renderPublicationFilters(publications) {
   });
 
   if (categoriesMap.size <= 1) {
-    bar.replaceChildren();
+    clearElement(bar);
     bar.classList.add("hidden");
     activePubFilterKey = "all";
     return;
@@ -1892,7 +2094,7 @@ function renderPublicationFilters(publications) {
     activePubFilterKey = "all";
   }
 
-  bar.replaceChildren();
+  clearElement(bar);
 
   const makeChip = (key, label, count, iconId) => {
     const btn = document.createElement("button");
@@ -1929,7 +2131,7 @@ function renderPublicationCards(publications) {
   const gridEl = document.getElementById("publications-grid");
   if (!gridEl) return;
 
-  gridEl.replaceChildren();
+  clearElement(gridEl);
 
   const filtered =
     activePubFilterKey === "all"
@@ -1945,8 +2147,12 @@ function renderPublicationCards(publications) {
     card.className = `pub-card surface-card elevate-card reveal visible ${theme.cardCls}`.trim();
 
     if (pub.photos.length > 0) {
+      const fallbackSvg = buildPublicationFallbackSvg(pub.title);
       const mediaWrap = document.createElement("div");
       mediaWrap.className = "pub-card-media";
+      mediaWrap.setAttribute("tabindex", "0");
+      mediaWrap.setAttribute("role", "button");
+      mediaWrap.setAttribute("aria-label", `Открыть материал: ${pub.title}`);
       mediaWrap.setAttribute("title", "Нажмите, чтобы открыть материал полностью");
 
       const img = document.createElement("img");
@@ -1958,19 +2164,7 @@ function renderPublicationCards(publications) {
       img.height = 375;
       img.alt = pub.title;
 
-      const fallbackSvg = buildPublicationFallbackSvg(pub.title);
-      const resolved = resolveImageLinkSource(pub.photos[0], fallbackSvg, 640);
-      let triedAlt = false;
-      img.onerror = () => {
-        if (!triedAlt && resolved.altTry) {
-          triedAlt = true;
-          img.src = resolved.altTry;
-        } else {
-          img.onerror = null;
-          img.src = resolved.fallback;
-        }
-      };
-      img.src = resolved.src;
+      attachSafeImageFallback(img, resolveImageLinkSource(pub.photos[0], fallbackSvg, 640));
       mediaWrap.appendChild(img);
 
       if (pub.photos.length > 1) {
@@ -1983,8 +2177,51 @@ function renderPublicationCards(publications) {
         mediaWrap.appendChild(multiBadge);
       }
 
-      mediaWrap.addEventListener("click", () => openPublicationModal(pub, true));
+      const openCardModal = () => openPublicationModal(pub, true);
+      mediaWrap.addEventListener("click", openCardModal);
+      mediaWrap.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openCardModal();
+        }
+      });
       card.appendChild(mediaWrap);
+
+      // Полоса мини-превью для новостей с несколькими фото (2–4+ фото)
+      if (pub.photos.length > 1) {
+        const thumbsBar = document.createElement("div");
+        thumbsBar.className = "pub-card-thumbs";
+        thumbsBar.setAttribute("role", "group");
+        thumbsBar.setAttribute("aria-label", `Фотографии материала «${pub.title}»`);
+
+        const pubSlides = buildPublicationLightboxSlides(pub);
+        pub.photos.slice(0, 5).forEach((photoUrl, photoIdx) => {
+          const tBtn = document.createElement("button");
+          tBtn.type = "button";
+          tBtn.className = "pub-card-thumb-btn";
+          tBtn.setAttribute("aria-label", `Открыть фото ${photoIdx + 1} из ${pub.photos.length}`);
+
+          const tImg = document.createElement("img");
+          tImg.setAttribute("referrerpolicy", "no-referrer");
+          tImg.loading = "lazy";
+          tImg.decoding = "async";
+          tImg.width = 120;
+          tImg.height = 88;
+          tImg.alt = "";
+          attachSafeImageFallback(tImg, resolveImageLinkSource(photoUrl, fallbackSvg, 240));
+
+          tBtn.appendChild(tImg);
+          tBtn.addEventListener("click", () => {
+            if (typeof openLightboxSlidesFn === "function") {
+              openLightboxSlidesFn(pubSlides, photoIdx);
+            } else {
+              openPublicationModal(pub, true);
+            }
+          });
+          thumbsBar.appendChild(tBtn);
+        });
+        card.appendChild(thumbsBar);
+      }
     }
 
     const content = document.createElement("div");
@@ -2121,7 +2358,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
   if (!Array.isArray(rowsArray) || rowsArray.length <= 1) {
     lastRenderedPublicationsSignature = "[]";
     activePublicationsCache = [];
-    gridEl.replaceChildren();
+    clearElement(gridEl);
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
     if (navLinkEl) navLinkEl.classList.add("hidden");
@@ -2166,7 +2403,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
   lastRenderedPublicationsSignature = nextSignature;
 
   if (activePublications.length === 0) {
-    gridEl.replaceChildren();
+    clearElement(gridEl);
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
     if (navLinkEl) navLinkEl.classList.add("hidden");
@@ -2190,13 +2427,13 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
   }
 }
 
-async function loadSheet3PublicationsData() {
+async function loadSheet3PublicationsData(isManualRefresh = false) {
   const sectionEl = document.getElementById("school-publications");
   if (!sectionEl) return;
 
-  // Stale-While-Revalidate: мгновенно поднимаем кэш, не ожидая сеть
+  // Stale-While-Revalidate: мгновенно поднимаем кэш
   try {
-    const rawCache = localStorage.getItem(SHEET3_CACHE_KEY);
+    const rawCache = safeStorageGet(window.localStorage, SHEET3_CACHE_KEY);
     if (rawCache) {
       const cachedRows = JSON.parse(rawCache);
       latestRawSheet3Rows = cachedRows;
@@ -2216,18 +2453,19 @@ async function loadSheet3PublicationsData() {
     const rows = parseCSVPreserveRowIndex(csvText);
     latestRawSheet3Rows = rows;
     renderSheet3Publications(rows, false);
-
-    try {
-      localStorage.setItem(SHEET3_CACHE_KEY, JSON.stringify(rows));
-    } catch (_) {}
-  } catch (_) {}
+    safeStorageSet(window.localStorage, SHEET3_CACHE_KEY, JSON.stringify(rows));
+  } catch (_) {
+    // Резервный fallback в сетях РФ / ЕМСПД: статический снапшот из GitHub Pages
+    const snapshot = await fetchSchoolSnapshotOnce(isManualRefresh);
+    if (snapshot && Array.isArray(snapshot.publicationsRows) && snapshot.publicationsRows.length > 1) {
+      latestRawSheet3Rows = snapshot.publicationsRows;
+      renderSheet3Publications(snapshot.publicationsRows, false);
+      safeStorageSet(window.localStorage, SHEET3_CACHE_KEY, JSON.stringify(snapshot.publicationsRows));
+    }
+  }
 }
 
-setInterval(() => {
-  if (!document.hidden && latestRawSheet3Rows && document.getElementById("school-publications")) {
-    renderSheet3Publications(latestRawSheet3Rows, false);
-  }
-}, 60000);
+/* ==================== ГАЛЕРЕЯ, LIGHTBOX (СВАЙП) И ПЕДАГОГИ ==================== */
 
 function createGalleryFigureElement() {
   const figure = document.createElement("figure");
@@ -2300,18 +2538,12 @@ function updateGalleryFromSheetRows(galleryArray) {
       const resolvedThumb = resolveImageLinkSource(itemData.url, defaultSvg, 640);
       const resolvedFull = resolveImageLinkSource(itemData.url, defaultSvg, 1600);
       figure.setAttribute("data-full-src", resolvedFull.src);
-
-      let triedAlt = false;
-      imgEl.onerror = () => {
-        if (!triedAlt && resolvedThumb.altTry) {
-          triedAlt = true;
-          imgEl.src = resolvedThumb.altTry;
-        } else {
-          imgEl.onerror = null;
-          imgEl.src = resolvedThumb.fallback;
-        }
-      };
-      imgEl.src = resolvedThumb.src;
+      if (resolvedFull.altTry) {
+        figure.setAttribute("data-full-alt", resolvedFull.altTry);
+      } else {
+        figure.removeAttribute("data-full-alt");
+      }
+      attachSafeImageFallback(imgEl, resolvedThumb);
       imgEl.alt = newTitle;
     }
   });
@@ -2333,25 +2565,27 @@ function initGalleryLightbox() {
   let activeSlides = [];
   let currentSlideIdx = 0;
   let touchStartX = 0;
+  let touchStartY = 0;
+  let isHorizontalSwipe = false;
   let lbTriggerEl = null;
+
+  const resetImgTransform = () => {
+    lbImg.classList.remove("is-dragging");
+    lbImg.style.transform = "";
+  };
 
   const renderSlideAt = (idx) => {
     if (activeSlides.length === 0) return;
 
+    resetImgTransform();
     currentSlideIdx = (idx + activeSlides.length) % activeSlides.length;
     const slide = activeSlides[currentSlideIdx];
 
-    let triedAlt = false;
-    lbImg.onerror = () => {
-      if (!triedAlt && slide.altTry) {
-        triedAlt = true;
-        lbImg.src = slide.altTry;
-      } else {
-        lbImg.onerror = null;
-        if (slide.fallback) lbImg.src = slide.fallback;
-      }
-    };
-    lbImg.src = slide.src || slide.fallback || "";
+    attachSafeImageFallback(lbImg, {
+      src: slide.src || slide.fallback || "",
+      altTry: slide.altTry || null,
+      fallback: slide.fallback || ""
+    });
     lbImg.alt = slide.title || "";
 
     if (lbTitle) lbTitle.textContent = slide.title || "";
@@ -2382,6 +2616,7 @@ function initGalleryLightbox() {
 
   const closeLightbox = () => {
     if (lightbox.classList.contains("hidden")) return;
+    resetImgTransform();
     lightbox.classList.add("hidden");
     lightbox.setAttribute("hidden", "");
     const returnEl = lbTriggerEl;
@@ -2401,7 +2636,7 @@ function initGalleryLightbox() {
         const thumbSrc = imgEl ? imgEl.src : "";
         return {
           src: item.getAttribute("data-full-src") || thumbSrc,
-          altTry: null,
+          altTry: item.getAttribute("data-full-alt") || null,
           fallback: thumbSrc,
           title: item.getAttribute("data-caption") || "",
           desc: item.getAttribute("data-desc") || ""
@@ -2433,12 +2668,32 @@ function initGalleryLightbox() {
     if (e.target === lightbox) closeLightbox();
   });
 
-  // Свайп пальцем влево/вправо на сенсорных экранах
+  // Эластичный свайп пальцем влево/вправо на сенсорных экранах
   lightbox.addEventListener(
     "touchstart",
     (e) => {
       if (e.changedTouches && e.changedTouches[0]) {
         touchStartX = e.changedTouches[0].clientX;
+        touchStartY = e.changedTouches[0].clientY;
+        isHorizontalSwipe = false;
+      }
+    },
+    { passive: true }
+  );
+
+  lightbox.addEventListener(
+    "touchmove",
+    (e) => {
+      if (activeSlides.length <= 1 || isReducedMotionPreferred() || !e.changedTouches || !e.changedTouches[0]) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (!isHorizontalSwipe && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+        isHorizontalSwipe = true;
+        lbImg.classList.add("is-dragging");
+      }
+      if (isHorizontalSwipe) {
+        const clamped = Math.max(Math.min(dx * 0.4, 96), -96);
+        lbImg.style.transform = `translate3d(${clamped.toFixed(1)}px, 0, 0)`;
       }
     },
     { passive: true }
@@ -2447,15 +2702,19 @@ function initGalleryLightbox() {
   lightbox.addEventListener(
     "touchend",
     (e) => {
+      resetImgTransform();
       if (activeSlides.length <= 1 || !e.changedTouches || !e.changedTouches[0]) return;
       const dx = e.changedTouches[0].clientX - touchStartX;
       if (Math.abs(dx) > 48) {
         if (dx > 0) renderSlideAt(currentSlideIdx - 1);
         else renderSlideAt(currentSlideIdx + 1);
       }
+      isHorizontalSwipe = false;
     },
     { passive: true }
   );
+
+  lightbox.addEventListener("touchcancel", resetImgTransform, { passive: true });
 
   document.addEventListener("keydown", (e) => {
     if (lightbox.classList.contains("hidden")) return;
@@ -2555,18 +2814,7 @@ function populateSingleTeacherCard(card, rowData, idx) {
   if (photoEl && (newPhotoRaw || rowData.fio)) {
     photoEl.setAttribute("referrerpolicy", "no-referrer");
     const resolved = resolveTeacherPhotoSource(newPhotoRaw, newFio, idx);
-    let triedAlt = false;
-
-    photoEl.onerror = () => {
-      if (!triedAlt && resolved.altTry) {
-        triedAlt = true;
-        photoEl.src = resolved.altTry;
-      } else {
-        photoEl.onerror = null;
-        photoEl.src = resolved.fallback;
-      }
-    };
-    photoEl.src = resolved.src;
+    attachSafeImageFallback(photoEl, resolved);
     photoEl.alt = `Фото педагога: ${newFio}`;
   }
 }
@@ -2609,6 +2857,8 @@ function updateTeachersFromSheetRows(teachersDataArray) {
   }
 }
 
+/* ==================== ПЕРЕКЛЮЧАТЕЛИ, ПАРСЕР ПАНЕЛИ И ОФЛАЙН-СНИМОК ==================== */
+
 function refreshAllGlidePills() {
   glidePillRefreshers.forEach((fn) => fn());
 }
@@ -2641,6 +2891,14 @@ function initGlidePills() {
   });
 }
 
+function hideGradeAutoHint() {
+  const hintEl = document.getElementById("grade-auto-hint");
+  if (hintEl) {
+    hintEl.textContent = "";
+    hintEl.classList.add("hidden");
+  }
+}
+
 function initWeekdayAndGradeSwitchers() {
   const allDayPills = document.querySelectorAll(".day-pill[data-day]");
   const allGradePills = document.querySelectorAll(".grade-pill");
@@ -2663,9 +2921,9 @@ function initWeekdayAndGradeSwitchers() {
     gPill.addEventListener("click", () => {
       const gradeNum = parseInt(gPill.getAttribute("data-grade") || "1", 10);
       currentSelectedGrade = gradeNum;
-      try {
-        localStorage.setItem(GRADE_STORAGE_KEY, String(gradeNum));
-      } catch (_) {}
+      hasExplicitSavedGrade = true;
+      hideGradeAutoHint();
+      safeStorageSet(window.localStorage, GRADE_STORAGE_KEY, String(gradeNum));
       syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
       if (latestParsedSheetData) {
         renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade);
@@ -2829,6 +3087,211 @@ function detectPhotoRowFromCell(cellString) {
   return /^фото\s*\d+/i.test(s);
 }
 
+// Единый парсер матрицы «Ежедневная панель школы» (работает и с live CSV, и с data/school-snapshot.json)
+function parsePanelRowsToDataObject(rows, timeLabel) {
+  const scheduleByGradeAndDay = {};
+  for (let g = 1; g <= 9; g++) {
+    scheduleByGradeAndDay[g] = {};
+  }
+
+  const menuByDay = {};
+  const menuByWeekAndDay = { 1: {}, 2: {} };
+  const galleryList = [];
+  const teachersList = [];
+  const parsedBellTimes = cloneDefaultBells();
+  let hasCustomBells = false;
+
+  let col1News = "";
+  let col2Schedule = "";
+  let col3Important = "";
+  let col4Status = "";
+
+  let currentMode = "";
+  let boardCols = { news: 0, schedule: -1, important: 1, status: 2 };
+  let boardReadDone = false;
+
+  for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+    const r = rows[rIdx] || [];
+    const colA = (r[0] || "").trim();
+    const colALower = colA.toLowerCase();
+    const colB = (r[1] || "").trim();
+    const colC = (r[2] || "").trim();
+    const colD = (r[3] || "").trim();
+
+    if (!r.some((cell) => (cell || "").trim())) continue;
+    if (colA.startsWith("ℹ️") || colALower.startsWith("панель управления сайтом")) continue;
+
+    if (colALower.includes("оперативное табло")) {
+      currentMode = "board";
+      continue;
+    }
+    if (colALower === "новости дня") {
+      currentMode = "board";
+      if (colB.toLowerCase().includes("расписан")) {
+        boardCols = { news: 0, schedule: 1, important: 2, status: 3 };
+      } else {
+        boardCols = { news: 0, schedule: -1, important: 1, status: 2 };
+      }
+      continue;
+    }
+    if (colALower.includes("расписание уроков") || colALower === "класс") {
+      currentMode = "schedule";
+      continue;
+    }
+    if (colALower.includes("расписание звонков") || colALower === "звонки" || colB.toLowerCase().includes("расписание звонков")) {
+      currentMode = "bells";
+      continue;
+    }
+    if (
+      colALower.includes("меню питания") ||
+      (colALower.includes("день") && (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")))
+    ) {
+      currentMode = colALower.includes("2") || colALower.includes("вторая") ? "menu_w2" : "menu_w1";
+      continue;
+    }
+    if (colALower.includes("фотогалере")) {
+      currentMode = "gallery";
+      continue;
+    }
+    if (colALower.includes("педагогический коллектив")) {
+      currentMode = "teachers";
+      continue;
+    }
+    if (colALower === "урок" || colALower.startsWith("фото (ссылка")) {
+      continue;
+    }
+
+    if (currentMode === "board" && !boardReadDone) {
+      col1News = sanitizeInput(r[boardCols.news] || "", 600);
+      col2Schedule = boardCols.schedule >= 0 ? sanitizeInput(r[boardCols.schedule] || "", 600) : "";
+      col3Important = sanitizeInput(r[boardCols.important] || "", 600);
+      col4Status = sanitizeInput(r[boardCols.status] || "", 120);
+      boardReadDone = true;
+      continue;
+    }
+
+    if (currentMode === "teachers") {
+      const fio = sanitizeInput(r[2] || "", 120);
+      if (!fio || fio.toLowerCase().includes("фио")) continue;
+      teachersList.push({
+        photo: (r[0] || "").trim(),
+        badge: sanitizeInput(r[1] || "", 100),
+        fio,
+        role: sanitizeInput(r[3] || "", 160),
+        desc: sanitizeInput(r[4] || "", 450)
+      });
+      continue;
+    }
+
+    const bellNumA = detectBellLessonNumberFromCell(colA);
+    const bellNumB = bellNumA >= 0 ? -1 : detectBellLessonNumberFromCell(colB);
+    if (bellNumA >= 0 && bellNumA <= 8) {
+      const parsedBell = parseBellTimeRangeString(colB, bellNumA);
+      parsedBellTimes[bellNumA] = parsedBell.bell;
+      if (parsedBell.isCustom) hasCustomBells = true;
+      continue;
+    }
+    if (currentMode === "bells" && bellNumB >= 0 && bellNumB <= 8) {
+      const parsedBell = parseBellTimeRangeString(colC, bellNumB);
+      parsedBellTimes[bellNumB] = parsedBell.bell;
+      if (parsedBell.isCustom) hasCustomBells = true;
+      continue;
+    }
+
+    if (currentMode === "gallery" || detectPhotoRowFromCell(colA)) {
+      if (detectPhotoRowFromCell(colA)) {
+        galleryList.push({
+          url: colB,
+          title: sanitizeInput(colC, 140),
+          desc: sanitizeInput(colD, 400)
+        });
+        continue;
+      }
+    }
+
+    const gradeNum = detectGradeNumberFromCell(colA);
+    if (gradeNum >= 1 && gradeNum <= 9) {
+      for (let d = 1; d <= 5; d++) {
+        const cellLesson = sanitizeInput(r[d] || "", 1200);
+        if (cellLesson) {
+          scheduleByGradeAndDay[gradeNum][d] = cellLesson;
+        }
+      }
+      continue;
+    }
+
+    const dayIndex = detectWeekdayIndexFromCell(colA);
+    if (dayIndex >= 1 && dayIndex <= 5 && (currentMode === "menu_w1" || currentMode === "menu_w2")) {
+      const targetWeek = currentMode === "menu_w2" ? 2 : 1;
+      const entry = {
+        breakfast: sanitizeInput(colB, 600),
+        lunch: sanitizeInput(colC, 600),
+        note: sanitizeInput(colD, 600)
+      };
+      menuByWeekAndDay[targetWeek][dayIndex] = entry;
+      if (targetWeek === 1) menuByDay[dayIndex] = entry;
+    }
+  }
+
+  if (teachersList.length === 0) {
+    for (let rIdx = 1; rIdx < rows.length; rIdx++) {
+      const r = rows[rIdx] || [];
+      const colA = (r[0] || "").trim().toLowerCase();
+      const isScheduleMatrixRow = colA === "класс" || detectGradeNumberFromCell(colA) > 0;
+      const fio = sanitizeInput(r[7] || "", 120);
+      if (!fio || fio.toLowerCase().includes("фио")) continue;
+      teachersList.push({
+        photo: isScheduleMatrixRow ? "" : (r[5] || "").trim(),
+        badge: sanitizeInput(r[6] || "", 100),
+        fio,
+        role: sanitizeInput(r[8] || "", 160),
+        desc: sanitizeInput(r[9] || "", 450)
+      });
+    }
+  }
+
+  return {
+    col1News,
+    col2Schedule,
+    col3Important,
+    col4Status,
+    bellTimes: parsedBellTimes,
+    hasCustomBells,
+    scheduleByGradeAndDay,
+    menuByDay,
+    menuByWeekAndDay,
+    teachers: teachersList,
+    gallery: galleryList,
+    timeLabel
+  };
+}
+
+function maybeAutoSelectFilledGrade(dataObj) {
+  const hintEl = document.getElementById("grade-auto-hint");
+  if (hasExplicitSavedGrade || !dataObj || !dataObj.scheduleByGradeAndDay) {
+    hideGradeAutoHint();
+    return;
+  }
+
+  const currentMap = dataObj.scheduleByGradeAndDay[currentSelectedGrade];
+  if (currentMap && currentMap[currentSelectedWeekday]) {
+    hideGradeAutoHint();
+    return;
+  }
+
+  for (let g = 1; g <= 9; g++) {
+    if (dataObj.scheduleByGradeAndDay[g] && dataObj.scheduleByGradeAndDay[g][currentSelectedWeekday]) {
+      const skippedGrade = currentSelectedGrade;
+      currentSelectedGrade = g;
+      if (hintEl) {
+        hintEl.textContent = `Показан ${g} класс (для ${skippedGrade} класса расписание уточняется). Выберите класс ребёнка — сайт его запомнит.`;
+        hintEl.classList.remove("hidden");
+      }
+      return;
+    }
+  }
+}
+
 function initLiveSheetWidgetAndMenu() {
   const newsEl = document.getElementById("col-news");
   const scheduleEl = document.getElementById("col-schedule");
@@ -2838,7 +3301,17 @@ function initLiveSheetWidgetAndMenu() {
 
   if (!newsEl || !scheduleEl || !importantEl) return;
 
-  const renderWidgetData = (dataObj, isFromCache = false) => {
+  // Таймер отложенных публикаций запускается строго на главной странице
+  if (document.getElementById("school-publications")) {
+    setInterval(() => {
+      if (!document.hidden && latestRawSheet3Rows) {
+        renderSheet3Publications(latestRawSheet3Rows, false);
+      }
+    }, 60000);
+  }
+
+  const renderWidgetData = (dataObj, sourceMode = "live") => {
+    const isFromCache = sourceMode === "cache";
     latestParsedSheetData = dataObj;
 
     activeBellTimes = { ...cloneDefaultBells(), ...(dataObj.bellTimes || {}) };
@@ -2860,6 +3333,7 @@ function initLiveSheetWidgetAndMenu() {
       customSheetSchoolStatus = dataObj.col4Status;
     }
 
+    maybeAutoSelectFilledGrade(dataObj);
     syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
     renderDaySpecificScheduleAndMenu(dataObj, currentSelectedWeekday, currentSelectedGrade, isFromCache);
 
@@ -2872,19 +3346,26 @@ function initLiveSheetWidgetAndMenu() {
     }
 
     if (statusEl) {
-      statusEl.textContent = isFromCache
-        ? `Сохранённая копия (${dataObj.timeLabel || "офлайн"})`
-        : `Обновлено в ${dataObj.timeLabel}`;
+      statusEl.classList.remove("is-snapshot", "is-offline");
+      if (sourceMode === "snapshot") {
+        statusEl.classList.add("is-snapshot");
+        statusEl.textContent = `Резервный снимок (${dataObj.timeLabel || "РФ-кэш"})`;
+      } else if (sourceMode === "cache") {
+        statusEl.classList.add("is-offline");
+        statusEl.textContent = `Сохранённая копия (${dataObj.timeLabel || "офлайн"})`;
+      } else {
+        statusEl.textContent = `Обновлено в ${dataObj.timeLabel}`;
+      }
     }
   };
 
   // Stale-While-Revalidate: мгновенный рендер кэша до сетевого запроса
   let hasHydratedCache = false;
   try {
-    const rawCache = localStorage.getItem(SHEET_CACHE_KEY);
+    const rawCache = safeStorageGet(window.localStorage, SHEET_CACHE_KEY);
     if (rawCache) {
       const cached = JSON.parse(rawCache);
-      renderWidgetData(cached, true);
+      renderWidgetData(cached, "cache");
       hasHydratedCache = true;
     }
   } catch (_) {}
@@ -2899,9 +3380,12 @@ function initLiveSheetWidgetAndMenu() {
     } else {
       [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.add("is-loading-shimmer"));
     }
-    if (statusEl) statusEl.textContent = "Синхронизация...";
+    if (statusEl) {
+      statusEl.classList.remove("is-snapshot", "is-offline");
+      statusEl.textContent = "Синхронизация...";
+    }
 
-    loadSheet3PublicationsData();
+    loadSheet3PublicationsData(isManualRefresh);
 
     try {
       const response = await fetchWithTimeout(SHEET_CSV_URL, { cache: "no-store" }, 6500);
@@ -2913,217 +3397,36 @@ function initLiveSheetWidgetAndMenu() {
       }
 
       const rows = parseCSVPreserveRowIndex(csvText);
-
-      const scheduleByGradeAndDay = {};
-      for (let g = 1; g <= 9; g++) {
-        scheduleByGradeAndDay[g] = {};
-      }
-
-      const menuByDay = {};
-      const menuByWeekAndDay = { 1: {}, 2: {} };
-      const galleryList = [];
-      const teachersList = [];
-      const parsedBellTimes = cloneDefaultBells();
-      let hasCustomBells = false;
-
-      let col1News = "";
-      let col2Schedule = "";
-      let col3Important = "";
-      let col4Status = "";
-
-      let currentMode = "";
-      let boardCols = { news: 0, schedule: -1, important: 1, status: 2 };
-      let boardReadDone = false;
-
-      for (let rIdx = 0; rIdx < rows.length; rIdx++) {
-        const r = rows[rIdx] || [];
-        const colA = (r[0] || "").trim();
-        const colALower = colA.toLowerCase();
-        const colB = (r[1] || "").trim();
-        const colC = (r[2] || "").trim();
-        const colD = (r[3] || "").trim();
-
-        if (!r.some((cell) => (cell || "").trim())) continue;
-        if (colA.startsWith("ℹ️") || colALower.startsWith("панель управления сайтом")) continue;
-
-        if (colALower.includes("оперативное табло")) {
-          currentMode = "board";
-          continue;
-        }
-        if (colALower === "новости дня") {
-          currentMode = "board";
-          if (colB.toLowerCase().includes("расписан")) {
-            boardCols = { news: 0, schedule: 1, important: 2, status: 3 };
-          } else {
-            boardCols = { news: 0, schedule: -1, important: 1, status: 2 };
-          }
-          continue;
-        }
-        if (colALower.includes("расписание уроков") || colALower === "класс") {
-          currentMode = "schedule";
-          continue;
-        }
-        if (colALower.includes("расписание звонков") || colALower === "звонки" || colB.toLowerCase().includes("расписание звонков")) {
-          currentMode = "bells";
-          continue;
-        }
-        if (
-          colALower.includes("меню питания") ||
-          (colALower.includes("день") && (colALower.includes("питан") || colB.toLowerCase().includes("завтрак")))
-        ) {
-          currentMode = colALower.includes("2") || colALower.includes("вторая") ? "menu_w2" : "menu_w1";
-          continue;
-        }
-        if (colALower.includes("фотогалере")) {
-          currentMode = "gallery";
-          continue;
-        }
-        if (colALower.includes("педагогический коллектив")) {
-          currentMode = "teachers";
-          continue;
-        }
-        if (colALower === "урок" || colALower.startsWith("фото (ссылка")) {
-          continue;
-        }
-
-        if (currentMode === "board" && !boardReadDone) {
-          col1News = sanitizeInput(r[boardCols.news] || "", 600);
-          col2Schedule = boardCols.schedule >= 0 ? sanitizeInput(r[boardCols.schedule] || "", 600) : "";
-          col3Important = sanitizeInput(r[boardCols.important] || "", 600);
-          col4Status = sanitizeInput(r[boardCols.status] || "", 120);
-          boardReadDone = true;
-          continue;
-        }
-
-        if (currentMode === "teachers") {
-          const fio = sanitizeInput(r[2] || "", 120);
-          if (!fio || fio.toLowerCase().includes("фио")) continue;
-          teachersList.push({
-            photo: (r[0] || "").trim(),
-            badge: sanitizeInput(r[1] || "", 100),
-            fio,
-            role: sanitizeInput(r[3] || "", 160),
-            desc: sanitizeInput(r[4] || "", 450)
-          });
-          continue;
-        }
-
-        const bellNumA = detectBellLessonNumberFromCell(colA);
-        const bellNumB = bellNumA >= 0 ? -1 : detectBellLessonNumberFromCell(colB);
-        if (bellNumA >= 0 && bellNumA <= 8) {
-          const parsedBell = parseBellTimeRangeString(colB, bellNumA);
-          if (parsedBell) {
-            parsedBellTimes[bellNumA] = {
-              start: parsedBell.start,
-              end: parsedBell.end,
-              startMin: parsedBell.startMin,
-              endMin: parsedBell.endMin
-            };
-            if (parsedBell.isCustom) hasCustomBells = true;
-          }
-          continue;
-        }
-        if (currentMode === "bells" && bellNumB >= 0 && bellNumB <= 8) {
-          const parsedBell = parseBellTimeRangeString(colC, bellNumB);
-          if (parsedBell) {
-            parsedBellTimes[bellNumB] = {
-              start: parsedBell.start,
-              end: parsedBell.end,
-              startMin: parsedBell.startMin,
-              endMin: parsedBell.endMin
-            };
-            if (parsedBell.isCustom) hasCustomBells = true;
-          }
-          continue;
-        }
-
-        if (currentMode === "gallery" || detectPhotoRowFromCell(colA)) {
-          if (detectPhotoRowFromCell(colA)) {
-            galleryList.push({
-              url: colB,
-              title: sanitizeInput(colC, 140),
-              desc: sanitizeInput(colD, 400)
-            });
-            continue;
-          }
-        }
-
-        const gradeNum = detectGradeNumberFromCell(colA);
-        if (gradeNum >= 1 && gradeNum <= 9) {
-          for (let d = 1; d <= 5; d++) {
-            const cellLesson = sanitizeInput(r[d] || "", 1200);
-            if (cellLesson) {
-              scheduleByGradeAndDay[gradeNum][d] = cellLesson;
-            }
-          }
-          continue;
-        }
-
-        const dayIndex = detectWeekdayIndexFromCell(colA);
-        if (dayIndex >= 1 && dayIndex <= 5 && (currentMode === "menu_w1" || currentMode === "menu_w2")) {
-          const targetWeek = currentMode === "menu_w2" ? 2 : 1;
-          const entry = {
-            breakfast: sanitizeInput(colB, 600),
-            lunch: sanitizeInput(colC, 600),
-            note: sanitizeInput(colD, 600)
-          };
-          menuByWeekAndDay[targetWeek][dayIndex] = entry;
-          if (targetWeek === 1) menuByDay[dayIndex] = entry;
-        }
-      }
-
-      if (teachersList.length === 0) {
-        for (let rIdx = 1; rIdx < rows.length; rIdx++) {
-          const r = rows[rIdx] || [];
-          const colA = (r[0] || "").trim().toLowerCase();
-          const isScheduleMatrixRow = colA === "класс" || detectGradeNumberFromCell(colA) > 0;
-          const fio = sanitizeInput(r[7] || "", 120);
-          if (!fio || fio.toLowerCase().includes("фио")) continue;
-          teachersList.push({
-            photo: isScheduleMatrixRow ? "" : (r[5] || "").trim(),
-            badge: sanitizeInput(r[6] || "", 100),
-            fio,
-            role: sanitizeInput(r[8] || "", 160),
-            desc: sanitizeInput(r[9] || "", 450)
-          });
-        }
-      }
-
       const nowLabel = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+      const parsedData = parsePanelRowsToDataObject(rows, nowLabel);
 
-      const parsedData = {
-        col1News,
-        col2Schedule,
-        col3Important,
-        col4Status,
-        bellTimes: parsedBellTimes,
-        hasCustomBells,
-        scheduleByGradeAndDay,
-        menuByDay,
-        menuByWeekAndDay,
-        teachers: teachersList,
-        gallery: galleryList,
-        timeLabel: nowLabel
-      };
-
-      renderWidgetData(parsedData, false);
+      renderWidgetData(parsedData, "live");
       hasHydratedCache = true;
-
-      try {
-        localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify(parsedData));
-      } catch (_) {}
+      safeStorageSet(window.localStorage, SHEET_CACHE_KEY, JSON.stringify(parsedData));
     } catch (_) {
       [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
 
-      if (hasHydratedCache && latestParsedSheetData) {
+      // Ступень 2: резервный статический снимок из репозитория GitHub Pages (работает без доступа к Google)
+      const snapshot = await fetchSchoolSnapshotOnce(isManualRefresh);
+      if (snapshot && Array.isArray(snapshot.panelRows) && snapshot.panelRows.length >= 3) {
+        const snapshotLabel = sanitizeInput(snapshot.updatedLabel || "сохранено", 40);
+        const parsedSnapshot = parsePanelRowsToDataObject(snapshot.panelRows, snapshotLabel);
+        renderWidgetData(parsedSnapshot, "snapshot");
+        hasHydratedCache = true;
+        safeStorageSet(window.localStorage, SHEET_CACHE_KEY, JSON.stringify(parsedSnapshot));
+      } else if (hasHydratedCache && latestParsedSheetData) {
         if (statusEl) {
+          statusEl.classList.add("is-offline");
           statusEl.textContent = `Офлайн-копия (${latestParsedSheetData.timeLabel || "сохранено"})`;
         }
       } else {
         newsEl.textContent = "Информация обновляется";
         renderDiaryLessonCards(scheduleEl, "", currentSelectedWeekday, false, true);
         importantEl.textContent = "Желаем хорошего дня!";
-        if (statusEl) statusEl.textContent = "Автономный режим";
+        if (statusEl) {
+          statusEl.classList.add("is-offline");
+          statusEl.textContent = "Автономный режим";
+        }
       }
     } finally {
       if (refreshBtn) {
@@ -3142,6 +3445,8 @@ function initLiveSheetWidgetAndMenu() {
 
   loadSheetData(false);
 }
+
+/* ==================== НАВИГАЦИЯ, КОПИРОВАНИЕ И ЭЛЕКТРОННАЯ ПРИЁМНАЯ ==================== */
 
 function initCopyButtons() {
   const copyBtns = document.querySelectorAll(".btn-copy-mini");
@@ -3257,6 +3562,15 @@ function initDigitalNavigatorTabs() {
   });
 }
 
+function isValidRussianPhone(contact) {
+  if (!/^\+?[0-9\s\-()]+$/.test(contact)) return false;
+  const digits = contact.replace(/\D/g, "");
+  if (digits.length === 11 && (digits.charAt(0) === "7" || digits.charAt(0) === "8")) {
+    return true;
+  }
+  return digits.length === 10 && contact.charAt(0) !== "+";
+}
+
 function initFeedbackForm() {
   const consentStep = document.getElementById("consent-step");
   const formStep = document.getElementById("form-step");
@@ -3334,7 +3648,7 @@ function initFeedbackForm() {
       fioHint.className = "field-hint";
     }
     if (contactHint) {
-      contactHint.textContent = "Укажите удобный номер телефона или адрес электронной почты";
+      contactHint.textContent = "Укажите номер телефона (+7 или 8) либо адрес электронной почты";
       contactHint.className = "field-hint";
     }
     if (commentHint) {
@@ -3408,9 +3722,7 @@ function initFeedbackForm() {
       stepsProgressBar.classList.add("is-complete");
     }
 
-    try {
-      sessionStorage.setItem(FEEDBACK_CONSENT_SESSION_KEY, "confirmed");
-    } catch (_) {}
+    safeStorageSet(window.sessionStorage, FEEDBACK_CONSENT_SESSION_KEY, "confirmed");
 
     if (!isRestoredFromSession) {
       showDynamicIslandToast("Согласие подтверждено — форма открыта");
@@ -3429,18 +3741,16 @@ function initFeedbackForm() {
   };
 
   // Сохраняем открытую форму в рамках текущей вкладки при возврате с privacy.html
-  try {
-    if (sessionStorage.getItem(FEEDBACK_CONSENT_SESSION_KEY) === "confirmed") {
-      unlockFormStep(true);
-    }
-  } catch (_) {}
+  if (safeStorageGet(window.sessionStorage, FEEDBACK_CONSENT_SESSION_KEY) === "confirmed") {
+    unlockFormStep(true);
+  }
 
   acceptBtn.addEventListener("click", () => unlockFormStep(false));
 
   const validateFio = () => {
     const cleanVal = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
     const onlyLettersAndSpaces = /^[А-Яа-яЁёA-Za-z\-\s]+$/.test(cleanVal);
-    const words = cleanVal.split(" ").filter((w) => w.length >= 2);
+    const words = cleanVal.split(" ").filter((w) => w.length >= 2 && /[А-Яа-яЁёA-Za-z]/.test(w));
     const isValid = onlyLettersAndSpaces && words.length >= 2;
     const isInvalidShown = !isValid && cleanVal.length > 0;
 
@@ -3464,10 +3774,9 @@ function initFeedbackForm() {
   const validateContact = () => {
     const cleanVal = sanitizeInput(contactInput.value, 100);
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-    const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[0-9]{3,5}\)?[\s\-]?[0-9]{1,3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
 
     const isEmail = emailRegex.test(cleanVal);
-    const isPhone = phoneRegex.test(cleanVal);
+    const isPhone = isValidRussianPhone(cleanVal);
     const isValid = isEmail || isPhone;
     const isInvalidShown = !isValid && cleanVal.length > 0;
 
@@ -3482,10 +3791,10 @@ function initFeedbackForm() {
       contactHint.textContent = "Распознан контактный номер телефона";
       contactHint.className = "field-hint valid-text";
     } else if (isInvalidShown) {
-      contactHint.textContent = "Введите корректный телефон (+7 900 123-45-67) или Email";
+      contactHint.textContent = "Введите корректный телефон (+7 900 123-45-67 или 8 900 123-45-67) либо Email";
       contactHint.className = "field-hint error-text";
     } else {
-      contactHint.textContent = "Укажите удобный номер телефона или адрес электронной почты";
+      contactHint.textContent = "Укажите номер телефона (+7 или 8) либо адрес электронной почты";
       contactHint.className = "field-hint";
     }
     return isValid;
@@ -3524,7 +3833,7 @@ function initFeedbackForm() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!isConsentConfirmed || formFieldset.disabled) return;
+    if (!isConsentConfirmed || formFieldset.disabled || submitBtn.disabled) return;
 
     if (hpInput && hpInput.value.trim().length > 0) {
       return;
@@ -3539,17 +3848,15 @@ function initFeedbackForm() {
       return;
     }
 
-    try {
-      const lastSentTs = parseInt(localStorage.getItem(FEEDBACK_COOLDOWN_KEY) || "0", 10);
-      const secondsSinceLast = Math.floor((Date.now() - lastSentTs) / 1000);
-      if (lastSentTs && secondsSinceLast < 60) {
-        const waitSec = 60 - secondsSinceLast;
-        formResponse.textContent = `Повторная отправка доступна через ${waitSec} сек.`;
-        formResponse.className = "form-response error";
-        formResponse.classList.remove("hidden");
-        return;
-      }
-    } catch (_) {}
+    const lastSentTs = parseInt(safeStorageGet(window.localStorage, FEEDBACK_COOLDOWN_KEY) || "0", 10);
+    const secondsSinceLast = Math.floor((Date.now() - lastSentTs) / 1000);
+    if (lastSentTs && secondsSinceLast < 60) {
+      const waitSec = 60 - secondsSinceLast;
+      formResponse.textContent = `Повторная отправка доступна через ${waitSec} сек.`;
+      formResponse.className = "form-response error";
+      formResponse.classList.remove("hidden");
+      return;
+    }
 
     const isFioOk = validateFio();
     const isContactOk = validateContact();
@@ -3574,11 +3881,12 @@ function initFeedbackForm() {
     submitBtnText.textContent = "Отправка сообщения...";
     submitLoader.classList.remove("hidden");
 
+    // Передаём чистые значения: серверный Code.gs валидирует (+7 и др.) и сам экранирует формулы (CWE-1236)
     const formDataParams = new URLSearchParams();
-    formDataParams.append("fio", neutralizeSpreadsheetFormula(sanitizedFio));
-    formDataParams.append("contact", neutralizeSpreadsheetFormula(sanitizedContact));
-    formDataParams.append("comment", neutralizeSpreadsheetFormula(sanitizedComment));
-    formDataParams.append("ticket", neutralizeSpreadsheetFormula(fallbackTicketNum));
+    formDataParams.append("fio", sanitizedFio);
+    formDataParams.append("contact", sanitizedContact);
+    formDataParams.append("comment", sanitizedComment);
+    formDataParams.append("ticket", fallbackTicketNum);
     formDataParams.append("consent_152fz", "confirmed");
     formDataParams.append("website_hp", hpInput ? hpInput.value : "");
 
@@ -3601,16 +3909,16 @@ function initFeedbackForm() {
       if (contentType.includes("application/json")) {
         const payload = await response.json();
         if (payload && payload.ok === false) {
-          throw new Error(payload.error || "Сервер отклонил обращение");
+          const serverErr = new Error(sanitizeInput(String(payload.error || "Сервер отклонил обращение"), 240));
+          serverErr.isServerMessage = true;
+          throw serverErr;
         }
         if (payload && payload.ticketId) {
           ticketNum = sanitizeInput(String(payload.ticketId), 60) || fallbackTicketNum;
         }
       }
 
-      try {
-        localStorage.setItem(FEEDBACK_COOLDOWN_KEY, String(Date.now()));
-      } catch (_) {}
+      safeStorageSet(window.localStorage, FEEDBACK_COOLDOWN_KEY, String(Date.now()));
 
       if (receiptBox && receiptFio && receiptContact && receiptComment && receiptMeta) {
         receiptMeta.textContent = `Талон № ${ticketNum} • ${new Date().toLocaleString("ru-RU")}`;
@@ -3637,7 +3945,7 @@ function initFeedbackForm() {
       resetFormValidationUI();
     } catch (err) {
       formResponse.textContent =
-        err && err.message && err.message.includes("повтор")
+        err && err.isServerMessage && err.message
           ? err.message
           : "Не удалось отправить сообщение. Проверьте подключение к интернету и попробуйте снова.";
       formResponse.className = "form-response error";
@@ -3675,6 +3983,8 @@ function initFeedbackForm() {
     });
   }
 }
+
+/* ==================== 60 FPS MOTION, SCROLL-REVEAL И SERVICE WORKER ==================== */
 
 function bindTiltToSelector(selector) {
   if (!isDesktopHoverPointer()) return;
