@@ -11,6 +11,7 @@ const GRADE_STORAGE_KEY = "yambirno_selected_grade";
 const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v14";
 const SHEET3_CACHE_KEY = "yambirno_publications_cache_v2";
 const FEEDBACK_COOLDOWN_KEY = "yambirno_feedback_last_sent";
+const FEEDBACK_CONSENT_SESSION_KEY = "yambirno_feedback_consent_session_v1";
 
 const ALLOWED_DOC_HOSTS = [
   "drive.google.com",
@@ -397,13 +398,19 @@ function handleModalFocusTrap(e, modalEl) {
 
 function lockPageScrollForModal() {
   lastModalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  document.documentElement.classList.add("modal-open");
   document.body.classList.add("modal-open");
 }
 
 function unlockPageScrollAfterModal() {
+  document.documentElement.classList.remove("modal-open");
   document.body.classList.remove("modal-open");
   if (lastModalTriggerEl && document.contains(lastModalTriggerEl)) {
-    lastModalTriggerEl.focus();
+    try {
+      lastModalTriggerEl.focus({ preventScroll: true });
+    } catch (_) {
+      lastModalTriggerEl.focus();
+    }
   }
   lastModalTriggerEl = null;
 }
@@ -553,7 +560,7 @@ document.addEventListener("DOMContentLoaded", () => {
   registerOfflineServiceWorker();
 });
 
-// Если растровый Hero ещё не загружен в assets/img/, аккуратно скрываем слой, оставляя градиент
+// Если растровый Hero недоступен, аккуратно скрываем слой, оставляя градиент
 function initHeroBackdropFallback() {
   const backdrop = document.getElementById("hero-backdrop");
   const img = document.getElementById("hero-backdrop-img");
@@ -3253,9 +3260,9 @@ function initFeedbackForm() {
     else if (topicParam === "question" && topicChips[0]) topicChips[0].click();
   } catch (_) {}
 
-  acceptBtn.addEventListener("click", () => {
+  const unlockFormStep = (isRestoredFromSession = false) => {
     isConsentConfirmed = true;
-    formUnlockedAtMs = Date.now();
+    formUnlockedAtMs = isRestoredFromSession ? Date.now() - 2500 : Date.now();
     formFieldset.disabled = false;
     submitBtn.disabled = false;
 
@@ -3274,9 +3281,34 @@ function initFeedbackForm() {
       stepsProgressBar.classList.add("is-complete");
     }
 
-    showDynamicIslandToast("Согласие подтверждено — форма открыта");
-    fioInput.focus();
-  });
+    try {
+      sessionStorage.setItem(FEEDBACK_CONSENT_SESSION_KEY, "confirmed");
+    } catch (_) {}
+
+    if (!isRestoredFromSession) {
+      showDynamicIslandToast("Согласие подтверждено — форма открыта");
+      requestAnimationFrame(() => {
+        if (typeof formStep.scrollIntoView === "function") {
+          formStep.scrollIntoView({
+            behavior: isReducedMotionPreferred() ? "auto" : "smooth",
+            block: "start"
+          });
+        }
+        try {
+          fioInput.focus({ preventScroll: true });
+        } catch (_) {}
+      });
+    }
+  };
+
+  // Сохраняем открытую форму в рамках текущей вкладки при возврате с privacy.html
+  try {
+    if (sessionStorage.getItem(FEEDBACK_CONSENT_SESSION_KEY) === "confirmed") {
+      unlockFormStep(true);
+    }
+  } catch (_) {}
+
+  acceptBtn.addEventListener("click", () => unlockFormStep(false));
 
   const validateFio = () => {
     const cleanVal = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
@@ -3460,7 +3492,13 @@ function initFeedbackForm() {
         receiptComment.textContent = sanitizedComment;
         form.classList.add("hidden");
         receiptBox.classList.remove("hidden");
-        if (receiptHeading) receiptHeading.focus();
+        if (receiptHeading) {
+          try {
+            receiptHeading.focus({ preventScroll: true });
+          } catch (_) {
+            receiptHeading.focus();
+          }
+        }
       } else {
         formResponse.textContent = "Спасибо! Ваше сообщение успешно записано в реестр школы.";
         formResponse.className = "form-response success";
@@ -3502,7 +3540,13 @@ function initFeedbackForm() {
     newFeedbackBtn.addEventListener("click", () => {
       receiptBox.classList.add("hidden");
       form.classList.remove("hidden");
-      fioInput.focus();
+      formStep.scrollIntoView({
+        behavior: isReducedMotionPreferred() ? "auto" : "smooth",
+        block: "start"
+      });
+      try {
+        fioInput.focus({ preventScroll: true });
+      } catch (_) {}
     });
   }
 }
