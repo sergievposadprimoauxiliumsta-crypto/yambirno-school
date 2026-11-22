@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
-  "updatedAt": "2026-11-21T19:18:36+03:00",
-  "updatedLabel": "21.11.2026 19:18",
+  "schemaVersion": 2,
+  "updatedAt": "2026-11-22T12:16:30+03:00",
+  "updatedLabel": "22.11.2026 12:16",
   "panelRows": [
     [
       "ПАНЕЛЬ УПРАВЛЕНИЯ САЙТОМ — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»"
@@ -412,5 +412,13 @@
       "18.11.2026 21:35",
       "https://www.takzdorovo.ru/"
     ]
-  ]
+  ],
+  "mediaMap": {
+    "1pvZaMZWYiPJ40ThwJFzkcoU8D4YK_t7V": "data/media/1pvZaMZWYiPJ40ThwJFzkcoU8D4YK_t7V.jpg",
+    "11ioS_HrW3_eE31cfPdxnqNxaB5SI_jho": "data/media/11ioS_HrW3_eE31cfPdxnqNxaB5SI_jho.jpg",
+    "1Q09i0gnxy6xqMDIJeNSoaXsohKF5N3wm": "data/media/1Q09i0gnxy6xqMDIJeNSoaXsohKF5N3wm.jpg",
+    "1FNZXmE10ulmujrISGG606Ozr0avCmUZy": "data/media/1FNZXmE10ulmujrISGG606Ozr0avCmUZy.jpg",
+    "1G3lFEDIJ2LQ1ThQNq6Vcr5c2GsKJalmg": "data/media/1G3lFEDIJ2LQ1ThQNq6Vcr5c2GsKJalmg.png",
+    "1wTJb41QPw57icnMOoA-qnILlxZjyT8x3": "data/media/1wTJb41QPw57icnMOoA-qnILlxZjyT8x3.png"
+  }
 }
