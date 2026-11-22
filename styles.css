@@ -309,12 +309,13 @@ section[id],
   }
 }
 
-/* ===== АВТОРСКИЕ МНОГОСЛОЙНЫЕ SVG-ИКОНКИ И МИКРОАНИМАЦИИ ===== */
+/* ===== АВТОРСКИЕ МНОГОСЛОЙНЫЕ SVG-ИКОНКИ, КОНТРАСТ И МИКРОАНИМАЦИИ ===== */
 .ui-ico {
   display: inline-block;
   vertical-align: -0.18em;
   flex-shrink: 0;
   overflow: visible;
+  filter: drop-shadow(0 1px 1.5px rgba(15, 23, 42, 0.14));
 }
 
 .ui-ico--lg {
@@ -327,6 +328,51 @@ section[id],
   height: 40px;
 }
 
+/* Кристальный контраст иконок на синих, тёмных и активных кнопках/поверхностях */
+.btn-primary .ui-ico,
+.nav-cta-btn .ui-ico,
+.digital-tab-btn.active .ui-ico,
+.pub-filter-chip.active .ui-ico,
+.cta-reason-card .ui-ico,
+.pub-multi-badge .ui-ico,
+.pub-modal-photo-zoom .ui-ico,
+.gallery-zoom-badge .ui-ico {
+  color: #ffffff;
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.3));
+}
+
+.btn-secondary .ui-ico,
+.btn-share-chat .ui-ico,
+.btn-copy-mini .ui-ico,
+.btn-pub-action .ui-ico,
+.widget-today-pill .ui-ico,
+.badge .ui-ico,
+.contact-label .ui-ico,
+.mobile-schedule-jump .ui-ico {
+  color: var(--primary);
+}
+
+.btn-cta .ui-ico,
+.btn-a11y .ui-ico {
+  color: #0f172a;
+  filter: none;
+}
+
+.nav-link-live .ui-ico,
+.bell-shift-banner .ui-ico,
+.prep-notice .ui-ico {
+  color: #b45309;
+}
+
+.live-menu-title .ui-ico,
+.consent-confirmed-note .ui-ico {
+  color: var(--success);
+}
+
+.weather-loc-label .ui-ico {
+  color: #0284c7;
+}
+
 .ui-ico .ico-part-moving {
   transform-box: fill-box;
   transform-origin: center;
@@ -334,6 +380,17 @@ section[id],
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .digital-tab-btn:hover .ui-ico,
+  .btn-pub-action:hover .ui-ico,
+  .btn-share-chat:hover .ui-ico,
+  .btn-copy-mini:hover .ui-ico {
+    color: #ffffff;
+  }
+
+  .btn-pub-doc:hover .ui-ico {
+    color: var(--primary);
+  }
+
   a:hover .ui-ico--bell .ico-part-moving,
   button:hover .ui-ico--bell .ico-part-moving,
   .live-badge-capsule:hover .ui-ico--bell .ico-part-moving {
@@ -342,7 +399,7 @@ section[id],
 
   a:hover .ui-ico--send .ico-part-moving,
   button:hover .ui-ico--send .ico-part-moving {
-    transform: translate3d(2px, -2px, 0) scale(1.06);
+    transform: translate3d(2px, -2px, 0) scale(1.08);
   }
 
   a:hover .ui-ico--book .ico-part-moving,
@@ -353,11 +410,11 @@ section[id],
   a:hover .ui-ico--shield .ico-part-moving,
   button:hover .ui-ico--shield .ico-part-moving,
   .info-box:hover .ui-ico--shield .ico-part-moving {
-    transform: scale(1.12);
+    transform: scale(1.14);
   }
 
   .diary-lesson-row:hover .ui-ico .ico-part-moving {
-    transform: rotate(10deg) scale(1.08);
+    transform: rotate(10deg) scale(1.1);
   }
 }
 
@@ -489,6 +546,7 @@ section[id],
 .utility-icon {
   display: inline-flex;
   align-items: center;
+  color: #93c5fd;
 }
 
 .utility-date-text {
@@ -1062,6 +1120,12 @@ section[id],
   flex-wrap: wrap;
 }
 
+.chalk-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #fde68a;
+}
+
 .chalkboard-grade-badge {
   font-size: 0.78rem;
   font-weight: 800;
@@ -1470,13 +1534,28 @@ section[id],
 .widget-block-head {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 4px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .widget-block-icon {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%);
+  border: 1px solid rgba(30, 64, 175, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 3px rgba(15, 23, 42, 0.06);
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.widget-block-highlight .widget-block-icon {
+  background: linear-gradient(145deg, #ffffff 0%, #fef2f2 100%);
+  border-color: rgba(217, 119, 6, 0.28);
+  color: var(--danger);
 }
 
 .widget-block h3 {
@@ -1558,6 +1637,10 @@ section[id],
   font-size: 0.92rem;
   font-weight: 800;
   color: var(--text-main);
+}
+
+.diary-empty-title .ui-ico {
+  color: var(--primary);
 }
 
 .diary-empty-text {
@@ -1723,8 +1806,20 @@ section[id],
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--bg-alt);
+  color: var(--primary);
   flex-shrink: 0;
 }
+
+.diary-lesson-row.subj-zero .diary-lesson-icon { background: #fef3c7; color: #b45309; }
+.diary-lesson-row.subj-math .diary-lesson-icon { background: #eff6ff; color: #1d4ed8; }
+.diary-lesson-row.subj-lang .diary-lesson-icon { background: #f0fdf4; color: #15803d; }
+.diary-lesson-row.subj-sci  .diary-lesson-icon { background: #f0fdfa; color: #0f766e; }
+.diary-lesson-row.subj-hist .diary-lesson-icon { background: #fef2f2; color: #b91c1c; }
+.diary-lesson-row.subj-art  .diary-lesson-icon { background: #fffbeb; color: #b45309; }
 
 .diary-lesson-name {
   font-size: 0.92rem;
@@ -1826,7 +1921,7 @@ section[id],
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  align-items: center;
+  align-items: start;
 }
 
 .weather-loc-label {
@@ -1853,6 +1948,7 @@ section[id],
   display: inline-flex;
   align-items: center;
   font-size: 1.25rem;
+  color: #0284c7;
 }
 
 .weather-temp-val {
@@ -1900,6 +1996,12 @@ section[id],
   border-left-color: #2563eb;
 }
 
+.weather-advice-banner.advice-weekend {
+  background: #f0fdf4;
+  color: #14532d;
+  border-left-color: #16a34a;
+}
+
 /* ===== ПЕРЕКЛЮЧАТЕЛИ ДНЕЙ И КЛАССОВ (СКОЛЬЗЯЩАЯ GPU-КАПСУЛА) ===== */
 .widget-schedule-head,
 .live-menu-head {
@@ -1921,7 +2023,7 @@ section[id],
 .schedule-title-line {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .day-accent-label {
@@ -2035,7 +2137,6 @@ section[id],
   margin-bottom: 6px;
   line-height: 1.35;
 }
-
 /* ===== ЛЕНТА ПУБЛИКАЦИЙ, ФИЛЬТРЫ РУБРИК И ПЛАВНОЕ РАСКРЫТИЕ ===== */
 .pub-filters-bar {
   display: flex;
@@ -2059,6 +2160,10 @@ section[id],
   font-weight: 700;
   cursor: pointer;
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease, border-color var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
+}
+
+.pub-filter-chip .ui-ico {
+  color: var(--primary);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -2119,7 +2224,50 @@ section[id],
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 450ms var(--ease-out-expo);
+  transition: transform 450ms var(--ease-out-expo), opacity 240ms ease;
+}
+
+/* Прелоадер загрузки изображений (убирает пустой чёрный/серый прямоугольник на мобильном) */
+.pub-card-media.is-loading::after,
+.pub-modal-photo-item.is-loading::before,
+.lightbox-img-container.is-loading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.24) 50%,
+    transparent 100%
+  );
+  transform: translate3d(-100%, 0, 0);
+  animation: skeletonSweep 1.3s var(--ease-in-out) infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.pub-modal-photo-item.is-loading::after,
+.lightbox-img-container.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  margin-left: -17px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #fbbf24;
+  animation: spin 0.78s linear infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.pub-card-media.is-loading .pub-card-img,
+.pub-modal-photo-item.is-loading img,
+.lightbox-img-container.is-loading .lightbox-main-img {
+  opacity: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -2132,6 +2280,7 @@ section[id],
   position: absolute;
   top: 10px;
   right: 10px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -2392,6 +2541,7 @@ section[id],
 
 .pub-modal-photo-item {
   position: relative;
+  min-height: 180px;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--border);
@@ -2406,13 +2556,14 @@ section[id],
   width: 100%;
   max-height: 440px;
   object-fit: contain;
-  transition: transform 360ms var(--ease-out-expo);
+  transition: transform 360ms var(--ease-out-expo), opacity 240ms ease;
 }
 
 .pub-modal-photo-zoom {
   position: absolute;
   bottom: 8px;
   right: 8px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -2501,6 +2652,10 @@ section[id],
   transition: background-color var(--dur-micro) ease, color var(--dur-micro) ease, border-color var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
   text-align: left;
   min-width: 0;
+}
+
+.digital-tab-btn .ui-ico {
+  color: var(--primary);
 }
 
 .digital-tab-btn.active {
@@ -2649,10 +2804,13 @@ section[id],
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   border-radius: 16px;
-  background: var(--primary-soft);
+  background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%);
+  border: 1px solid #dbeafe;
+  box-shadow: inset 0 1px 0 #ffffff, 0 4px 14px rgba(30, 64, 175, 0.12);
+  color: var(--primary);
   margin: 0 auto 12px;
 }
 
@@ -2877,10 +3035,13 @@ section[id],
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--primary-soft);
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%);
+  border: 1px solid #dbeafe;
+  box-shadow: inset 0 1px 0 #ffffff, 0 3px 10px rgba(30, 64, 175, 0.1);
+  color: var(--primary);
   flex-shrink: 0;
 }
 
@@ -3012,7 +3173,7 @@ section[id],
   color: var(--text-main);
 }
 
-/* ===== LIGHTBOX (ПОВЕРХ МОДАЛОК + SAFE AREA + СВАЙП) ===== */
+/* ===== LIGHTBOX (ПОВЕРХ МОДАЛОК + SAFE AREA + ПРЕЛОАДЕР + СВАЙП) ===== */
 .lightbox-backdrop {
   position: fixed;
   inset: 0;
@@ -3106,8 +3267,10 @@ section[id],
 }
 
 .lightbox-img-container {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 220px;
   width: 100%;
   max-width: 100%;
   max-height: 64vh;
@@ -3130,7 +3293,7 @@ section[id],
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
-  transition: transform 240ms var(--ease-out-expo);
+  transition: transform 240ms var(--ease-out-expo), opacity 220ms ease;
 }
 
 .lightbox-main-img.is-dragging {
@@ -3368,10 +3531,13 @@ section[id],
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.14);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #ffffff;
   margin-bottom: 4px;
 }
 
@@ -3650,6 +3816,10 @@ section[id],
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color var(--dur-micro) ease, border-color var(--dur-micro) ease, color var(--dur-micro) ease;
+}
+
+.topic-chip .ui-ico {
+  color: var(--primary);
 }
 
 .topic-chip.active {
@@ -4066,6 +4236,7 @@ body.visually-impaired *::after {
 body.visually-impaired svg,
 body.visually-impaired svg * {
   background-color: transparent !important;
+  filter: none !important;
 }
 
 body.visually-impaired #yambirno-icon-sprite linearGradient stop,
@@ -4083,6 +4254,14 @@ body.visually-impaired #yambirno-icon-sprite symbol [fill]:not([fill="none"]) {
 
 body.visually-impaired #yambirno-icon-sprite symbol .ico-base {
   opacity: 0.16 !important;
+}
+
+body.visually-impaired .pub-card-media.is-loading::after,
+body.visually-impaired .pub-modal-photo-item.is-loading::before,
+body.visually-impaired .pub-modal-photo-item.is-loading::after,
+body.visually-impaired .lightbox-img-container.is-loading::before,
+body.visually-impaired .lightbox-img-container.is-loading::after {
+  display: none !important;
 }
 
 /* Защита сеток от сжатия при А+ / А++ и увеличенном кернинге */
@@ -4633,7 +4812,12 @@ body.visually-impaired .reveal.reveal-pending {
   .tilt-card,
   .pill-glide-indicator,
   .skeleton-row::after,
-  .skeleton-line::after {
+  .skeleton-line::after,
+  .pub-card-media.is-loading::after,
+  .pub-modal-photo-item.is-loading::before,
+  .pub-modal-photo-item.is-loading::after,
+  .lightbox-img-container.is-loading::before,
+  .lightbox-img-container.is-loading::after {
     animation: none !important;
     transition: none !important;
     transform: none !important;
