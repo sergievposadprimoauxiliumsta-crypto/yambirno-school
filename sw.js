@@ -1,6 +1,4 @@
-// Сервис-воркер Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»
-// Версия кэша поднята до v10: поддержка data/school-snapshot.json, 404.html и локальной графики
-const CACHE_NAME = "yambirno-school-v10";
+const CACHE_NAME = "yambirno-school-v11";
 const NETWORK_TIMEOUT_MS = 4000;
 const SNAPSHOT_TIMEOUT_MS = 4500;
 
@@ -28,7 +26,12 @@ const STATIC_ASSET_REGEX = /\.(css|js|json|png|jpe?g|webp|avif|svg|ico|woff2?)$/
 const SNAPSHOT_PATH_SUFFIX = "/data/school-snapshot.json";
 
 function isCacheableResponse(response) {
-  return Boolean(response && response.status === 200 && response.type === "basic");
+  return Boolean(
+    response &&
+    response.status === 200 &&
+    response.type === "basic" &&
+    !response.redirected
+  );
 }
 
 function fetchWithTimeout(request, timeoutMs) {
@@ -44,7 +47,6 @@ function fetchWithTimeout(request, timeoutMs) {
   });
 }
 
-// Синхронно клонируем ответ до возврата клиенту и возвращаем промис для event.waitUntil
 function putInCacheSafe(request, response) {
   if (!isCacheableResponse(response)) return Promise.resolve();
   const cloned = response.clone();
@@ -54,7 +56,6 @@ function putInCacheSafe(request, response) {
     .catch(() => {});
 }
 
-// Загружаем свежую копию в обход старого HTTP-кэша браузера при обновлении версии SW
 async function precacheFreshAsset(cache, assetUrl) {
   const freshRequest = new Request(assetUrl, { cache: "reload" });
   const response = await fetch(freshRequest);
@@ -84,35 +85,39 @@ function buildOfflineHtmlResponse() {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      await Promise.all(
-        ASSETS_TO_CACHE.map(async (assetUrl) => {
-          const ok = await precacheFreshAsset(cache, assetUrl);
-          if (!ok) {
-            await cache.add(assetUrl);
-          }
-        })
-      );
+    caches
+      .open(CACHE_NAME)
+      .then(async (cache) => {
+        await Promise.all(
+          ASSETS_TO_CACHE.map(async (assetUrl) => {
+            const ok = await precacheFreshAsset(cache, assetUrl);
+            if (!ok) {
+              await cache.add(assetUrl);
+            }
+          })
+        );
 
-      await Promise.allSettled(
-        OPTIONAL_ASSETS.map((assetUrl) => precacheFreshAsset(cache, assetUrl))
-      );
-    })
+        await Promise.allSettled(
+          OPTIONAL_ASSETS.map((assetUrl) => precacheFreshAsset(cache, assetUrl))
+        );
+      })
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key))
+        )
       )
-    )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener("message", (event) => {
@@ -131,35 +136,33 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Строгая проверка origin: внешние запросы (Google, Drive, Open-Meteo) идут напрямую
   if (requestUrl.origin !== self.location.origin) return;
-
-  // Не перехватываем сам файл Service Worker
   if (requestUrl.pathname.endsWith("/sw.js")) return;
 
-  // 1. Резервный JSON-снапшот школы: Network-First с таймаутом и офлайн-кэшем
   if (requestUrl.pathname.endsWith(SNAPSHOT_PATH_SUFFIX)) {
-    event.respondWith(
-      fetchWithTimeout(event.request, SNAPSHOT_TIMEOUT_MS)
-        .then((networkResponse) => {
-          if (isCacheableResponse(networkResponse)) {
-            event.waitUntil(putInCacheSafe(event.request, networkResponse));
-          }
-          return networkResponse;
-        })
-        .catch(async () => {
-          const cachedSnapshot =
-            (await caches.match(event.request)) ||
-            (await caches.match("./data/school-snapshot.json"));
-          if (cachedSnapshot) return cachedSnapshot;
+    let cacheWritePromise = Promise.resolve();
+    const responsePromise = fetchWithTimeout(event.request, SNAPSHOT_TIMEOUT_MS)
+      .then((networkResponse) => {
+        if (isCacheableResponse(networkResponse)) {
+          cacheWritePromise = putInCacheSafe(event.request, networkResponse);
+        }
+        return networkResponse;
+      })
+      .catch(async () => {
+        const cachedSnapshot =
+          (await caches.match(event.request, { ignoreSearch: true })) ||
+          (await caches.match("./data/school-snapshot.json"));
+        if (cachedSnapshot) return cachedSnapshot;
 
-          return new Response(JSON.stringify({ ok: false, offline: true }), {
-            status: 503,
-            statusText: "Service Unavailable",
-            headers: { "Content-Type": "application/json; charset=utf-8" }
-          });
-        })
-    );
+        return new Response(JSON.stringify({ ok: false, offline: true }), {
+          status: 503,
+          statusText: "Service Unavailable",
+          headers: { "Content-Type": "application/json; charset=utf-8" }
+        });
+      });
+
+    event.respondWith(responsePromise);
+    event.waitUntil(responsePromise.then(() => cacheWritePromise, () => {}));
     return;
   }
 
@@ -167,24 +170,22 @@ self.addEventListener("fetch", (event) => {
     event.request.mode === "navigate" ||
     (event.request.headers.get("accept") || "").includes("text/html");
 
-  // 2. Статические ресурсы (CSS, JS, manifest, локальные иконки/фото): Stale-While-Revalidate
   if (!isNavigation && STATIC_ASSET_REGEX.test(requestUrl.pathname)) {
+    let cacheWritePromise = Promise.resolve();
+    const networkUpdate = fetch(event.request)
+      .then((networkResponse) => {
+        if (isCacheableResponse(networkResponse)) {
+          cacheWritePromise = putInCacheSafe(event.request, networkResponse);
+        }
+        return networkResponse;
+      })
+      .catch(() => null);
+
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
-        const networkUpdate = fetch(event.request)
-          .then((networkResponse) => {
-            if (isCacheableResponse(networkResponse)) {
-              event.waitUntil(putInCacheSafe(event.request, networkResponse));
-            }
-            return networkResponse;
-          })
-          .catch(() => null);
-
         if (cachedResponse) {
-          event.waitUntil(networkUpdate);
           return cachedResponse;
         }
-
         return networkUpdate.then(
           (networkResponse) =>
             networkResponse ||
@@ -192,39 +193,41 @@ self.addEventListener("fetch", (event) => {
         );
       })
     );
+    event.waitUntil(networkUpdate.then(() => cacheWritePromise));
     return;
   }
 
-  // 3. HTML-страницы: Network-First с таймаутом и многоступенчатым офлайн-фолбэком
-  event.respondWith(
-    fetchWithTimeout(event.request, NETWORK_TIMEOUT_MS)
-      .then((networkResponse) => {
-        if (isCacheableResponse(networkResponse)) {
-          event.waitUntil(putInCacheSafe(event.request, networkResponse));
+  let cacheWritePromise = Promise.resolve();
+  const responsePromise = fetchWithTimeout(event.request, NETWORK_TIMEOUT_MS)
+    .then((networkResponse) => {
+      if (isCacheableResponse(networkResponse)) {
+        cacheWritePromise = putInCacheSafe(event.request, networkResponse);
+      }
+      return networkResponse;
+    })
+    .catch(async () => {
+      const cachedExact = await caches.match(event.request);
+      if (cachedExact) return cachedExact;
+
+      const cachedIgnoreSearch = await caches.match(event.request, { ignoreSearch: true });
+      if (cachedIgnoreSearch) return cachedIgnoreSearch;
+
+      if (isNavigation) {
+        const fallbackIndex = await caches.match("./index.html");
+        if (fallbackIndex) return fallbackIndex;
+        return buildOfflineHtmlResponse();
+      }
+
+      return new Response(
+        "Нет подключения к интернету. Пожалуйста, проверьте сеть и обновите страницу.",
+        {
+          status: 503,
+          statusText: "Service Unavailable",
+          headers: { "Content-Type": "text/plain; charset=utf-8" }
         }
-        return networkResponse;
-      })
-      .catch(async () => {
-        const cachedExact = await caches.match(event.request);
-        if (cachedExact) return cachedExact;
+      );
+    });
 
-        const cachedIgnoreSearch = await caches.match(event.request, { ignoreSearch: true });
-        if (cachedIgnoreSearch) return cachedIgnoreSearch;
-
-        if (isNavigation) {
-          const fallbackIndex = await caches.match("./index.html");
-          if (fallbackIndex) return fallbackIndex;
-          return buildOfflineHtmlResponse();
-        }
-
-        return new Response(
-          "Нет подключения к интернету. Пожалуйста, проверьте сеть и обновите страницу.",
-          {
-            status: 503,
-            statusText: "Service Unavailable",
-            headers: { "Content-Type": "text/plain; charset=utf-8" }
-          }
-        );
-      })
-  );
+  event.respondWith(responsePromise);
+  event.waitUntil(responsePromise.then(() => cacheWritePromise, () => {}));
 });
