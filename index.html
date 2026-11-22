@@ -98,8 +98,7 @@
 </head>
 <body class="paper-texture">
 
-  <!-- Авторский многослойный SVG-спрайт Ямбирнского филиала (3-ступенчатые градиенты, 45° свет и адаптивный контраст) -->
-  <svg id="yambirno-icon-sprite" class="hp-field" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
+  <svg id="yambirno-icon-sprite" class="svg-sprite-defs" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
     <defs>
       <linearGradient id="yamb-g-sapphire" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#60a5fa"/>
@@ -143,7 +142,6 @@
       </radialGradient>
     </defs>
 
-    <!-- Календарь / Дата -->
     <symbol id="ico-calendar" viewBox="0 0 24 24">
       <rect class="ico-base" x="3" y="5" width="18" height="16" rx="3.2" fill="currentColor" opacity="0.16"/>
       <path class="ico-base" d="M3 8.2A3.2 3.2 0 0 1 6.2 5h11.6A3.2 3.2 0 0 1 21 8.2V10H3V8.2Z" fill="url(#yamb-g-amber)" opacity="0.32"/>
@@ -154,7 +152,6 @@
       <circle cx="15.2" cy="15.1" r="1.2" fill="currentColor" opacity="0.55"/>
     </symbol>
 
-    <!-- Оперативное табло / Новости -->
     <symbol id="ico-board" viewBox="0 0 24 24">
       <rect class="ico-base" x="2.5" y="4" width="19" height="14" rx="3.5" fill="currentColor" opacity="0.16"/>
       <rect class="ico-accent" x="2.5" y="4" width="19" height="14" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -164,7 +161,6 @@
       <path d="M8.5 21h7M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Резервный снимок / Офлайн-копия -->
     <symbol id="ico-snapshot" viewBox="0 0 24 24">
       <path class="ico-base" d="M6.5 17.8h11a3.5 3.5 0 0 0 .5-6.95A5.5 5.5 0 0 0 7.4 9.3 4 4 0 0 0 6.5 17.8Z" fill="url(#yamb-g-sky)" opacity="0.28"/>
       <path class="ico-accent" d="M6.5 17.8h11a3.5 3.5 0 0 0 .5-6.95A5.5 5.5 0 0 0 7.4 9.3 4 4 0 0 0 6.5 17.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -172,7 +168,6 @@
       <path class="ico-part-moving" d="m9.4 13.4 1.9 1.9 3.6-3.8" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
 
-    <!-- Учебный день / Школьный звонок -->
     <symbol id="ico-school-day" viewBox="0 0 24 24">
       <path class="ico-base" d="M18 15.4V10a6 6 0 1 0-12 0v5.4L4 18h16l-2-2.6Z" fill="url(#yamb-g-amber)" opacity="0.34"/>
       <path class="ico-accent" d="M18 15.4V10a6 6 0 1 0-12 0v5.4L4 18h16l-2-2.6Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
@@ -181,7 +176,6 @@
       <path class="ico-part-moving" d="M9.8 18.6a2.3 2.3 0 0 0 4.4 0" fill="none" stroke="url(#yamb-g-amber)" stroke-width="2" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Выходной день / Вечер -->
     <symbol id="ico-day-off" viewBox="0 0 24 24">
       <path class="ico-base" d="M4.5 11.4 12 5.2l7.5 6.2V19a1.8 1.8 0 0 1-1.8 1.8H6.3A1.8 1.8 0 0 1 4.5 19v-7.6Z" fill="currentColor" opacity="0.18"/>
       <path class="ico-accent" d="M3 11.4 12 4.4l9 7M5.5 10.6V19a1.6 1.6 0 0 0 1.6 1.6h9.8a1.6 1.6 0 0 0 1.6-1.6v-8.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -189,7 +183,6 @@
       <circle class="ico-highlight" cx="14.7" cy="10.2" r="0.9" fill="#fef08a"/>
     </symbol>
 
-    <!-- Расписание уроков / Часы -->
     <symbol id="ico-schedule" viewBox="0 0 24 24">
       <circle class="ico-base" cx="12" cy="12" r="9.2" fill="currentColor" opacity="0.16"/>
       <circle class="ico-accent" cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -198,7 +191,6 @@
       <circle cx="12" cy="12" r="1.3" fill="url(#yamb-g-amber)"/>
     </symbol>
 
-    <!-- 0. урок («Разговоры о важном» / «Мои горизонты») -->
     <symbol id="ico-zero-lesson" viewBox="0 0 24 24">
       <circle class="ico-base" cx="12" cy="12" r="9.2" fill="url(#yamb-g-amber)" opacity="0.28"/>
       <circle class="ico-accent" cx="12" cy="12" r="9.2" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.8"/>
@@ -207,7 +199,6 @@
       <circle cx="12" cy="12" r="1.4" fill="#ffffff" opacity="0.85"/>
     </symbol>
 
-    <!-- Важно / Срочно -->
     <symbol id="ico-cat-urgent" viewBox="0 0 24 24">
       <path class="ico-base" d="M10.4 4.1a1.85 1.85 0 0 1 3.2 0l7.6 13.6A1.85 1.85 0 0 1 19.6 20.2H4.4a1.85 1.85 0 0 1-1.6-2.5L10.4 4.1Z" fill="url(#yamb-g-crimson)" opacity="0.28"/>
       <path class="ico-accent" d="M10.4 4.1a1.85 1.85 0 0 1 3.2 0l7.6 13.6A1.85 1.85 0 0 1 19.6 20.2H4.4a1.85 1.85 0 0 1-1.6-2.5L10.4 4.1Z" fill="none" stroke="url(#yamb-g-crimson)" stroke-width="1.85" stroke-linejoin="round"/>
@@ -218,7 +209,6 @@
       </g>
     </symbol>
 
-    <!-- Безопасность / Щит -->
     <symbol id="ico-cat-safety" viewBox="0 0 24 24">
       <path class="ico-base" d="M12 2.8 4.8 5.9v5.9c0 4.8 3.1 8.4 7.2 10 4.1-1.6 7.2-5.2 7.2-10V5.9L12 2.8Z" fill="url(#yamb-g-amber)" opacity="0.28"/>
       <path class="ico-accent" d="M12 2.8 4.8 5.9v5.9c0 4.8 3.1 8.4 7.2 10 4.1-1.6 7.2-5.2 7.2-10V5.9L12 2.8Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linejoin="round"/>
@@ -226,7 +216,6 @@
       <path class="ico-part-moving" d="m8.8 12.1 2.2 2.2 4.4-4.5" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
 
-    <!-- Праздник / Олимпиады / Звезда -->
     <symbol id="ico-cat-holiday" viewBox="0 0 24 24">
       <path class="ico-base" d="M12 3 14.5 8.5l6 .6-4.5 3.9 1.4 5.9L12 15.8l-5.4 3.1 1.4-5.9-4.5-3.9 6-.6L12 3Z" fill="url(#yamb-g-amber)" opacity="0.34"/>
       <path class="ico-accent ico-part-moving" d="M12 3 14.5 8.5l6 .6-4.5 3.9 1.4 5.9L12 15.8l-5.4 3.1 1.4-5.9-4.5-3.9 6-.6L12 3Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.8" stroke-linejoin="round"/>
@@ -234,7 +223,6 @@
       <circle cx="19.5" cy="4.8" r="1.1" fill="#fef08a"/>
     </symbol>
 
-    <!-- Профилактика и здоровье / Питание -->
     <symbol id="ico-cat-health" viewBox="0 0 24 24">
       <path class="ico-base" d="M12 20.4S4.4 15.7 4.4 9.7a4.4 4.4 0 0 1 7.6-2.9 4.4 4.4 0 0 1 7.6 2.9c0 6-7.6 10.7-7.6 10.7Z" fill="url(#yamb-g-emerald)" opacity="0.28"/>
       <path class="ico-accent" d="M12 20.4S4.4 15.7 4.4 9.7a4.4 4.4 0 0 1 7.6-2.9 4.4 4.4 0 0 1 7.6 2.9c0 6-7.6 10.7-7.6 10.7Z" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="1.85" stroke-linejoin="round"/>
@@ -242,7 +230,6 @@
       <path class="ico-part-moving" d="M9.3 12.2h5.4M12 9.5v5.4" stroke="url(#yamb-g-emerald)" stroke-width="2" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Памятка родителям / Книга / Дневник -->
     <symbol id="ico-cat-memo" viewBox="0 0 24 24">
       <path class="ico-base" d="M3.2 6.3c2.9-1.1 6-.6 8.8 1.4 2.8-2 5.9-2.5 8.8-1.4v12.1c-2.9-1.1-6-.6-8.8 1.3-2.8-1.9-5.9-2.4-8.8-1.3V6.3Z" fill="currentColor" opacity="0.18"/>
       <path class="ico-accent" d="M3.2 6.3c2.9-1.1 6-.6 8.8 1.4 2.8-2 5.9-2.5 8.8-1.4v12.1c-2.9-1.1-6-.6-8.8 1.3-2.8-1.9-5.9-2.4-8.8-1.3V6.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -250,7 +237,6 @@
       <path class="ico-part-moving" d="M12 7.7v12M14.8 10.3h3.2M14.8 13.6h2.6" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Документ / PDF / Информация -->
     <symbol id="ico-doc-pdf" viewBox="0 0 24 24">
       <path class="ico-base" d="M6 3.3h8l4.7 4.7v11.2a1.6 1.6 0 0 1-1.6 1.6H6a1.6 1.6 0 0 1-1.6-1.6V4.9A1.6 1.6 0 0 1 6 3.3Z" fill="currentColor" opacity="0.16"/>
       <path class="ico-base" d="M14 3.3V8h4.7Z" fill="url(#yamb-g-amber)" opacity="0.45"/>
@@ -259,7 +245,6 @@
       <path class="ico-part-moving" d="M8.2 12.8h7.6M8.2 16.2h4.8" stroke="url(#yamb-g-amber)" stroke-width="1.9" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Галерея фото -->
     <symbol id="ico-gallery" viewBox="0 0 24 24">
       <rect class="ico-base" x="3" y="4.4" width="18" height="15.2" rx="3.2" fill="currentColor" opacity="0.16"/>
       <rect class="ico-accent" x="3" y="4.4" width="18" height="15.2" rx="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -268,14 +253,12 @@
       <path d="m5.4 17.2 4.3-4.4 3 2.9 2.9-3.2 3 4.7" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
 
-    <!-- Отправка / В чат -->
     <symbol id="ico-send" viewBox="0 0 24 24">
       <path class="ico-base" d="m20.8 3.6-8.4 16.8-2.7-6.3-6.3-2.7L20.8 3.6Z" fill="currentColor" opacity="0.22"/>
       <path class="ico-accent ico-part-moving" d="m20.8 3.6-8.4 16.8-2.7-6.3-6.3-2.7L20.8 3.6Z" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
       <path class="ico-part-moving" d="M20.4 4 9.8 14.1" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Номер талона -->
     <symbol id="ico-ticket" viewBox="0 0 24 24">
       <path class="ico-base" d="M4 6.5A1.6 1.6 0 0 1 5.6 4.9h12.8A1.6 1.6 0 0 1 20 6.5V10a2 2 0 0 0 0 4v3.5a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 17.5V14a2 2 0 0 0 0-4V6.5Z" fill="url(#yamb-g-emerald)" opacity="0.28"/>
       <path class="ico-accent" d="M4 6.5A1.6 1.6 0 0 1 5.6 4.9h12.8A1.6 1.6 0 0 1 20 6.5V10a2 2 0 0 0 0 4v3.5a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 17.5V14a2 2 0 0 0 0-4V6.5Z" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="1.85" stroke-linejoin="round"/>
@@ -283,7 +266,6 @@
       <path class="ico-check-draw" d="m8.8 12.2 2.2 2.2 4.4-4.6" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
 
-    <!-- Погода: Солнце -->
     <symbol id="ico-weather-sun" viewBox="0 0 24 24">
       <circle class="ico-base" cx="12" cy="12" r="5.2" fill="url(#yamb-g-sun-glow)" opacity="0.88"/>
       <circle class="ico-accent" cx="12" cy="12" r="4.8" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.6"/>
@@ -291,14 +273,12 @@
       <path class="ico-part-moving" d="M12 2.2v2.4M12 19.4v2.4M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M2.2 12h2.4M19.4 12h2.4M4.8 19.2l1.7-1.7M17.5 6.5l1.7-1.7" stroke="url(#yamb-g-amber)" stroke-width="1.9" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Погода: Облачно -->
     <symbol id="ico-weather-cloud" viewBox="0 0 24 24">
       <path class="ico-base" d="M6.8 18.2h10.7a3.6 3.6 0 0 0 .5-7.15A5.6 5.6 0 0 0 7.3 9.5a4.1 4.1 0 0 0-.5 8.7Z" fill="url(#yamb-g-sky)" opacity="0.32"/>
       <path class="ico-accent ico-part-moving" d="M6.8 18.2h10.7a3.6 3.6 0 0 0 .5-7.15A5.6 5.6 0 0 0 7.3 9.5a4.1 4.1 0 0 0-.5 8.7Z" fill="none" stroke="url(#yamb-g-sky)" stroke-width="1.85" stroke-linejoin="round"/>
       <path class="ico-highlight" d="M9.4 9.1a3.4 3.4 0 0 1 4.8-.8" fill="none" stroke="url(#yamb-g-glass)" stroke-width="1.25" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Погода: Дождь -->
     <symbol id="ico-weather-rain" viewBox="0 0 24 24">
       <path class="ico-base" d="M6.4 14.5h11.2a3.1 3.1 0 0 0 .4-6.15A5.1 5.1 0 0 0 8.1 7.2a3.7 3.7 0 0 0-1.7 7.3Z" fill="url(#yamb-g-sky)" opacity="0.32"/>
       <path class="ico-accent" d="M6.4 14.5h11.2a3.1 3.1 0 0 0 .4-6.15A5.1 5.1 0 0 0 8.1 7.2a3.7 3.7 0 0 0-1.7 7.3Z" fill="none" stroke="url(#yamb-g-sky)" stroke-width="1.85" stroke-linejoin="round"/>
@@ -306,14 +286,12 @@
       <path class="ico-part-moving" d="M8.4 17.4 7.3 20.7M12.5 17.4l-1.1 3.3M16.6 17.4l-1.1 3.3" stroke="url(#yamb-g-sapphire)" stroke-width="1.95" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Погода: Снег -->
     <symbol id="ico-weather-snow" viewBox="0 0 24 24">
       <circle class="ico-base" cx="12" cy="12" r="4.4" fill="url(#yamb-g-sky)" opacity="0.28"/>
       <path class="ico-accent ico-part-moving" d="M12 2.8v18.4M4 7.4l16 9.2M20 7.4 4 16.6" stroke="url(#yamb-g-sky)" stroke-width="1.85" stroke-linecap="round"/>
       <circle class="ico-highlight" cx="12" cy="12" r="2" fill="#ffffff" opacity="0.85"/>
     </symbol>
 
-    <!-- Рассвет / Утро -->
     <symbol id="ico-sunrise" viewBox="0 0 24 24">
       <path class="ico-base" d="M6.8 16.2a5.2 5.2 0 0 1 10.4 0Z" fill="url(#yamb-g-sun-glow)" opacity="0.72"/>
       <path class="ico-accent" d="M2.8 16.2h18.4M6.8 16.2a5.2 5.2 0 0 1 10.4 0" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linecap="round"/>
@@ -321,14 +299,12 @@
       <path d="M5.5 19.6h13" stroke="url(#yamb-g-sky)" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
     </symbol>
 
-    <!-- Доска / Мел / Карандаш -->
     <symbol id="ico-chalk" viewBox="0 0 24 24">
       <path class="ico-base" d="M15.4 4.2 19.8 8.6 9.2 19.2H4.8v-4.4L15.4 4.2Z" fill="url(#yamb-g-amber)" opacity="0.32"/>
       <path class="ico-accent ico-part-moving" d="M15.4 4.2 19.8 8.6 9.2 19.2H4.8v-4.4L15.4 4.2Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linejoin="round"/>
       <path class="ico-highlight" d="m13.2 6.6 4.2 4.2" stroke="#ffffff" stroke-width="1.35" stroke-linecap="round" opacity="0.78"/>
     </symbol>
 
-    <!-- Идея / Самопроверка -->
     <symbol id="ico-idea" viewBox="0 0 24 24">
       <path class="ico-base" d="M8.8 15.5c-1.6-1-2.6-2.8-2.6-4.9a5.8 5.8 0 1 1 11.6 0c0 2.1-1 3.9-2.6 4.9v1.7H8.8v-1.7Z" fill="url(#yamb-g-amber)" opacity="0.34"/>
       <path class="ico-accent ico-part-moving" d="M8.8 15.5c-1.6-1-2.6-2.8-2.6-4.9a5.8 5.8 0 1 1 11.6 0c0 2.1-1 3.9-2.6 4.9v1.7H8.8v-1.7Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linejoin="round"/>
@@ -336,13 +312,11 @@
       <path d="M9.4 20.2h5.2" stroke="url(#yamb-g-amber)" stroke-width="1.95" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Далее / Следующий класс -->
     <symbol id="ico-next" viewBox="0 0 24 24">
       <path class="ico-base" d="M4.6 7.2 12 12l-7.4 4.8V7.2ZM13.4 7.2 20.8 12l-7.4 4.8V7.2Z" fill="url(#yamb-g-amber)" opacity="0.34"/>
       <path class="ico-accent ico-part-moving" d="M4.6 7.2 12 12l-7.4 4.8V7.2ZM13.4 7.2 20.8 12l-7.4 4.8V7.2Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.8" stroke-linejoin="round"/>
     </symbol>
 
-    <!-- Локация / Адрес -->
     <symbol id="ico-pin" viewBox="0 0 24 24">
       <path class="ico-base" d="M12 21.2s-6.8-5.7-6.8-11.3a6.8 6.8 0 1 1 13.6 0c0 5.6-6.8 11.3-6.8 11.3Z" fill="currentColor" opacity="0.18"/>
       <path class="ico-accent" d="M12 21.2s-6.8-5.7-6.8-11.3a6.8 6.8 0 1 1 13.6 0c0 5.6-6.8 11.3-6.8 11.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -350,21 +324,18 @@
       <circle class="ico-highlight" cx="11.2" cy="9.1" r="0.8" fill="#ffffff" opacity="0.85"/>
     </symbol>
 
-    <!-- Телефон -->
     <symbol id="ico-phone" viewBox="0 0 24 24">
       <path class="ico-base" d="M6.4 4.4h3.1l1.5 3.9-2 1.6a11.4 11.4 0 0 0 5.1 5.1l1.6-2 3.9 1.5v3.1a1.9 1.9 0 0 1-2 1.9C10.3 19.1 4.9 13.7 4.5 6.4a1.9 1.9 0 0 1 1.9-2Z" fill="url(#yamb-g-emerald)" opacity="0.28"/>
       <path class="ico-accent ico-part-moving" d="M6.4 4.4h3.1l1.5 3.9-2 1.6a11.4 11.4 0 0 0 5.1 5.1l1.6-2 3.9 1.5v3.1a1.9 1.9 0 0 1-2 1.9C10.3 19.1 4.9 13.7 4.5 6.4a1.9 1.9 0 0 1 1.9-2Z" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="1.85" stroke-linejoin="round"/>
       <path class="ico-highlight" d="M14.2 5.4a5.2 5.2 0 0 1 4.4 4.4" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.6" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Почта -->
     <symbol id="ico-mail" viewBox="0 0 24 24">
       <rect class="ico-base" x="2.8" y="5.4" width="18.4" height="13.2" rx="2.8" fill="currentColor" opacity="0.16"/>
       <rect class="ico-accent" x="2.8" y="5.4" width="18.4" height="13.2" rx="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/>
       <path class="ico-part-moving" d="m4.2 7.2 7.8 5.6 7.8-5.6" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.95" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
 
-    <!-- Копировать -->
     <symbol id="ico-copy" viewBox="0 0 24 24">
       <rect class="ico-base" x="8.8" y="7.8" width="11.4" height="12.4" rx="2.4" fill="currentColor" opacity="0.18"/>
       <rect class="ico-accent" x="8.8" y="7.8" width="11.4" height="12.4" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -372,20 +343,17 @@
       <path class="ico-part-moving" d="M15.2 7.8V5.9A2.1 2.1 0 0 0 13.1 3.8H6a2.1 2.1 0 0 0-2.1 2.1v9.2A2.1 2.1 0 0 0 6 17.2h2.8" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Ссылка -->
     <symbol id="ico-link" viewBox="0 0 24 24">
       <path class="ico-accent ico-part-moving" d="M10.2 13.8a4.3 4.3 0 0 0 6.1 0l2.7-2.7a4.3 4.3 0 0 0-6.1-6.1l-1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
       <path class="ico-accent ico-part-moving" d="M13.8 10.2a4.3 4.3 0 0 0-6.1 0L5 12.9A4.3 4.3 0 0 0 11.1 19l1.5-1.5" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.9" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Благодарность / Сердце -->
     <symbol id="ico-heart" viewBox="0 0 24 24">
       <path class="ico-base" d="M12 20.8S3.8 15.5 3.8 9.4a4.6 4.6 0 0 1 8.2-2.9 4.6 4.6 0 0 1 8.2 2.9c0 6.1-8.2 11.4-8.2 11.4Z" fill="url(#yamb-g-crimson)" opacity="0.34"/>
       <path class="ico-accent ico-part-moving" d="M12 20.8S3.8 15.5 3.8 9.4a4.6 4.6 0 0 1 8.2-2.9 4.6 4.6 0 0 1 8.2 2.9c0 6.1-8.2 11.4-8.2 11.4Z" fill="none" stroke="url(#yamb-g-crimson)" stroke-width="1.9" stroke-linejoin="round"/>
       <path class="ico-highlight" d="M6.8 9.1a2.3 2.3 0 0 1 2.2-2" fill="none" stroke="#ffffff" stroke-width="1.35" stroke-linecap="round" opacity="0.82"/>
     </symbol>
 
-    <!-- Вопрос -->
     <symbol id="ico-question" viewBox="0 0 24 24">
       <circle class="ico-base" cx="12" cy="12" r="9.2" fill="currentColor" opacity="0.18"/>
       <circle class="ico-accent" cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -396,7 +364,6 @@
       </g>
     </symbol>
 
-    <!-- Единство / Сообщество -->
     <symbol id="ico-unity" viewBox="0 0 24 24">
       <circle class="ico-base" cx="9" cy="8.4" r="3.2" fill="currentColor" opacity="0.24"/>
       <circle class="ico-accent" cx="9" cy="8.4" r="3.2" fill="none" stroke="currentColor" stroke-width="1.85"/>
@@ -406,7 +373,6 @@
       <path class="ico-part-moving" d="M14.4 19.2a4.6 4.6 0 0 1 6.4 0" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="1.85" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Ноутбук / Учи.ру / ЦДЗ -->
     <symbol id="ico-laptop" viewBox="0 0 24 24">
       <rect class="ico-base" x="3.8" y="4.8" width="16.4" height="11.2" rx="2.2" fill="currentColor" opacity="0.18"/>
       <rect class="ico-accent" x="3.8" y="4.8" width="16.4" height="11.2" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -415,7 +381,6 @@
       <path class="ico-part-moving" d="M2 19.2h20" stroke="url(#yamb-g-amber)" stroke-width="2.1" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Питание / Столовая -->
     <symbol id="ico-meal" viewBox="0 0 24 24">
       <circle class="ico-base" cx="12" cy="13.2" r="6.8" fill="url(#yamb-g-emerald)" opacity="0.26"/>
       <circle class="ico-accent" cx="12" cy="13.2" r="6.8" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="1.85"/>
@@ -424,42 +389,36 @@
       <path class="ico-part-moving" d="M12 6.4c0-2.1 1.9-3.2 3.8-3.2M9.8 13.2h4.4" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Предметы: Математика -->
     <symbol id="ico-math" viewBox="0 0 24 24">
       <path class="ico-base" d="M4 19.2 19.2 4v15.2H4Z" fill="url(#yamb-g-sapphire)" opacity="0.26"/>
       <path class="ico-accent ico-part-moving" d="M4 19.2 19.2 4v15.2H4Z" fill="none" stroke="url(#yamb-g-sapphire)" stroke-width="1.85" stroke-linejoin="round"/>
       <path d="M11.6 15.4h3.8v-3.8" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
 
-    <!-- Предметы: Естественные науки -->
     <symbol id="ico-science" viewBox="0 0 24 24">
       <path class="ico-base" d="M19.8 4.2C12 4.2 6.2 9.4 6.2 17.2c7.8 0 13.6-5.6 13.6-13Z" fill="url(#yamb-g-emerald)" opacity="0.3"/>
       <path class="ico-accent ico-part-moving" d="M19.8 4.2C12 4.2 6.2 9.4 6.2 17.2c7.8 0 13.6-5.6 13.6-13ZM4.8 19.2l7.4-7.4" fill="none" stroke="url(#yamb-g-emerald)" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
       <path class="ico-highlight" d="M11.5 8.8c1.6-1.3 3.4-2 5.2-2.2" fill="none" stroke="url(#yamb-g-glass)" stroke-width="1.2" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Предметы: История / Общество -->
     <symbol id="ico-history" viewBox="0 0 24 24">
       <path class="ico-base" d="M3.6 9.4 12 4.6l8.4 4.8H3.6Z" fill="url(#yamb-g-crimson)" opacity="0.3"/>
       <path class="ico-accent" d="M3.4 9.4 12 4.6l8.6 4.8H3.4ZM6 9.8v8.4M10 9.8v8.4M14 9.8v8.4M18 9.8v8.4M3.4 19.6h17.2" fill="none" stroke="url(#yamb-g-crimson)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
       <path class="ico-highlight" d="M6.8 18.2h10.4" stroke="url(#yamb-g-amber)" stroke-width="1.2" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Предметы: Творчество / Спорт -->
     <symbol id="ico-art" viewBox="0 0 24 24">
       <path class="ico-base" d="M13.2 2.8 5.2 13.2h5.8l-1.1 8L18.8 10.8H13l.2-8Z" fill="url(#yamb-g-amber)" opacity="0.36"/>
       <path class="ico-accent ico-part-moving" d="M13.2 2.8 5.2 13.2h5.8l-1.1 8L18.8 10.8H13l.2-8Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linejoin="round"/>
       <path class="ico-highlight" d="m11.5 6.5-3.2 4.4" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.78"/>
     </symbol>
 
-    <!-- Лупа / Увеличить -->
     <symbol id="ico-zoom" viewBox="0 0 24 24">
       <circle class="ico-base" cx="10.5" cy="10.5" r="6.2" fill="url(#yamb-g-sky)" opacity="0.28"/>
       <circle class="ico-accent" cx="10.5" cy="10.5" r="6.2" fill="none" stroke="currentColor" stroke-width="1.9"/>
       <path class="ico-part-moving" d="m15.3 15.3 4.5 4.5M8 10.5h5M10.5 8v5" stroke="currentColor" stroke-width="1.95" stroke-linecap="round"/>
     </symbol>
 
-    <!-- Замок / Защита -->
     <symbol id="ico-lock" viewBox="0 0 24 24">
       <rect class="ico-base" x="4.8" y="10.4" width="14.4" height="9.8" rx="2.8" fill="url(#yamb-g-amber)" opacity="0.34"/>
       <rect class="ico-accent" x="4.8" y="10.4" width="14.4" height="9.8" rx="2.8" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85"/>
@@ -467,7 +426,6 @@
       <circle cx="12" cy="15.3" r="1.4" fill="url(#yamb-g-emerald)"/>
     </symbol>
 
-    <!-- Версия для слабовидящих (Глаз) -->
     <symbol id="ico-eye" viewBox="0 0 24 24">
       <path class="ico-base" d="M1.5 12s4-7.4 10.5-7.4S22.5 12 22.5 12s-4 7.4-10.5 7.4S1.5 12 1.5 12Z" fill="currentColor" opacity="0.14"/>
       <path d="M1.5 12s4-7.4 10.5-7.4S22.5 12 22.5 12s-4 7.4-10.5 7.4S1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -475,7 +433,6 @@
       <circle cx="11.1" cy="11.1" r="1" fill="currentColor"/>
     </symbol>
 
-    <!-- Обновить -->
     <symbol id="ico-refresh" viewBox="0 0 24 24">
       <polyline points="22.5 4.2 22.5 10.2 16.5 10.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <polyline points="1.5 19.8 1.5 13.8 7.5 13.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -871,6 +828,7 @@
         <div id="publications-grid" class="publications-grid"></div>
       </div>
     </section>
+
     <section id="about" class="section">
       <div class="container">
         <div class="section-header reveal">
@@ -1719,7 +1677,13 @@
     <div class="lightbox-dialog">
       <div class="lightbox-top-bar">
         <span id="lightbox-counter" class="lightbox-counter">1 / 4</span>
-        <button type="button" id="lightbox-close" class="lightbox-close-btn" aria-label="Закрыть просмотр фото">✕ Закрыть</button>
+        <div class="lightbox-top-actions">
+          <button type="button" id="lightbox-zoom" class="lightbox-zoom-btn" aria-pressed="false" aria-label="Увеличить фотографию">
+            <svg class="ui-ico" width="16" height="16" aria-hidden="true"><use href="#ico-zoom"></use></svg>
+            <span id="lightbox-zoom-label">Увеличить</span>
+          </button>
+          <button type="button" id="lightbox-close" class="lightbox-close-btn" aria-label="Закрыть просмотр фото">✕ Закрыть</button>
+        </div>
       </div>
       <div class="lightbox-stage">
         <button type="button" id="lightbox-prev" class="lightbox-nav-btn" aria-label="Предыдущее фото">‹</button>
