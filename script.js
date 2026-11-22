@@ -1,9 +1,3 @@
-/* =========================================================================
- * Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Основной скрипт портала
- * Отказоустойчивость: live CSV -> localStorage -> data/school-snapshot.json
- * Кроссплатформенность: iOS Safari 15+, Яндекс, Samsung Internet, WebView TG/VK
- * ========================================================================= */
-
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const SHEET3_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?gid=809598510&single=true&output=csv";
 const SNAPSHOT_JSON_URL = "data/school-snapshot.json";
@@ -66,6 +60,8 @@ const DAY_NAMES_FULL = {
   4: "Четверг",
   5: "Пятница"
 };
+
+const RU_WEEKDAYS_SHORT = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
 
 const RU_MONTHS_GENITIVE = [
   "января",
@@ -201,13 +197,59 @@ let currentSelectedWeekday = getDefaultSchoolWeekday();
 let hasExplicitSavedGrade = false;
 let currentSelectedGrade = getSavedGradeSelection();
 let currentSelectedMenuWeek = 1;
+let isTomorrowWeekendWeather = false;
 let toastTimeoutId = null;
 let lastModalTriggerEl = null;
 let openLightboxSlidesFn = null;
 const glidePillRefreshers = [];
+let isGlideResizeBound = false;
+let glideResizeRafId = 0;
 let chalkboardSyncCallback = null;
+let imageLoadSequence = 0;
 
-/* ==================== БАЗОВЫЕ УТИЛИТЫ И КРОССПЛАТФОРМЕННОСТЬ ==================== */
+function getMoscowTimeParts(baseMs = Date.now()) {
+  const msk = new Date(baseMs + 3 * 3600000);
+  return {
+    year: msk.getUTCFullYear(),
+    month: msk.getUTCMonth(),
+    day: msk.getUTCDate(),
+    weekday: msk.getUTCDay(),
+    hours: msk.getUTCHours(),
+    minutes: msk.getUTCMinutes(),
+    seconds: msk.getUTCSeconds()
+  };
+}
+
+function formatMoscowClock(parts) {
+  const hh = String(parts.hours).padStart(2, "0");
+  const mm = String(parts.minutes).padStart(2, "0");
+  const ss = String(parts.seconds).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
+}
+
+function formatMoscowShortTime(parts) {
+  const hh = String(parts.hours).padStart(2, "0");
+  const mm = String(parts.minutes).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function formatMoscowHeaderDate(parts) {
+  const wd = RU_WEEKDAYS_SHORT[parts.weekday] || "";
+  const monthWord = RU_MONTHS_GENITIVE[parts.month] || "";
+  return `${wd}, ${parts.day} ${monthWord} ${parts.year} г.`;
+}
+
+function formatMoscowShortDate(parts) {
+  const dd = String(parts.day).padStart(2, "0");
+  const monthWord = RU_MONTHS_GENITIVE[parts.month] || "";
+  return `${dd} ${monthWord}`;
+}
+
+function formatMoscowFullDateTime(parts) {
+  const dd = String(parts.day).padStart(2, "0");
+  const mm = String(parts.month + 1).padStart(2, "0");
+  return `${dd}.${mm}.${parts.year}, ${formatMoscowClock(parts)} (МСК)`;
+}
 
 function clearElement(el) {
   if (!el) return;
@@ -305,29 +347,35 @@ function fetchSchoolSnapshotOnce(forceReload = false) {
   if (!forceReload && latestSnapshotPromise) {
     return latestSnapshotPromise;
   }
-  latestSnapshotPromise = (async () => {
+  const pendingPromise = (async () => {
     try {
       const response = await fetchWithTimeout(
         SNAPSHOT_JSON_URL,
         { cache: forceReload ? "no-store" : "default" },
         4500
       );
-      if (!response.ok) return null;
+      if (!response.ok) {
+        if (latestSnapshotPromise === pendingPromise) latestSnapshotPromise = null;
+        return null;
+      }
       const data = await response.json();
       if (!data || typeof data !== "object" || !Array.isArray(data.panelRows)) {
+        if (latestSnapshotPromise === pendingPromise) latestSnapshotPromise = null;
         return null;
       }
       return data;
     } catch (_) {
+      if (latestSnapshotPromise === pendingPromise) latestSnapshotPromise = null;
       return null;
     }
   })();
-  return latestSnapshotPromise;
+  latestSnapshotPromise = pendingPromise;
+  return pendingPromise;
 }
 
 function isValidCsvResponse(text, expectedMarkers = []) {
   if (typeof text !== "string" || text.trim().length < 15) return false;
-  const head = text.slice(0, 320).trim().toLowerCase();
+  const head = text.replace(/^\uFEFF/, "").slice(0, 320).trim().toLowerCase();
   if (
     head.startsWith("<!doctype") ||
     head.startsWith("<html") ||
@@ -354,8 +402,8 @@ function pluralRu(n, one, few, many) {
 }
 
 function getDefaultSchoolWeekday() {
-  const jsDay = new Date().getDay();
-  return jsDay >= 1 && jsDay <= 5 ? jsDay : 1;
+  const wd = getMoscowTimeParts().weekday;
+  return wd >= 1 && wd <= 5 ? wd : 1;
 }
 
 function getSavedGradeSelection() {
@@ -378,7 +426,6 @@ function escapeXml(str) {
     .replace(/'/g, "&apos;");
 }
 
-// Очистка пользовательского и табличного текста. Все вставки в DOM выполняются строго через textContent.
 function sanitizeInput(rawString, maxLength = 1000) {
   if (typeof rawString !== "string") return "";
   return rawString
@@ -390,10 +437,10 @@ function sanitizeInput(rawString, maxLength = 1000) {
 }
 
 function generateSecureTicketNumber() {
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, "0");
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const yyyy = String(now.getFullYear());
+  const parts = getMoscowTimeParts();
+  const dd = String(parts.day).padStart(2, "0");
+  const mm = String(parts.month + 1).padStart(2, "0");
+  const yyyy = String(parts.year);
   const datePart = `${dd}${mm}${yyyy}`;
   let randomPart;
   if (window.crypto && typeof window.crypto.getRandomValues === "function") {
@@ -540,7 +587,6 @@ function buildInitialsSvgDataUri(initials, index = 0) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-// Авторская векторная заглушка без эмодзи (единый свет 45° сверху слева)
 function buildPublicationFallbackSvg(titleText) {
   const safeTitle = escapeXml(sanitizeInput(titleText || "Материал школы", 40));
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 375'><defs><linearGradient id='pg' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#1e3a8a'/><stop offset='100%' stop-color='#2563eb'/></linearGradient><linearGradient id='pa' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='#fbbf24'/><stop offset='100%' stop-color='#d97706'/></linearGradient></defs><rect width='600' height='375' fill='url(#pg)'/><circle cx='300' cy='148' r='54' fill='#ffffff' opacity='0.14'/><circle cx='300' cy='132' r='16' fill='url(#pa)'/><path d='M256 154 C274 146 290 151 300 160 C310 151 326 146 344 154 V192 C326 184 310 189 300 198 C290 189 274 184 256 192 Z' fill='#ffffff' opacity='0.95'/><path d='M300 160 V198' stroke='#1e3a8a' stroke-width='3'/><text x='300' y='252' font-family='sans-serif' font-size='21' font-weight='bold' fill='#ffffff' text-anchor='middle'>${safeTitle}</text></svg>`;
@@ -555,7 +601,6 @@ function extractInitialsFromFio(fioString) {
   return "УЧ";
 }
 
-// Строгая проверка изображений + резервный хост lh3.googleusercontent.com против 429/403 Google Drive
 function resolveImageLinkSource(rawUrlCell, fallbackSvg, driveWidth = 640) {
   const cleaned = (rawUrlCell || "").trim();
   if (!cleaned) return { src: fallbackSvg, altTry: null, fallback: fallbackSvg };
@@ -642,6 +687,24 @@ function truncateAtWordBoundary(text, maxLen = 220) {
   };
 }
 
+function buildStablePublicationId(rawDateCell, rawTitleCell, usedIdsSet) {
+  const seed = `${String(rawDateCell || "").trim().toLowerCase()}|${String(rawTitleCell || "").trim().toLowerCase()}`;
+  let hash = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    hash ^= seed.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const baseId = `p${(hash >>> 0).toString(36)}`;
+  let candidate = baseId;
+  let suffix = 2;
+  while (usedIdsSet.has(candidate)) {
+    candidate = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+  usedIdsSet.add(candidate);
+  return candidate;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initHeroBackdropFallback();
   initAccessibilityMode();
@@ -664,7 +727,6 @@ document.addEventListener("DOMContentLoaded", () => {
   registerOfflineServiceWorker();
 });
 
-// Если растровый Hero недоступен, аккуратно скрываем слой, оставляя градиент
 function initHeroBackdropFallback() {
   const backdrop = document.getElementById("hero-backdrop");
   const img = document.getElementById("hero-backdrop-img");
@@ -682,7 +744,6 @@ function initHeroBackdropFallback() {
   }
 }
 
-// Пауза бесконечных pulse/shimmer анимаций вне экрана и при скрытой вкладке (гигиена 60 FPS)
 function initAmbientAnimationPause() {
   const targets = [
     document.getElementById("live-widget-card"),
@@ -743,7 +804,21 @@ function initChalkboardEngine() {
   let isViewportVisible = true;
   let runToken = 0;
   let revealResolver = null;
+  let pauseWaiters = [];
   const totalSteps = CHALKBOARD_CURRICULUM.length;
+
+  const flushPauseWaiters = () => {
+    if (pauseWaiters.length === 0) return;
+    const waiters = pauseWaiters;
+    pauseWaiters = [];
+    waiters.forEach((fn) => fn());
+  };
+
+  const notifyCanResume = () => {
+    if (!document.hidden && isViewportVisible) {
+      flushPauseWaiters();
+    }
+  };
 
   if ("IntersectionObserver" in window) {
     const obs = new IntersectionObserver(
@@ -751,26 +826,39 @@ function initChalkboardEngine() {
         entries.forEach((entry) => {
           isViewportVisible = entry.isIntersecting;
         });
+        notifyCanResume();
       },
       { threshold: 0.05 }
     );
     obs.observe(widget);
   }
 
+  document.addEventListener("visibilitychange", notifyCanResume);
+
   const waitMs = (ms, token) =>
     new Promise((resolve) => {
-      const check = () => {
+      const schedule = () => {
         if (token !== runToken) {
           resolve(false);
           return;
         }
         if (document.hidden || !isViewportVisible) {
-          setTimeout(check, 400);
+          pauseWaiters.push(schedule);
           return;
         }
-        setTimeout(() => resolve(token === runToken), ms);
+        setTimeout(() => {
+          if (token !== runToken) {
+            resolve(false);
+            return;
+          }
+          if (document.hidden || !isViewportVisible) {
+            pauseWaiters.push(() => resolve(token === runToken));
+            return;
+          }
+          resolve(true);
+        }, ms);
       };
-      check();
+      schedule();
     });
 
   const typeChalkString = async (targetEl, text, token, baseSpeed = 58) => {
@@ -886,6 +974,7 @@ function initChalkboardEngine() {
 
   const restartFromCurrent = () => {
     runToken++;
+    flushPauseWaiters();
     if (revealResolver) {
       revealResolver(false);
       revealResolver = null;
@@ -943,13 +1032,10 @@ function initChalkboardEngine() {
   runStageLoop(runToken);
 }
 
-/* ==================== РАСПИСАНИЕ, ЗВОНКИ, ПОГОДА И ГОСТ ==================== */
-
 function parseBellTimeRangeString(rawRangeStr, lessonNum) {
   const fallback = DEFAULT_BELL_TIMES[lessonNum] || null;
   const cleaned = sanitizeInput(rawRangeStr || "", 40);
 
-  // Для 0-го и 8-го урока пустая ячейка означает «показывать без времени» (согласно памятке в таблице)
   if (!cleaned) {
     if (lessonNum === 0 || lessonNum === 8) {
       return { bell: null, isCustom: false };
@@ -1053,13 +1139,13 @@ function parseRawScheduleIntoLessons(rawText) {
   if (!cleaned) return [];
 
   const parts = cleaned
-    .replace(/(^|\s)([0-9])\.(?=\s*[А-Яа-яЁёA-Za-z«"(])/g, "\n$2. ")
+    .replace(/(^|\s)([0-9])[.)](?=\s*[А-Яа-яЁёA-Za-z«"(])/g, "\n$2. ")
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean);
 
   return parts.map((item, idx) => {
-    const match = item.match(/^([0-9])\.\s*(.+)$/);
+    const match = item.match(/^([0-9])[.)]\s*(.+)$/);
     if (match) {
       return { num: parseInt(match[1], 10), title: match[2].trim() };
     }
@@ -1133,9 +1219,9 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
     return;
   }
 
-  const now = new Date();
-  const isTodaySelected = now.getDay() === selectedDayNum;
-  const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+  const nowMsk = getMoscowTimeParts();
+  const isTodaySelected = nowMsk.weekday === selectedDayNum;
+  const currentTotalMinutes = nowMsk.hours * 60 + nowMsk.minutes;
 
   lessons.forEach((lessonObj, idx) => {
     const row = document.createElement("div");
@@ -1236,9 +1322,12 @@ function initShareScheduleToChat() {
 
     const tomTemp = document.getElementById("weather-tomorrow-temp");
     const advice = document.getElementById("weather-parent-advice");
+    const weatherHeading = isTomorrowWeekendWeather
+      ? "Погода в с. Ямбирно завтра утром (выходной, 08:00):"
+      : "Погода в с. Ямбирно к 1-му уроку:";
     const weatherLine =
       tomTemp && advice && tomTemp.textContent.trim() !== "..."
-        ? `\n\nПогода в с. Ямбирно к 1-му уроку: ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
+        ? `\n\n${weatherHeading} ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
         : "";
 
     const textForChat =
@@ -1268,34 +1357,20 @@ function initLiveDateTimeClockAndAmbient() {
   let lastScheduleMinute = -1;
 
   const updateClock = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    const currentMinuteKey = now.getDay() * 1440 + hour * 60 + now.getMinutes();
+    const msk = getMoscowTimeParts();
+    const hour = msk.hours;
+    const currentMinuteKey = msk.weekday * 1440 + hour * 60 + msk.minutes;
 
     if (heroAmbient) {
       heroAmbient.classList.toggle("ambient-morning", hour >= 6 && hour < 11);
       heroAmbient.classList.toggle("ambient-evening", hour >= 17 || hour < 6);
     }
 
-    const dateFormatted = now.toLocaleDateString("ru-RU", {
-      weekday: "short",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-    const capitalizedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
-
-    const timeFormatted = now.toLocaleTimeString("ru-RU", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-
-    if (dateEl) dateEl.textContent = capitalizedDate;
-    if (timeEl) timeEl.textContent = timeFormatted;
+    if (dateEl) dateEl.textContent = formatMoscowHeaderDate(msk);
+    if (timeEl) timeEl.textContent = formatMoscowClock(msk);
 
     if (widgetTodayPill) {
-      const shortDate = now.toLocaleDateString("ru-RU", { day: "2-digit", month: "long" });
+      const shortDate = formatMoscowShortDate(msk);
       if (widgetTodayText) {
         widgetTodayText.textContent = `Сегодня, ${shortDate}`;
       } else {
@@ -1304,7 +1379,7 @@ function initLiveDateTimeClockAndAmbient() {
     }
 
     if (statusEl) {
-      const day = now.getDay();
+      const day = msk.weekday;
       let statusLabel = "";
       let iconId = "ico-school-day";
 
@@ -1334,7 +1409,7 @@ function initLiveDateTimeClockAndAmbient() {
 
     if (currentMinuteKey !== lastScheduleMinute) {
       const shouldRefreshSchedule =
-        lastScheduleMinute !== -1 && latestParsedSheetData && now.getDay() === currentSelectedWeekday;
+        lastScheduleMinute !== -1 && latestParsedSheetData && msk.weekday === currentSelectedWeekday;
       lastScheduleMinute = currentMinuteKey;
       if (shouldRefreshSchedule) {
         renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade, true);
@@ -1365,13 +1440,12 @@ function decodeWmoWeather(code) {
   return { iconId: "ico-weather-sun", text: "Без осадков", rain: false, snow: false, sky: "clear" };
 }
 
-// Расчёт завтрашней даты по МСК (UTC+3) вручную без зависимости от локали "sv-SE" (Safari/WebView safe)
 function findTomorrowMorningWeatherIndex(hourlyTimes) {
   if (!Array.isArray(hourlyTimes) || hourlyTimes.length === 0) return 32;
-  const moscowTomorrow = new Date(Date.now() + 86400000 + 3 * 3600000);
-  const y = moscowTomorrow.getUTCFullYear();
-  const m = String(moscowTomorrow.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(moscowTomorrow.getUTCDate()).padStart(2, "0");
+  const tomorrowMsk = getMoscowTimeParts(Date.now() + 86400000);
+  const y = tomorrowMsk.year;
+  const m = String(tomorrowMsk.month + 1).padStart(2, "0");
+  const d = String(tomorrowMsk.day).padStart(2, "0");
   const targetKey = `${y}-${m}-${d}T08:00`;
   const exactIdx = hourlyTimes.indexOf(targetKey);
   if (exactIdx !== -1) return exactIdx;
@@ -1387,9 +1461,24 @@ async function initYambirnoWeatherWidget() {
   const nowIconEl = document.getElementById("weather-now-icon");
   const nowTempEl = document.getElementById("weather-now-temp");
   const nowDescEl = document.getElementById("weather-now-desc");
+  const tomLabelEl = document.getElementById("weather-tomorrow-label");
   const tomTempEl = document.getElementById("weather-tomorrow-temp");
   const tomDescEl = document.getElementById("weather-tomorrow-desc");
   const adviceEl = document.getElementById("weather-parent-advice");
+
+  const tomorrowMsk = getMoscowTimeParts(Date.now() + 86400000);
+  const isTomorrowWeekend = tomorrowMsk.weekday === 0 || tomorrowMsk.weekday === 6;
+  isTomorrowWeekendWeather = isTomorrowWeekend;
+
+  if (tomLabelEl) {
+    if (isTomorrowWeekend) {
+      tomLabelEl.textContent = "Завтра утром (выходной, 08:00):";
+    } else if (tomorrowMsk.weekday === 1) {
+      tomLabelEl.textContent = "Завтра утром (Пн, 08:00):";
+    } else {
+      tomLabelEl.textContent = "Завтра утром (08:00):";
+    }
+  }
 
   const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${YAMBIRNO_LAT}&longitude=${YAMBIRNO_LON}&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&timezone=Europe%2FMoscow&forecast_days=2`;
 
@@ -1452,8 +1541,19 @@ async function initYambirnoWeatherWidget() {
     if (tomDescEl) tomDescEl.textContent = `${tomWmo.text} (осадки ${tomPrecipProb}%)`;
 
     if (adviceEl) {
-      adviceEl.classList.remove("advice-rain", "advice-cold");
-      if (tomWmo.rain || (tomPrecipProb >= 40 && tomTempRaw > 0)) {
+      adviceEl.classList.remove("advice-rain", "advice-cold", "advice-weekend");
+      if (isTomorrowWeekend) {
+        adviceEl.classList.add("advice-weekend");
+        if (tomWmo.rain || (tomPrecipProb >= 40 && tomTempRaw > 0)) {
+          adviceEl.textContent = "Завтра выходной — уроков нет. Если планируете прогулку, возьмите зонт или дождевик.";
+        } else if (tomWmo.snow || (tomPrecipProb >= 40 && tomTempRaw <= 0)) {
+          adviceEl.textContent = "Завтра выходной — уроков нет. Ожидается снег, одевайтесь на прогулку потеплее.";
+        } else if (tomTempRaw <= -12) {
+          adviceEl.textContent = "Завтра выходной — уроков нет. Утро будет морозным — берегите тепло.";
+        } else {
+          adviceEl.textContent = "Завтра выходной — уроков нет. Хорошего отдыха всей семье!";
+        }
+      } else if (tomWmo.rain || (tomPrecipProb >= 40 && tomTempRaw > 0)) {
         adviceEl.textContent = "Совет на утро: возможен дождь — дайте ребёнку в школу зонт или дождевик.";
         adviceEl.classList.add("advice-rain");
       } else if (tomWmo.snow || (tomPrecipProb >= 40 && tomTempRaw <= 0)) {
@@ -1474,7 +1574,15 @@ async function initYambirnoWeatherWidget() {
       else topPill.textContent = "с. Ямбирно";
     }
     if (nowDescEl) nowDescEl.textContent = "Метеоданные обновляются";
-    if (adviceEl) adviceEl.textContent = "Удачного учебного дня и хорошей погоды!";
+    if (adviceEl) {
+      adviceEl.classList.remove("advice-rain", "advice-cold", "advice-weekend");
+      if (isTomorrowWeekend) {
+        adviceEl.classList.add("advice-weekend");
+        adviceEl.textContent = "Завтра выходной — уроков нет. Хорошего отдыха!";
+      } else {
+        adviceEl.textContent = "Удачного учебного дня и хорошей погоды!";
+      }
+    }
   }
 }
 
@@ -1655,17 +1763,17 @@ function initAccessibilityMode() {
     });
   }
 }
-/* ==================== ПАРСИНГ CSV, ПУБЛИКАЦИИ И ОТЛОЖЕННЫЕ ДАТЫ ==================== */
 
 function parseCSVPreserveRowIndex(csvText) {
+  const cleanText = String(csvText || "").replace(/^\uFEFF/, "");
   const rows = [];
   let currentRow = [];
   let currentCell = "";
   let inQuotes = false;
 
-  for (let i = 0; i < csvText.length; i++) {
-    const char = csvText[i];
-    const nextChar = csvText[i + 1];
+  for (let i = 0; i < cleanText.length; i++) {
+    const char = cleanText[i];
+    const nextChar = cleanText[i + 1];
 
     if (char === '"') {
       if (inQuotes && nextChar === '"') {
@@ -1703,7 +1811,6 @@ function parseMultiplePhotoUrls(rawCell) {
     .filter((item) => item.length > 3);
 }
 
-// Строго ручной кроссбраузерный парсинг дат (МСК UTC+3) без передачи не-ISO строк в new Date() / Date.parse()
 function parseScheduleDateTime(rawDateStr) {
   const cleaned = sanitizeInput(rawDateStr || "", 60);
   if (!cleaned) {
@@ -1718,11 +1825,11 @@ function parseScheduleDateTime(rawDateStr) {
   let hasTimePart = false;
 
   const ruMatch = cleaned.match(
-    /^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})(?:[T\s]+(\d{1,2})[:.](\d{2})(?:[:.]\d{2})?)?$/
+    /^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})(?:[T\s,]+(\d{1,2})[:.](\d{2})(?:[:.]\d{2})?)?$/
   );
   const isoMatch = !ruMatch
     ? cleaned.match(
-        /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s]+(\d{1,2})[:.](\d{2})(?:[:.]\d{2})?)?/
+        /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s,]+(\d{1,2})[:.](\d{2})(?:[:.]\d{2})?)?/
       )
     : null;
 
@@ -1764,7 +1871,6 @@ function parseScheduleDateTime(rawDateStr) {
     return { timestamp: 0, displayStr: cleaned, isFuture: false };
   }
 
-  // Проверяем, что календарная дата не перекатилась (например, 31 февраля)
   const checkDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   if (
     checkDate.getUTCFullYear() !== year ||
@@ -1774,7 +1880,6 @@ function parseScheduleDateTime(rawDateStr) {
     return { timestamp: 0, displayStr: cleaned, isFuture: false };
   }
 
-  // Переводим время МСК (UTC+3) в UTC timestamp
   const targetMs = Date.UTC(year, month - 1, day, hours - 3, minutes, 0);
   const dd = String(day).padStart(2, "0");
   const monthWord = RU_MONTHS_GENITIVE[month - 1] || String(month).padStart(2, "0");
@@ -1865,18 +1970,45 @@ function buildPublicationLightboxSlides(pubItem) {
   });
 }
 
-function attachSafeImageFallback(imgEl, resolved) {
+function attachSafeImageFallback(imgEl, resolved, loadingContainer = null) {
+  const seq = String(++imageLoadSequence);
+  imgEl.dataset.loadSeq = seq;
   let triedAlt = false;
+
+  const isStale = () => imgEl.dataset.loadSeq !== seq;
+  const finishLoading = () => {
+    if (isStale()) return;
+    if (loadingContainer) loadingContainer.classList.remove("is-loading");
+  };
+
+  if (loadingContainer) {
+    loadingContainer.classList.add("is-loading");
+  }
+
+  imgEl.onload = () => {
+    finishLoading();
+  };
+
   imgEl.onerror = () => {
+    if (isStale()) return;
     if (!triedAlt && resolved.altTry) {
       triedAlt = true;
       imgEl.src = resolved.altTry;
     } else {
       imgEl.onerror = null;
-      imgEl.src = resolved.fallback;
+      if (resolved.fallback && imgEl.src !== resolved.fallback) {
+        imgEl.src = resolved.fallback;
+      } else {
+        finishLoading();
+      }
     }
   };
+
   imgEl.src = resolved.src;
+
+  if (imgEl.complete && imgEl.naturalWidth > 0) {
+    finishLoading();
+  }
 }
 
 function openPublicationModal(pubItem, updateUrlHash = true) {
@@ -1922,7 +2054,7 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
         img.alt = `${pubItem.title || "Фото материала"} — изображение ${idx + 1}`;
 
         const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1200);
-        attachSafeImageFallback(img, resolved);
+        attachSafeImageFallback(img, resolved, wrap);
 
         const zoomHint = document.createElement("span");
         zoomHint.className = "pub-modal-photo-zoom";
@@ -1990,7 +2122,9 @@ function tryOpenPublicationFromUrl() {
   } catch (_) {}
 
   if (!pubId) return;
-  const matched = activePublicationsCache.find((item) => item.id === pubId);
+  const matched =
+    activePublicationsCache.find((item) => item.id === pubId) ||
+    activePublicationsCache.find((item) => item.rowIndex === pubId);
   if (matched) {
     openPublicationModal(matched, false);
   }
@@ -2164,7 +2298,7 @@ function renderPublicationCards(publications) {
       img.height = 375;
       img.alt = pub.title;
 
-      attachSafeImageFallback(img, resolveImageLinkSource(pub.photos[0], fallbackSvg, 640));
+      attachSafeImageFallback(img, resolveImageLinkSource(pub.photos[0], fallbackSvg, 640), mediaWrap);
       mediaWrap.appendChild(img);
 
       if (pub.photos.length > 1) {
@@ -2187,7 +2321,6 @@ function renderPublicationCards(publications) {
       });
       card.appendChild(mediaWrap);
 
-      // Полоса мини-превью для новостей с несколькими фото (2–4+ фото)
       if (pub.photos.length > 1) {
         const thumbsBar = document.createElement("div");
         thumbsBar.className = "pub-card-thumbs";
@@ -2366,6 +2499,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
   }
 
   const activePublications = [];
+  const usedIdsSet = new Set();
 
   for (let i = 1; i < rowsArray.length; i++) {
     const row = rowsArray[i] || [];
@@ -2383,10 +2517,14 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
     const scheduleInfo = parseScheduleDateTime(rawDateCell);
     if (scheduleInfo.isFuture) continue;
 
+    const finalTitle = rawTitleCell || "Объявление школы";
+    const stableId = buildStablePublicationId(rawDateCell, finalTitle, usedIdsSet);
+
     activePublications.push({
-      id: String(i),
+      id: stableId,
+      rowIndex: String(i),
       photos: photosList,
-      title: rawTitleCell || "Объявление школы",
+      title: finalTitle,
       badge: rawBadgeCell || "Информация",
       text: rawTextCell,
       dateDisplay: scheduleInfo.displayStr,
@@ -2431,7 +2569,6 @@ async function loadSheet3PublicationsData(isManualRefresh = false) {
   const sectionEl = document.getElementById("school-publications");
   if (!sectionEl) return;
 
-  // Stale-While-Revalidate: мгновенно поднимаем кэш
   try {
     const rawCache = safeStorageGet(window.localStorage, SHEET3_CACHE_KEY);
     if (rawCache) {
@@ -2455,7 +2592,6 @@ async function loadSheet3PublicationsData(isManualRefresh = false) {
     renderSheet3Publications(rows, false);
     safeStorageSet(window.localStorage, SHEET3_CACHE_KEY, JSON.stringify(rows));
   } catch (_) {
-    // Резервный fallback в сетях РФ / ЕМСПД: статический снапшот из GitHub Pages
     const snapshot = await fetchSchoolSnapshotOnce(isManualRefresh);
     if (snapshot && Array.isArray(snapshot.publicationsRows) && snapshot.publicationsRows.length > 1) {
       latestRawSheet3Rows = snapshot.publicationsRows;
@@ -2464,8 +2600,6 @@ async function loadSheet3PublicationsData(isManualRefresh = false) {
     }
   }
 }
-
-/* ==================== ГАЛЕРЕЯ, LIGHTBOX (СВАЙП) И ПЕДАГОГИ ==================== */
 
 function createGalleryFigureElement() {
   const figure = document.createElement("figure");
@@ -2552,10 +2686,13 @@ function updateGalleryFromSheetRows(galleryArray) {
 function initGalleryLightbox() {
   const grid = document.getElementById("gallery-grid");
   const lightbox = document.getElementById("gallery-lightbox");
+  const lbContainer = document.getElementById("lightbox-img-container");
   const lbImg = document.getElementById("lightbox-img");
   const lbTitle = document.getElementById("lightbox-title");
   const lbDesc = document.getElementById("lightbox-desc");
   const lbCounter = document.getElementById("lightbox-counter");
+  const zoomBtn = document.getElementById("lightbox-zoom");
+  const zoomLabel = document.getElementById("lightbox-zoom-label");
   const closeBtn = document.getElementById("lightbox-close");
   const prevBtn = document.getElementById("lightbox-prev");
   const nextBtn = document.getElementById("lightbox-next");
@@ -2567,7 +2704,26 @@ function initGalleryLightbox() {
   let touchStartX = 0;
   let touchStartY = 0;
   let isHorizontalSwipe = false;
+  let isZoomed = false;
   let lbTriggerEl = null;
+
+  const setZoomState = (nextZoom) => {
+    isZoomed = Boolean(nextZoom);
+    lbImg.classList.toggle("is-zoomed", isZoomed);
+    if (lbContainer) {
+      lbContainer.classList.toggle("is-zoomed", isZoomed);
+      if (!isZoomed) {
+        lbContainer.scrollLeft = 0;
+        lbContainer.scrollTop = 0;
+      }
+    }
+    if (zoomBtn) {
+      zoomBtn.setAttribute("aria-pressed", String(isZoomed));
+      if (zoomLabel) {
+        zoomLabel.textContent = isZoomed ? "100%" : "Увеличить";
+      }
+    }
+  };
 
   const resetImgTransform = () => {
     lbImg.classList.remove("is-dragging");
@@ -2578,14 +2734,19 @@ function initGalleryLightbox() {
     if (activeSlides.length === 0) return;
 
     resetImgTransform();
+    setZoomState(false);
     currentSlideIdx = (idx + activeSlides.length) % activeSlides.length;
     const slide = activeSlides[currentSlideIdx];
 
-    attachSafeImageFallback(lbImg, {
-      src: slide.src || slide.fallback || "",
-      altTry: slide.altTry || null,
-      fallback: slide.fallback || ""
-    });
+    attachSafeImageFallback(
+      lbImg,
+      {
+        src: slide.src || slide.fallback || "",
+        altTry: slide.altTry || null,
+        fallback: slide.fallback || ""
+      },
+      lbContainer
+    );
     lbImg.alt = slide.title || "";
 
     if (lbTitle) lbTitle.textContent = slide.title || "";
@@ -2617,6 +2778,8 @@ function initGalleryLightbox() {
   const closeLightbox = () => {
     if (lightbox.classList.contains("hidden")) return;
     resetImgTransform();
+    setZoomState(false);
+    if (lbContainer) lbContainer.classList.remove("is-loading");
     lightbox.classList.add("hidden");
     lightbox.setAttribute("hidden", "");
     const returnEl = lbTriggerEl;
@@ -2660,6 +2823,17 @@ function initGalleryLightbox() {
     });
   }
 
+  if (zoomBtn) {
+    zoomBtn.addEventListener("click", () => {
+      setZoomState(!isZoomed);
+    });
+  }
+
+  lbImg.addEventListener("click", () => {
+    if (isHorizontalSwipe) return;
+    setZoomState(!isZoomed);
+  });
+
   if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
   if (prevBtn) prevBtn.addEventListener("click", () => renderSlideAt(currentSlideIdx - 1));
   if (nextBtn) nextBtn.addEventListener("click", () => renderSlideAt(currentSlideIdx + 1));
@@ -2668,10 +2842,10 @@ function initGalleryLightbox() {
     if (e.target === lightbox) closeLightbox();
   });
 
-  // Эластичный свайп пальцем влево/вправо на сенсорных экранах
   lightbox.addEventListener(
     "touchstart",
     (e) => {
+      if (isZoomed) return;
       if (e.changedTouches && e.changedTouches[0]) {
         touchStartX = e.changedTouches[0].clientX;
         touchStartY = e.changedTouches[0].clientY;
@@ -2684,7 +2858,7 @@ function initGalleryLightbox() {
   lightbox.addEventListener(
     "touchmove",
     (e) => {
-      if (activeSlides.length <= 1 || isReducedMotionPreferred() || !e.changedTouches || !e.changedTouches[0]) return;
+      if (isZoomed || activeSlides.length <= 1 || isReducedMotionPreferred() || !e.changedTouches || !e.changedTouches[0]) return;
       const dx = e.changedTouches[0].clientX - touchStartX;
       const dy = e.changedTouches[0].clientY - touchStartY;
       if (!isHorizontalSwipe && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
@@ -2702,6 +2876,7 @@ function initGalleryLightbox() {
   lightbox.addEventListener(
     "touchend",
     (e) => {
+      if (isZoomed) return;
       resetImgTransform();
       if (activeSlides.length <= 1 || !e.changedTouches || !e.changedTouches[0]) return;
       const dx = e.changedTouches[0].clientX - touchStartX;
@@ -2719,6 +2894,10 @@ function initGalleryLightbox() {
   document.addEventListener("keydown", (e) => {
     if (lightbox.classList.contains("hidden")) return;
     if (e.key === "Escape") {
+      if (isZoomed) {
+        setZoomState(false);
+        return;
+      }
       closeLightbox();
       return;
     }
@@ -2857,8 +3036,6 @@ function updateTeachersFromSheetRows(teachersDataArray) {
   }
 }
 
-/* ==================== ПЕРЕКЛЮЧАТЕЛИ, ПАРСЕР ПАНЕЛИ И ОФЛАЙН-СНИМОК ==================== */
-
 function refreshAllGlidePills() {
   glidePillRefreshers.forEach((fn) => fn());
 }
@@ -2886,9 +3063,23 @@ function initGlidePills() {
     };
 
     glidePillRefreshers.push(updateIndicator);
-    window.addEventListener("resize", updateIndicator, { passive: true });
     requestAnimationFrame(updateIndicator);
   });
+
+  if (!isGlideResizeBound && glidePillRefreshers.length > 0) {
+    isGlideResizeBound = true;
+    window.addEventListener(
+      "resize",
+      () => {
+        if (glideResizeRafId) return;
+        glideResizeRafId = requestAnimationFrame(() => {
+          glideResizeRafId = 0;
+          refreshAllGlidePills();
+        });
+      },
+      { passive: true }
+    );
+  }
 }
 
 function hideGradeAutoHint() {
@@ -2970,9 +3161,9 @@ function syncDayAndGradeUI(dayNum, gradeNum) {
     wPill.setAttribute("aria-pressed", String(isActive));
   });
 
-  const jsToday = new Date().getDay();
+  const mskToday = getMoscowTimeParts().weekday;
   const dayName = DAY_NAMES_FULL[dayNum] || "Понедельник";
-  const dayLabelText = jsToday === dayNum ? `${dayName}, ${gradeNum} класс` : `${dayName} (${gradeNum} класс)`;
+  const dayLabelText = mskToday === dayNum ? `${dayName}, ${gradeNum} класс` : `${dayName} (${gradeNum} класс)`;
 
   const hasWeek2 = Boolean(
     latestParsedSheetData &&
@@ -2985,7 +3176,7 @@ function syncDayAndGradeUI(dayNum, gradeNum) {
   const menuDayLabel = document.getElementById("menu-day-label");
   if (scheduleDayLabel) scheduleDayLabel.textContent = dayLabelText;
   if (menuDayLabel) {
-    const baseMenuLabel = jsToday === dayNum ? `${dayName} (сегодня)` : dayName;
+    const baseMenuLabel = mskToday === dayNum ? `${dayName} (сегодня)` : dayName;
     menuDayLabel.textContent = hasWeek2 ? `${baseMenuLabel} • ${currentSelectedMenuWeek} нед.` : baseMenuLabel;
   }
 
@@ -3087,7 +3278,6 @@ function detectPhotoRowFromCell(cellString) {
   return /^фото\s*\d+/i.test(s);
 }
 
-// Единый парсер матрицы «Ежедневная панель школы» (работает и с live CSV, и с data/school-snapshot.json)
 function parsePanelRowsToDataObject(rows, timeLabel) {
   const scheduleByGradeAndDay = {};
   for (let g = 1; g <= 9; g++) {
@@ -3125,7 +3315,7 @@ function parsePanelRowsToDataObject(rows, timeLabel) {
       currentMode = "board";
       continue;
     }
-    if (colALower === "новости дня") {
+    if (colALower.startsWith("новости дня")) {
       currentMode = "board";
       if (colB.toLowerCase().includes("расписан")) {
         boardCols = { news: 0, schedule: 1, important: 2, status: 3 };
@@ -3301,7 +3491,6 @@ function initLiveSheetWidgetAndMenu() {
 
   if (!newsEl || !scheduleEl || !importantEl) return;
 
-  // Таймер отложенных публикаций запускается строго на главной странице
   if (document.getElementById("school-publications")) {
     setInterval(() => {
       if (!document.hidden && latestRawSheet3Rows) {
@@ -3359,7 +3548,6 @@ function initLiveSheetWidgetAndMenu() {
     }
   };
 
-  // Stale-While-Revalidate: мгновенный рендер кэша до сетевого запроса
   let hasHydratedCache = false;
   try {
     const rawCache = safeStorageGet(window.localStorage, SHEET_CACHE_KEY);
@@ -3397,7 +3585,7 @@ function initLiveSheetWidgetAndMenu() {
       }
 
       const rows = parseCSVPreserveRowIndex(csvText);
-      const nowLabel = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+      const nowLabel = formatMoscowShortTime(getMoscowTimeParts());
       const parsedData = parsePanelRowsToDataObject(rows, nowLabel);
 
       renderWidgetData(parsedData, "live");
@@ -3406,7 +3594,6 @@ function initLiveSheetWidgetAndMenu() {
     } catch (_) {
       [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
 
-      // Ступень 2: резервный статический снимок из репозитория GitHub Pages (работает без доступа к Google)
       const snapshot = await fetchSchoolSnapshotOnce(isManualRefresh);
       if (snapshot && Array.isArray(snapshot.panelRows) && snapshot.panelRows.length >= 3) {
         const snapshotLabel = sanitizeInput(snapshot.updatedLabel || "сохранено", 40);
@@ -3445,8 +3632,6 @@ function initLiveSheetWidgetAndMenu() {
 
   loadSheetData(false);
 }
-
-/* ==================== НАВИГАЦИЯ, КОПИРОВАНИЕ И ЭЛЕКТРОННАЯ ПРИЁМНАЯ ==================== */
 
 function initCopyButtons() {
   const copyBtns = document.querySelectorAll(".btn-copy-mini");
@@ -3584,7 +3769,6 @@ function initFeedbackForm() {
   const formFieldset = document.getElementById("form-fieldset");
   if (!consentStep || !formStep || !acceptBtn || !form || !formFieldset) return;
 
-  // Защита формы от Clickjacking (встраивания в сторонний iframe)
   let isEmbeddedInFrame = false;
   try {
     isEmbeddedInFrame = window.self !== window.top;
@@ -3628,17 +3812,34 @@ function initFeedbackForm() {
   const receiptFio = document.getElementById("receipt-fio");
   const receiptContact = document.getElementById("receipt-contact");
   const receiptComment = document.getElementById("receipt-comment");
+  const copyTicketBtn = document.getElementById("copy-ticket-btn");
   const copyReceiptBtn = document.getElementById("copy-receipt-btn");
   const newFeedbackBtn = document.getElementById("new-feedback-btn");
 
   let isConsentConfirmed = false;
+  let isSubmitting = false;
   let formUnlockedAtMs = 0;
   let selectedTopicPrefix = "[Вопрос руководителю] ";
+  let lastRegisteredTicketId = "";
+
+  const getMaxCommentBodyLen = () => Math.max(100, 2000 - selectedTopicPrefix.length);
+
+  const syncCommentMaxLength = () => {
+    const maxBodyLen = getMaxCommentBodyLen();
+    if (commentInput) {
+      commentInput.maxLength = maxBodyLen;
+    }
+    if (charCounter && commentInput) {
+      charCounter.textContent = `${commentInput.value.length} / ${maxBodyLen}`;
+    }
+  };
 
   formFieldset.disabled = true;
   submitBtn.disabled = true;
+  syncCommentMaxLength();
 
   const resetFormValidationUI = () => {
+    const maxBodyLen = getMaxCommentBodyLen();
     [fioInput, contactInput, commentInput].forEach((el) => {
       el.classList.remove("is-valid", "is-invalid");
       el.setAttribute("aria-invalid", "false");
@@ -3652,12 +3853,10 @@ function initFeedbackForm() {
       contactHint.className = "field-hint";
     }
     if (commentHint) {
-      commentHint.textContent = "Пожалуйста, напишите ваше сообщение (от 5 до 2000 символов)";
+      commentHint.textContent = `Пожалуйста, напишите ваше сообщение (от 5 до ${maxBodyLen} символов)`;
       commentHint.className = "field-hint";
     }
-    if (charCounter) {
-      charCounter.textContent = "0 / 2000";
-    }
+    syncCommentMaxLength();
     if (formResponse) {
       formResponse.classList.add("hidden");
     }
@@ -3669,6 +3868,12 @@ function initFeedbackForm() {
     formStep.classList.add(`topic-theme-${themeName || "question"}`);
     if (commentInput && placeholderText) {
       commentInput.placeholder = placeholderText;
+    }
+    syncCommentMaxLength();
+    if (commentInput && commentInput.value.length > 0) {
+      validateComment();
+    } else if (commentHint) {
+      commentHint.textContent = `Пожалуйста, напишите ваше сообщение (от 5 до ${getMaxCommentBodyLen()} символов)`;
     }
   };
 
@@ -3740,7 +3945,6 @@ function initFeedbackForm() {
     }
   };
 
-  // Сохраняем открытую форму в рамках текущей вкладки при возврате с privacy.html
   if (safeStorageGet(window.sessionStorage, FEEDBACK_CONSENT_SESSION_KEY) === "confirmed") {
     unlockFormStep(true);
   }
@@ -3800,32 +4004,37 @@ function initFeedbackForm() {
     return isValid;
   };
 
-  const validateComment = () => {
+  function validateComment() {
+    const maxBodyLen = getMaxCommentBodyLen();
     const rawLen = commentInput.value.length;
     if (charCounter) {
-      charCounter.textContent = `${rawLen} / 2000`;
+      charCounter.textContent = `${rawLen} / ${maxBodyLen}`;
     }
 
-    const cleanVal = sanitizeInput(commentInput.value, 2000);
-    const isValid = cleanVal.length >= 5;
-    const isInvalidShown = !isValid && cleanVal.length > 0;
+    const cleanVal = sanitizeInput(commentInput.value, maxBodyLen + 50);
+    const isTooLong = cleanVal.length > maxBodyLen;
+    const isValid = cleanVal.length >= 5 && !isTooLong;
+    const isInvalidShown = (!isValid && cleanVal.length > 0) || isTooLong;
 
     commentInput.classList.toggle("is-valid", isValid);
     commentInput.classList.toggle("is-invalid", isInvalidShown);
     commentInput.setAttribute("aria-invalid", String(isInvalidShown));
 
-    if (isInvalidShown) {
+    if (isTooLong) {
+      commentHint.textContent = `Превышен лимит сообщения (максимум ${maxBodyLen} символов)`;
+      commentHint.className = "field-hint error-text";
+    } else if (isInvalidShown) {
       commentHint.textContent = "Слишком короткое сообщение (минимум 5 символов)";
       commentHint.className = "field-hint error-text";
     } else if (isValid) {
       commentHint.textContent = "Текст сообщения заполнен";
       commentHint.className = "field-hint valid-text";
     } else {
-      commentHint.textContent = "Пожалуйста, напишите ваше сообщение (от 5 до 2000 символов)";
+      commentHint.textContent = `Пожалуйста, напишите ваше сообщение (от 5 до ${maxBodyLen} символов)`;
       commentHint.className = "field-hint";
     }
     return isValid;
-  };
+  }
 
   fioInput.addEventListener("input", validateFio);
   contactInput.addEventListener("input", validateContact);
@@ -3833,7 +4042,7 @@ function initFeedbackForm() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!isConsentConfirmed || formFieldset.disabled || submitBtn.disabled) return;
+    if (!isConsentConfirmed || isSubmitting || formFieldset.disabled || submitBtn.disabled) return;
 
     if (hpInput && hpInput.value.trim().length > 0) {
       return;
@@ -3877,11 +4086,11 @@ function initFeedbackForm() {
     const sanitizedComment = sanitizeInput(`${selectedTopicPrefix}${commentInput.value}`, 2000);
     const fallbackTicketNum = generateSecureTicketNumber();
 
+    isSubmitting = true;
     submitBtn.disabled = true;
     submitBtnText.textContent = "Отправка сообщения...";
     submitLoader.classList.remove("hidden");
 
-    // Передаём чистые значения: серверный Code.gs валидирует (+7 и др.) и сам экранирует формулы (CWE-1236)
     const formDataParams = new URLSearchParams();
     formDataParams.append("fio", sanitizedFio);
     formDataParams.append("contact", sanitizedContact);
@@ -3918,10 +4127,11 @@ function initFeedbackForm() {
         }
       }
 
+      lastRegisteredTicketId = ticketNum;
       safeStorageSet(window.localStorage, FEEDBACK_COOLDOWN_KEY, String(Date.now()));
 
       if (receiptBox && receiptFio && receiptContact && receiptComment && receiptMeta) {
-        receiptMeta.textContent = `Талон № ${ticketNum} • ${new Date().toLocaleString("ru-RU")}`;
+        receiptMeta.textContent = `Талон № ${ticketNum} • ${formatMoscowFullDateTime(getMoscowTimeParts())}`;
         receiptFio.textContent = sanitizedFio;
         receiptContact.textContent = sanitizedContact;
         receiptComment.textContent = sanitizedComment;
@@ -3951,11 +4161,24 @@ function initFeedbackForm() {
       formResponse.className = "form-response error";
       formResponse.classList.remove("hidden");
     } finally {
+      isSubmitting = false;
       submitBtn.disabled = false;
       submitBtnText.textContent = "Отправить сообщение в школу";
       submitLoader.classList.add("hidden");
     }
   });
+
+  if (copyTicketBtn) {
+    copyTicketBtn.addEventListener("click", async () => {
+      if (!lastRegisteredTicketId) return;
+      const copied = await copyTextToClipboard(lastRegisteredTicketId);
+      showDynamicIslandToast(
+        copied
+          ? `Номер талона ${lastRegisteredTicketId} скопирован`
+          : "Не удалось скопировать — выделите номер талона вручную"
+      );
+    });
+  }
 
   if (copyReceiptBtn) {
     copyReceiptBtn.addEventListener("click", async () => {
@@ -3983,8 +4206,6 @@ function initFeedbackForm() {
     });
   }
 }
-
-/* ==================== 60 FPS MOTION, SCROLL-REVEAL И SERVICE WORKER ==================== */
 
 function bindTiltToSelector(selector) {
   if (!isDesktopHoverPointer()) return;
@@ -4076,7 +4297,6 @@ function initScrollRevealAndCounters() {
     { threshold: 0.12 }
   );
 
-  // Скрываем только элементы ниже текущего экрана, чтобы не задерживать LCP
   const viewportCutoff = window.innerHeight * 0.95;
   revealElements.forEach((el) => {
     const rect = el.getBoundingClientRect();
@@ -4096,6 +4316,10 @@ function initScrollRevealAndCounters() {
     const startTime = performance.now();
 
     const step = (currentTime) => {
+      if (isReducedMotionPreferred()) {
+        el.textContent = `${target.toFixed(decimals)}${suffix}`;
+        return;
+      }
       const progress = Math.min((currentTime - startTime) / duration, 1);
       const easeOut = 1 - Math.pow(1 - progress, 3);
       const currentVal = (target * easeOut).toFixed(decimals);
@@ -4128,6 +4352,9 @@ function initScrollRevealAndCounters() {
 
 function registerOfflineServiceWorker() {
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    const isProjectSite = location.pathname.startsWith("/yambirno-school/");
+    const swUrl = isProjectSite ? "/yambirno-school/sw.js" : "./sw.js";
+    const swOptions = isProjectSite ? { scope: "/yambirno-school/" } : undefined;
+    navigator.serviceWorker.register(swUrl, swOptions).catch(() => {});
   }
 }
