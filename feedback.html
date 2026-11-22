@@ -19,7 +19,6 @@
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 
-  <!-- Open Graph / Соцсети -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:url" content="https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/feedback.html">
@@ -33,7 +32,6 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Электронная приёмная Ямбирнского филиала МОУ «Лесно-Конобеевская СШ»">
 
-  <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Обратная связь — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»">
   <meta name="twitter:description" content="Отправьте благодарность педагогу, идею или вопрос руководителю Ямбирнского филиала.">
@@ -81,8 +79,7 @@
 </head>
 <body class="paper-texture">
 
-  <!-- Авторский многослойный SVG-спрайт страницы обратной связи -->
-  <svg id="yambirno-icon-sprite" class="hp-field" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
+  <svg id="yambirno-icon-sprite" class="svg-sprite-defs" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
     <defs>
       <linearGradient id="yamb-fb-sapphire" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#3b82f6"/>
@@ -390,7 +387,7 @@
             <div class="form-group">
               <div class="form-label-row">
                 <label for="comment-input" class="form-label">Текст сообщения <span class="req">*</span></label>
-                <span id="comment-char-counter" class="char-counter">0 / 2000</span>
+                <span id="comment-char-counter" class="char-counter">0 / 1978</span>
               </div>
               <textarea
                 id="comment-input"
@@ -398,12 +395,12 @@
                 rows="5"
                 class="form-control"
                 placeholder="Напишите здесь ваш вопрос, слова благодарности педагогу или предложение..."
-                maxlength="2000"
+                maxlength="1978"
                 aria-describedby="comment-hint"
                 aria-invalid="false"
                 required
               ></textarea>
-              <span id="comment-hint" class="field-hint">Пожалуйста, напишите ваше сообщение (от 5 до 2000 символов)</span>
+              <span id="comment-hint" class="field-hint">Пожалуйста, напишите ваше сообщение (от 5 до 1978 символов)</span>
             </div>
 
             <div class="consent-confirmed-note">
@@ -428,7 +425,13 @@
             </span>
             <div>
               <h3 id="receipt-heading" class="receipt-heading" tabindex="-1">Обращение успешно зарегистрировано!</h3>
-              <span id="receipt-meta" class="receipt-meta">Талон № ...</span>
+              <div class="receipt-meta-row">
+                <span id="receipt-meta" class="receipt-meta">Талон № ...</span>
+                <button type="button" id="copy-ticket-btn" class="btn-copy-ticket" title="Скопировать только номер талона">
+                  <svg class="ui-ico" width="14" height="14" aria-hidden="true"><use href="#ico-copy"></use></svg>
+                  <span>Скопировать талон</span>
+                </button>
+              </div>
             </div>
           </div>
           <div class="receipt-body">
