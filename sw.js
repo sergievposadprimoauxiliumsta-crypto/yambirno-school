@@ -1,4 +1,4 @@
-const CACHE_NAME = "yambirno-school-v12";
+const CACHE_NAME = "yambirno-school-v13";
 const NETWORK_TIMEOUT_MS = 4000;
 const SNAPSHOT_TIMEOUT_MS = 4500;
 
