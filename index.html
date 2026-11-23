@@ -1184,7 +1184,6 @@
         </div>
       </div>
     </section>
-
     <section id="teachers" class="section">
       <div class="container">
         <div class="section-header reveal">
@@ -1820,15 +1819,80 @@
       <div class="pub-modal-footer qr-modal-footer">
         <button type="button" id="qr-modal-max-btn" class="btn btn-max">
           <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-max"></use></svg>
-          <span>Отправить в MAX</span>
+          <span>Отправить плакат в MAX</span>
         </button>
         <button type="button" id="qr-modal-print-btn" class="btn btn-primary">
           <svg class="ui-ico" width="16" height="16" aria-hidden="true"><use href="#ico-print"></use></svg>
           <span>Распечатать для стенда</span>
         </button>
-        <a href="assets/img/qr-school-stand.png" download="QR-Shkola-Yambirno.png" class="btn btn-secondary">
+        <button type="button" id="qr-modal-download-btn" class="btn btn-secondary">
           <span>Скачать плакат (PNG)</span>
-        </a>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="max-share-modal" class="lightbox-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="max-modal-title" hidden>
+    <div class="max-modal-dialog surface-card">
+      <div class="pub-modal-header">
+        <div class="pub-modal-meta">
+          <span class="teacher-badge max-badge">Мессенджер MAX</span>
+        </div>
+        <button type="button" id="max-modal-close" class="pub-modal-close-btn" aria-label="Закрыть окно отправки в MAX">✕ Закрыть</button>
+      </div>
+
+      <div class="max-modal-body">
+        <h3 id="max-modal-title" class="max-modal-title">Отправить в мессенджер MAX</h3>
+        <p id="max-modal-subtitle" class="max-modal-subtitle">Выберите, как открыть MAX: через установленное приложение или в браузере.</p>
+
+        <div id="max-modal-poster-wrap" class="max-poster-wrap hidden">
+          <img
+            id="max-modal-poster-img"
+            src="assets/img/qr-school.svg"
+            alt="Предпросмотр QR-плаката портала школы для отправки в MAX"
+            class="max-poster-preview"
+            width="220"
+            height="275"
+            decoding="async"
+          >
+          <p id="max-poster-hint" class="max-poster-hint">
+            При нажатии на кнопку ниже <strong>QR-плакат (PNG)</strong> скопируется в буфер обмена, а ссылка и подпись передадутся в MAX. В выбранном чате просто нажмите <strong>Ctrl+V</strong>, чтобы прикрепить плакат.
+          </p>
+        </div>
+
+        <div id="max-modal-text-preview" class="max-text-preview"></div>
+
+        <div class="max-choice-grid">
+          <button type="button" id="max-share-native-btn" class="btn btn-max btn-full hidden">
+            <svg class="ui-ico" width="18" height="18" aria-hidden="true"><use href="#ico-max"></use></svg>
+            <span id="max-share-native-label">Отправить плакат и ссылку в MAX</span>
+          </button>
+
+          <button type="button" id="max-share-app-btn" class="btn btn-max btn-full">
+            <svg class="ui-ico" width="18" height="18" aria-hidden="true"><use href="#ico-max"></use></svg>
+            <span>Открыть приложение MAX</span>
+          </button>
+
+          <button type="button" id="max-share-web-btn" class="btn btn-secondary btn-full">
+            <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-laptop"></use></svg>
+            <span>Открыть MAX в браузере</span>
+          </button>
+        </div>
+
+        <div class="max-utility-actions">
+          <button type="button" id="max-copy-poster-btn" class="btn-pub-action hidden">
+            <svg class="ui-ico" width="15" height="15" aria-hidden="true"><use href="#ico-gallery"></use></svg>
+            <span>Скопировать плакат</span>
+          </button>
+          <button type="button" id="max-download-poster-btn" class="btn-pub-action btn-pub-doc hidden">
+            <svg class="ui-ico" width="15" height="15" aria-hidden="true"><use href="#ico-print"></use></svg>
+            <span>Скачать плакат (PNG)</span>
+          </button>
+          <button type="button" id="max-copy-text-btn" class="btn-pub-action btn-pub-doc">
+            <svg class="ui-ico" width="15" height="15" aria-hidden="true"><use href="#ico-copy"></use></svg>
+            <span>Скопировать текст</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
