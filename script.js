@@ -16,9 +16,13 @@ const FEEDBACK_CONSENT_SESSION_KEY = "yambirno_feedback_consent_session_v1";
 const MEDIA_MAP_CACHE_KEY = "yambirno_media_map_v1";
 
 const SITE_CANONICAL_URL = "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/";
+const MAX_SHARE_DEEPLINK_BASE = "https://max.ru/:share";
 const MAX_WEB_URL = "https://web.max.ru/";
 // При появлении официального школьного чата/канала в MAX укажите его HTTPS-адрес ниже:
 const MAX_SCHOOL_CHAT_URL = "";
+const SCHOOL_QR_SVG_URL = "assets/img/qr-school.svg";
+const SCHOOL_QR_POSTER_FILENAME = "QR-Shkola-Yambirno.png";
+const SCHOOL_QR_PATH_FALLBACK = "M4,4h7v1h-7zM16,4h1v1h-1zM18,4h1v1h-1zM20,4h1v1h-1zM27,4h1v1h-1zM32,4h1v1h-1zM34,4h7v1h-7zM4,5h1v1h-1zM10,5h1v1h-1zM18,5h1v1h-1zM20,5h3v1h-3zM24,5h1v1h-1zM26,5h1v1h-1zM31,5h1v1h-1zM34,5h1v1h-1zM40,5h1v1h-1zM4,6h1v1h-1zM6,6h3v1h-3zM10,6h1v1h-1zM12,6h2v1h-2zM15,6h6v1h-6zM25,6h3v1h-3zM34,6h1v1h-1zM36,6h3v1h-3zM40,6h1v1h-1zM4,7h1v1h-1zM6,7h3v1h-3zM10,7h1v1h-1zM12,7h1v1h-1zM14,7h8v1h-8zM24,7h1v1h-1zM26,7h7v1h-7zM34,7h1v1h-1zM36,7h3v1h-3zM40,7h1v1h-1zM4,8h1v1h-1zM6,8h3v1h-3zM10,8h1v1h-1zM12,8h1v1h-1zM14,8h1v1h-1zM16,8h1v1h-1zM18,8h1v1h-1zM20,8h2v1h-2zM23,8h2v1h-2zM27,8h1v1h-1zM29,8h1v1h-1zM32,8h1v1h-1zM34,8h1v1h-1zM36,8h3v1h-3zM40,8h1v1h-1zM4,9h1v1h-1zM10,9h1v1h-1zM12,9h2v1h-2zM15,9h2v1h-2zM18,9h4v1h-4zM24,9h1v1h-1zM26,9h1v1h-1zM31,9h1v1h-1zM34,9h1v1h-1zM40,9h1v1h-1zM4,10h7v1h-7zM12,10h1v1h-1zM14,10h1v1h-1zM16,10h1v1h-1zM18,10h1v1h-1zM20,10h1v1h-1zM22,10h1v1h-1zM24,10h1v1h-1zM26,10h1v1h-1zM28,10h1v1h-1zM30,10h1v1h-1zM32,10h1v1h-1zM34,10h7v1h-7zM12,11h1v1h-1zM14,11h1v1h-1zM17,11h1v1h-1zM19,11h4v1h-4zM24,11h3v1h-3zM30,11h1v1h-1zM32,11h1v1h-1zM4,12h1v1h-1zM6,12h5v1h-5zM14,12h1v1h-1zM17,12h1v1h-1zM20,12h1v1h-1zM23,12h1v1h-1zM26,12h6v1h-6zM34,12h5v1h-5zM8,13h1v1h-1zM11,13h2v1h-2zM14,13h1v1h-1zM16,13h1v1h-1zM19,13h1v1h-1zM22,13h1v1h-1zM24,13h2v1h-2zM27,13h1v1h-1zM29,13h2v1h-2zM32,13h1v1h-1zM35,13h1v1h-1zM39,13h1v1h-1zM6,14h1v1h-1zM10,14h1v1h-1zM13,14h1v1h-1zM15,14h1v1h-1zM17,14h1v1h-1zM19,14h2v1h-2zM23,14h1v1h-1zM25,14h1v1h-1zM28,14h5v1h-5zM34,14h1v1h-1zM36,14h1v1h-1zM38,14h3v1h-3zM6,15h1v1h-1zM12,15h1v1h-1zM14,15h2v1h-2zM18,15h2v1h-2zM22,15h5v1h-5zM28,15h1v1h-1zM30,15h4v1h-4zM35,15h2v1h-2zM40,15h1v1h-1zM5,16h1v1h-1zM8,16h1v1h-1zM10,16h1v1h-1zM13,16h2v1h-2zM19,16h3v1h-3zM23,16h1v1h-1zM26,16h5v1h-5zM32,16h9v1h-9zM4,17h1v1h-1zM7,17h3v1h-3zM11,17h3v1h-3zM15,17h1v1h-1zM18,17h1v1h-1zM20,17h1v1h-1zM22,17h3v1h-3zM26,17h2v1h-2zM30,17h1v1h-1zM32,17h1v1h-1zM35,17h1v1h-1zM4,18h2v1h-2zM7,18h1v1h-1zM9,18h4v1h-4zM17,18h3v1h-3zM22,18h1v1h-1zM24,18h3v1h-3zM29,18h1v1h-1zM31,18h2v1h-2zM35,18h3v1h-3zM39,18h2v1h-2zM6,19h1v1h-1zM9,19h1v1h-1zM13,19h2v1h-2zM16,19h1v1h-1zM19,19h1v1h-1zM24,19h2v1h-2zM28,19h1v1h-1zM31,19h6v1h-6zM4,20h1v1h-1zM6,20h2v1h-2zM10,20h1v1h-1zM12,20h2v1h-2zM15,20h5v1h-5zM22,20h1v1h-1zM24,20h1v1h-1zM27,20h5v1h-5zM33,20h2v1h-2zM36,20h1v1h-1zM38,20h2v1h-2zM7,21h1v1h-1zM9,21h1v1h-1zM12,21h2v1h-2zM18,21h3v1h-3zM25,21h1v1h-1zM27,21h1v1h-1zM32,21h1v1h-1zM37,21h3v1h-3zM4,22h2v1h-2zM7,22h2v1h-2zM10,22h1v1h-1zM12,22h4v1h-4zM17,22h2v1h-2zM22,22h1v1h-1zM24,22h3v1h-3zM29,22h1v1h-1zM31,22h4v1h-4zM36,22h1v1h-1zM39,22h2v1h-2zM4,23h1v1h-1zM6,23h1v1h-1zM12,23h1v1h-1zM14,23h5v1h-5zM20,23h1v1h-1zM25,23h4v1h-4zM30,23h2v1h-2zM33,23h2v1h-2zM40,23h1v1h-1zM4,24h5v1h-5zM10,24h3v1h-3zM15,24h1v1h-1zM17,24h2v1h-2zM20,24h3v1h-3zM24,24h1v1h-1zM26,24h1v1h-1zM28,24h4v1h-4zM33,24h2v1h-2zM36,24h1v1h-1zM38,24h1v1h-1zM4,25h3v1h-3zM9,25h1v1h-1zM11,25h4v1h-4zM16,25h1v1h-1zM20,25h5v1h-5zM26,25h2v1h-2zM29,25h1v1h-1zM32,25h2v1h-2zM37,25h1v1h-1zM4,26h2v1h-2zM7,26h2v1h-2zM10,26h5v1h-5zM16,26h1v1h-1zM18,26h4v1h-4zM24,26h1v1h-1zM26,26h1v1h-1zM28,26h6v1h-6zM35,26h3v1h-3zM40,26h1v1h-1zM4,27h1v1h-1zM6,27h3v1h-3zM12,27h3v1h-3zM16,27h4v1h-4zM21,27h2v1h-2zM25,27h4v1h-4zM31,27h1v1h-1zM33,27h1v1h-1zM35,27h2v1h-2zM39,27h1v1h-1zM5,28h4v1h-4zM10,28h2v1h-2zM13,28h2v1h-2zM17,28h2v1h-2zM20,28h1v1h-1zM23,28h1v1h-1zM25,28h1v1h-1zM28,28h3v1h-3zM34,28h1v1h-1zM36,28h1v1h-1zM38,28h2v1h-2zM4,29h1v1h-1zM6,29h4v1h-4zM11,29h1v1h-1zM13,29h2v1h-2zM16,29h2v1h-2zM19,29h1v1h-1zM21,29h2v1h-2zM24,29h1v1h-1zM27,29h1v1h-1zM32,29h1v1h-1zM35,29h1v1h-1zM4,30h1v1h-1zM6,30h1v1h-1zM9,30h5v1h-5zM15,30h1v1h-1zM19,30h2v1h-2zM23,30h1v1h-1zM25,30h1v1h-1zM31,30h2v1h-2zM34,30h2v1h-2zM37,30h1v1h-1zM39,30h2v1h-2zM4,31h1v1h-1zM7,31h1v1h-1zM12,31h2v1h-2zM16,31h1v1h-1zM18,31h2v1h-2zM23,31h3v1h-3zM27,31h2v1h-2zM30,31h2v1h-2zM35,31h1v1h-1zM4,32h1v1h-1zM6,32h1v1h-1zM9,32h3v1h-3zM13,32h1v1h-1zM15,32h2v1h-2zM18,32h4v1h-4zM23,32h1v1h-1zM26,32h1v1h-1zM29,32h2v1h-2zM32,32h9v1h-9zM12,33h3v1h-3zM16,33h1v1h-1zM18,33h1v1h-1zM20,33h1v1h-1zM22,33h3v1h-3zM27,33h1v1h-1zM29,33h1v1h-1zM31,33h2v1h-2zM36,33h2v1h-2zM4,34h7v1h-7zM15,34h2v1h-2zM19,34h1v1h-1zM22,34h1v1h-1zM26,34h1v1h-1zM28,34h3v1h-3zM32,34h1v1h-1zM34,34h1v1h-1zM36,34h1v1h-1zM38,34h3v1h-3zM4,35h1v1h-1zM10,35h1v1h-1zM12,35h2v1h-2zM16,35h3v1h-3zM24,35h1v1h-1zM28,35h1v1h-1zM30,35h1v1h-1zM32,35h1v1h-1zM36,35h2v1h-2zM40,35h1v1h-1zM4,36h1v1h-1zM6,36h3v1h-3zM10,36h1v1h-1zM12,36h1v1h-1zM14,36h2v1h-2zM18,36h2v1h-2zM22,36h5v1h-5zM29,36h1v1h-1zM31,36h6v1h-6zM38,36h3v1h-3zM4,37h1v1h-1zM6,37h3v1h-3zM10,37h1v1h-1zM12,37h1v1h-1zM14,37h3v1h-3zM18,37h3v1h-3zM27,37h1v1h-1zM32,37h3v1h-3zM36,37h3v1h-3zM40,37h1v1h-1zM4,38h1v1h-1zM6,38h3v1h-3zM10,38h1v1h-1zM12,38h1v1h-1zM16,38h1v1h-1zM18,38h1v1h-1zM21,38h2v1h-2zM24,38h2v1h-2zM30,38h1v1h-1zM37,38h1v1h-1zM39,38h2v1h-2zM4,39h1v1h-1zM10,39h1v1h-1zM13,39h1v1h-1zM16,39h3v1h-3zM20,39h1v1h-1zM25,39h2v1h-2zM32,39h2v1h-2zM36,39h1v1h-1zM40,39h1v1h-1zM4,40h7v1h-7zM12,40h5v1h-5zM18,40h1v1h-1zM20,40h2v1h-2zM26,40h2v1h-2zM29,40h2v1h-2zM33,40h1v1h-1zM36,40h1v1h-1zM38,40h3v1h-3z";
 
 const ALLOWED_DOC_HOSTS = [
   "drive.google.com",
@@ -207,6 +211,9 @@ let currentSelectedMenuWeek = 1;
 let isTomorrowWeekendWeather = false;
 let toastTimeoutId = null;
 let lastModalTriggerEl = null;
+let maxModalTriggerEl = null;
+let activeMaxSharePayload = null;
+let cachedQrPosterPromise = null;
 let openLightboxSlidesFn = null;
 const glidePillRefreshers = [];
 let isGlideResizeBound = false;
@@ -587,10 +594,12 @@ function unlockPageScrollAfterModal(customFocusTarget = null) {
   const pubModal = document.getElementById("publication-modal");
   const lbModal = document.getElementById("gallery-lightbox");
   const qrModal = document.getElementById("qr-modal");
+  const maxModal = document.getElementById("max-share-modal");
   const isAnyModalOpen =
     Boolean(pubModal && !pubModal.classList.contains("hidden")) ||
     Boolean(lbModal && !lbModal.classList.contains("hidden")) ||
-    Boolean(qrModal && !qrModal.classList.contains("hidden"));
+    Boolean(qrModal && !qrModal.classList.contains("hidden")) ||
+    Boolean(maxModal && !maxModal.classList.contains("hidden"));
 
   if (!isAnyModalOpen) {
     document.documentElement.classList.remove("modal-open");
@@ -1391,41 +1400,250 @@ function buildCurrentScheduleSharePayload() {
   };
 }
 
-async function shareToMaxMessenger(payload) {
-  const title = (payload && payload.title) || "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»";
-  const url = (payload && payload.url) || SITE_CANONICAL_URL;
-  const text = (payload && payload.text) || `Информационный портал школы с. Ямбирно: расписание 1–9 классов, меню питания и новости.\n${url}`;
-  const fullClipboardText = text.includes(url) ? text : `${text}\n${url}`;
+function drawCanvasRoundedRect(ctx, x, y, w, h, r) {
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
 
-  const copied = await copyTextToClipboard(fullClipboardText);
-
-  if (navigator.share && !isDesktopHoverPointer()) {
-    try {
-      await navigator.share({ title, text, url });
-      showDynamicIslandToast("Готово к отправке в MAX");
-      return;
-    } catch (err) {
-      if (err && err.name === "AbortError") {
-        if (copied) showDynamicIslandToast("Текст скопирован — можно вставить в чат MAX");
-        return;
+async function resolveQrPathDataForCanvas() {
+  try {
+    const resp = await fetchWithTimeout(SCHOOL_QR_SVG_URL, { cache: "default" }, 3000);
+    if (resp && resp.ok) {
+      const svgText = await resp.text();
+      const match = svgText.match(/<path[^>]*\bd="([^"]+)"/i);
+      if (match && match[1] && /M\d+,\d+h\d+v1h-\d+z/.test(match[1])) {
+        return match[1];
       }
     }
+  } catch (_) {}
+  return SCHOOL_QR_PATH_FALLBACK;
+}
+
+function getSchoolQrPosterAsset() {
+  if (cachedQrPosterPromise) return cachedQrPosterPromise;
+
+  cachedQrPosterPromise = (async () => {
+    const pathData = await resolveQrPathDataForCanvas();
+    const W = 1200;
+    const H = 1500;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Фон плаката
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillRect(0, 0, W, H);
+
+    // Верхний фирменный баннер
+    drawCanvasRoundedRect(ctx, 48, 48, W - 96, 256, 36);
+    ctx.fillStyle = "#1e3a8a";
+    ctx.fill();
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillRect(48, 280, W - 96, 26);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#fde68a";
+    ctx.font = '700 28px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    ctx.fillText("ШАЦКИЙ РАЙОН • РЯЗАНСКАЯ ОБЛАСТЬ • С. ЯМБИРНО", W / 2, 102);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = '800 46px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    ctx.fillText("Ямбирнский филиал", W / 2, 166);
+    ctx.fillText("МОУ «Лесно-Конобеевская СШ»", W / 2, 228);
+
+    // Белая карточка для QR-кода
+    drawCanvasRoundedRect(ctx, 130, 355, W - 260, 860, 40);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.stroke();
+
+    // Отрисовка чётких модулей QR (45x45 viewBox с тихой зоной 4)
+    const vb = 45;
+    const qrScale = 18;
+    const qrPx = vb * qrScale;
+    const qrX0 = Math.floor((W - qrPx) / 2);
+    const qrY0 = 380;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(qrX0, qrY0, qrPx, qrPx);
+
+    ctx.fillStyle = "#0f172a";
+    const runRegex = /M(\d+),(\d+)h(\d+)v1h-\d+z/g;
+    let m;
+    while ((m = runRegex.exec(pathData)) !== null) {
+      const rx = parseInt(m[1], 10);
+      const ry = parseInt(m[2], 10);
+      const rw = parseInt(m[3], 10);
+      ctx.fillRect(qrX0 + rx * qrScale, qrY0 + ry * qrScale, rw * qrScale, qrScale);
+    }
+
+    // Подписи под QR-кодом
+    ctx.fillStyle = "#1e40af";
+    ctx.font = '800 36px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    ctx.fillText("Наведите камеру смартфона", W / 2, 1266);
+
+    ctx.fillStyle = "#334155";
+    ctx.font = '600 28px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    ctx.fillText("Расписание 1–9 классов • Погода • Меню питания", W / 2, 1324);
+    ctx.fillText("Дневник, Учи.ру • Новости • Электронная приёмная", W / 2, 1368);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = '600 22px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    ctx.fillText("sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/", W / 2, 1432);
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const blob = await new Promise((resolve) => {
+      if (typeof canvas.toBlob === "function") {
+        canvas.toBlob((b) => resolve(b), "image/png");
+      } else {
+        resolve(null);
+      }
+    });
+
+    if (!blob) {
+      cachedQrPosterPromise = null;
+      return null;
+    }
+
+    return { blob, dataUrl };
+  })().catch(() => {
+    cachedQrPosterPromise = null;
+    return null;
+  });
+
+  return cachedQrPosterPromise;
+}
+
+async function copyImageBlobToClipboard(blob) {
+  if (!blob || !navigator.clipboard || typeof navigator.clipboard.write !== "function" || typeof ClipboardItem === "undefined") {
+    return false;
+  }
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function downloadSchoolQrPoster() {
+  const asset = await getSchoolQrPosterAsset();
+  if (!asset || !asset.blob) {
+    showDynamicIslandToast("Не удалось сформировать плакат — воспользуйтесь печатью");
+    return false;
   }
 
-  const targetMaxUrl =
-    MAX_SCHOOL_CHAT_URL && /^https:\/\/[a-z0-9.-]*max\.ru(\/|$)/i.test(MAX_SCHOOL_CHAT_URL)
-      ? MAX_SCHOOL_CHAT_URL
-      : MAX_WEB_URL;
+  const blobUrl = URL.createObjectURL(asset.blob);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = SCHOOL_QR_POSTER_FILENAME;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+  showDynamicIslandToast("QR-плакат (PNG) сохранён на устройство");
+  return true;
+}
 
-  const popup = window.open(targetMaxUrl, "_blank", "noopener,noreferrer");
-  if (copied) {
-    showDynamicIslandToast(
-      popup
-        ? "Скопировано! Вставьте (Ctrl+V) в чат MAX"
-        : "Скопировано! Откройте MAX и вставьте в чат"
-    );
-  } else {
-    showDynamicIslandToast("Откройте MAX и перешлите ссылку на портал школы");
+function buildMaxDeepLinkUrl(text) {
+  const safeText = String(text || SITE_CANONICAL_URL).slice(0, 1800);
+  return `${MAX_SHARE_DEEPLINK_BASE}?text=${encodeURIComponent(safeText)}`;
+}
+
+function getMaxWebTargetUrl() {
+  if (MAX_SCHOOL_CHAT_URL && /^https:\/\/[a-z0-9.-]*max\.ru(\/|$)/i.test(MAX_SCHOOL_CHAT_URL)) {
+    return MAX_SCHOOL_CHAT_URL;
+  }
+  return MAX_WEB_URL;
+}
+
+async function shareToMaxMessenger(payload) {
+  const modal = document.getElementById("max-share-modal");
+  const titleEl = document.getElementById("max-modal-title");
+  const subtitleEl = document.getElementById("max-modal-subtitle");
+  const posterWrap = document.getElementById("max-modal-poster-wrap");
+  const posterImg = document.getElementById("max-modal-poster-img");
+  const textPreview = document.getElementById("max-modal-text-preview");
+  const nativeBtn = document.getElementById("max-share-native-btn");
+  const nativeLabel = document.getElementById("max-share-native-label");
+  const copyPosterBtn = document.getElementById("max-copy-poster-btn");
+  const downloadPosterBtn = document.getElementById("max-download-poster-btn");
+  const closeBtn = document.getElementById("max-modal-close");
+
+  const title = (payload && payload.title) || "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»";
+  const url = (payload && payload.url) || SITE_CANONICAL_URL;
+  const rawText = (payload && payload.text) || `Информационный портал школы с. Ямбирно: расписание 1–9 классов, меню питания и новости.\n${url}`;
+  const fullText = rawText.includes(url) ? rawText : `${rawText}\n${url}`;
+  const includeQrPoster = Boolean(payload && payload.includeQrPoster);
+
+  activeMaxSharePayload = {
+    title,
+    url,
+    text: fullText,
+    includeQrPoster,
+    posterBlob: null
+  };
+
+  if (!modal) {
+    await copyTextToClipboard(fullText);
+    window.open(buildMaxDeepLinkUrl(fullText), "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (titleEl) {
+    titleEl.textContent = includeQrPoster
+      ? "Отправить QR-плакат и ссылку в MAX"
+      : "Отправить в мессенджер MAX";
+  }
+  if (subtitleEl) {
+    subtitleEl.textContent = includeQrPoster
+      ? "Выберите: открыть приложение MAX, браузерную версию или отправить файл плаката напрямую."
+      : "Выберите удобный способ: через приложение MAX или через веб-версию в браузере.";
+  }
+  if (textPreview) {
+    textPreview.textContent = fullText;
+  }
+
+  if (posterWrap) posterWrap.classList.toggle("hidden", !includeQrPoster);
+  if (copyPosterBtn) copyPosterBtn.classList.toggle("hidden", !includeQrPoster);
+  if (downloadPosterBtn) downloadPosterBtn.classList.toggle("hidden", !includeQrPoster);
+
+  const canNativeShare = Boolean(navigator.share);
+  if (nativeBtn) {
+    nativeBtn.classList.toggle("hidden", !canNativeShare);
+  }
+  if (nativeLabel) {
+    nativeLabel.textContent = includeQrPoster
+      ? "Отправить плакат и ссылку (через MAX)"
+      : "Поделиться через установленный MAX";
+  }
+
+  maxModalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  lockPageScrollForModal(false);
+  modal.classList.remove("hidden");
+  modal.removeAttribute("hidden");
+  if (closeBtn) closeBtn.focus();
+
+  if (includeQrPoster) {
+    const asset = await getSchoolQrPosterAsset();
+    if (asset && activeMaxSharePayload && activeMaxSharePayload.includeQrPoster) {
+      activeMaxSharePayload.posterBlob = asset.blob;
+      if (posterImg && asset.dataUrl) {
+        posterImg.src = asset.dataUrl;
+      }
+    }
   }
 }
 
@@ -1456,7 +1674,7 @@ function initShareScheduleToChat() {
         showDynamicIslandToast(`Расписание для ${currentSelectedGrade} класса пока уточняется`);
         return;
       }
-      await shareToMaxMessenger(payload);
+      await shareToMaxMessenger({ ...payload, includeQrPoster: false });
     });
   }
 }
@@ -1472,11 +1690,22 @@ function initShareAndQrModule() {
   const qrModalClose = document.getElementById("qr-modal-close");
   const qrModalMaxBtn = document.getElementById("qr-modal-max-btn");
   const qrModalPrintBtn = document.getElementById("qr-modal-print-btn");
+  const qrModalDownloadBtn = document.getElementById("qr-modal-download-btn");
+
+  const maxModal = document.getElementById("max-share-modal");
+  const maxModalClose = document.getElementById("max-modal-close");
+  const maxNativeBtn = document.getElementById("max-share-native-btn");
+  const maxAppBtn = document.getElementById("max-share-app-btn");
+  const maxWebBtn = document.getElementById("max-share-web-btn");
+  const maxCopyPosterBtn = document.getElementById("max-copy-poster-btn");
+  const maxDownloadPosterBtn = document.getElementById("max-download-poster-btn");
+  const maxCopyTextBtn = document.getElementById("max-copy-text-btn");
 
   const siteSharePayload = {
     title: "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
     text: `Информационный портал Ямбирнского филиала (с. Ямбирно): расписание 1–9 классов, погода к 1-му уроку, меню питания, Дневник и Учи.ру:\n${SITE_CANONICAL_URL}`,
-    url: SITE_CANONICAL_URL
+    url: SITE_CANONICAL_URL,
+    includeQrPoster: true
   };
 
   if (shareSiteMaxBtn) {
@@ -1494,6 +1723,156 @@ function initShareAndQrModule() {
     });
   }
 
+  if (maxModal) {
+    const closeMaxModal = () => {
+      if (maxModal.classList.contains("hidden")) return;
+      maxModal.classList.add("hidden");
+      maxModal.setAttribute("hidden", "");
+      const returnEl = maxModalTriggerEl;
+      maxModalTriggerEl = null;
+      unlockPageScrollAfterModal(returnEl);
+    };
+
+    if (maxModalClose) maxModalClose.addEventListener("click", closeMaxModal);
+
+    maxModal.addEventListener("click", (e) => {
+      if (e.target === maxModal) closeMaxModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (maxModal.classList.contains("hidden")) return;
+      if (e.key === "Escape") {
+        closeMaxModal();
+        return;
+      }
+      handleModalFocusTrap(e, maxModal);
+    });
+
+    if (maxNativeBtn) {
+      maxNativeBtn.addEventListener("click", async () => {
+        if (!activeMaxSharePayload || !navigator.share) return;
+        const { title, text, url, includeQrPoster } = activeMaxSharePayload;
+        try {
+          if (includeQrPoster) {
+            let blob = activeMaxSharePayload.posterBlob;
+            if (!blob) {
+              const asset = await getSchoolQrPosterAsset();
+              blob = asset && asset.blob;
+            }
+            if (blob && typeof File !== "undefined") {
+              const posterFile = new File([blob], SCHOOL_QR_POSTER_FILENAME, { type: "image/png" });
+              if (typeof navigator.canShare === "function" && navigator.canShare({ files: [posterFile] })) {
+                await navigator.share({ title, text, files: [posterFile] });
+                showDynamicIslandToast("QR-плакат и ссылка переданы в MAX");
+                closeMaxModal();
+                return;
+              }
+            }
+          }
+          await navigator.share({ title, text, url });
+          showDynamicIslandToast("Готово к отправке в MAX");
+          closeMaxModal();
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+          showDynamicIslandToast("Выберите приложение или браузер MAX ниже");
+        }
+      });
+    }
+
+    if (maxAppBtn) {
+      maxAppBtn.addEventListener("click", async () => {
+        if (!activeMaxSharePayload) return;
+        const { text, includeQrPoster } = activeMaxSharePayload;
+        let posterCopied = false;
+
+        if (includeQrPoster) {
+          let blob = activeMaxSharePayload.posterBlob;
+          if (!blob) {
+            const asset = await getSchoolQrPosterAsset();
+            blob = asset && asset.blob;
+          }
+          posterCopied = await copyImageBlobToClipboard(blob);
+          if (!posterCopied) {
+            await copyTextToClipboard(text);
+          }
+        } else {
+          await copyTextToClipboard(text);
+        }
+
+        window.open(buildMaxDeepLinkUrl(text), "_blank", "noopener,noreferrer");
+        showDynamicIslandToast(
+          includeQrPoster && posterCopied
+            ? "MAX открывается! QR-плакат в буфере — нажмите Ctrl+V в чате"
+            : "Открываем приложение MAX с готовым текстом"
+        );
+      });
+    }
+
+    if (maxWebBtn) {
+      maxWebBtn.addEventListener("click", async () => {
+        if (!activeMaxSharePayload) return;
+        const { text, includeQrPoster } = activeMaxSharePayload;
+        let posterCopied = false;
+        let textCopied = false;
+
+        if (includeQrPoster) {
+          let blob = activeMaxSharePayload.posterBlob;
+          if (!blob) {
+            const asset = await getSchoolQrPosterAsset();
+            blob = asset && asset.blob;
+          }
+          posterCopied = await copyImageBlobToClipboard(blob);
+          if (!posterCopied) {
+            textCopied = await copyTextToClipboard(text);
+          }
+        } else {
+          textCopied = await copyTextToClipboard(text);
+        }
+
+        window.open(getMaxWebTargetUrl(), "_blank", "noopener,noreferrer");
+        if (includeQrPoster && posterCopied) {
+          showDynamicIslandToast("QR-плакат скопирован! Нажмите Ctrl+V в веб-версии MAX");
+        } else if (textCopied) {
+          showDynamicIslandToast("Скопировано! Нажмите Ctrl+V в веб-версии MAX");
+        } else {
+          showDynamicIslandToast("Открыт MAX в браузере — вставьте плакат или ссылку");
+        }
+      });
+    }
+
+    if (maxCopyPosterBtn) {
+      maxCopyPosterBtn.addEventListener("click", async () => {
+        let blob = activeMaxSharePayload && activeMaxSharePayload.posterBlob;
+        if (!blob) {
+          const asset = await getSchoolQrPosterAsset();
+          blob = asset && asset.blob;
+        }
+        const ok = await copyImageBlobToClipboard(blob);
+        if (ok) {
+          showDynamicIslandToast("QR-плакат (картинка) скопирован — вставьте Ctrl+V в MAX");
+        } else {
+          await downloadSchoolQrPoster();
+        }
+      });
+    }
+
+    if (maxDownloadPosterBtn) {
+      maxDownloadPosterBtn.addEventListener("click", () => {
+        downloadSchoolQrPoster();
+      });
+    }
+
+    if (maxCopyTextBtn) {
+      maxCopyTextBtn.addEventListener("click", async () => {
+        if (!activeMaxSharePayload) return;
+        const ok = await copyTextToClipboard(activeMaxSharePayload.text);
+        showDynamicIslandToast(
+          ok ? "Текст и ссылка скопированы" : "Не удалось скопировать текст"
+        );
+      });
+    }
+  }
+
   if (!qrModal) return;
 
   const openQrModal = () => {
@@ -1501,6 +1880,8 @@ function initShareAndQrModule() {
     qrModal.classList.remove("hidden");
     qrModal.removeAttribute("hidden");
     if (qrModalClose) qrModalClose.focus();
+    // Фоновая предгенерация PNG-плаката, чтобы скачивание и копирование были мгновенными
+    getSchoolQrPosterAsset();
   };
 
   const closeQrModal = () => {
@@ -1523,6 +1904,7 @@ function initShareAndQrModule() {
 
   document.addEventListener("keydown", (e) => {
     if (qrModal.classList.contains("hidden")) return;
+    if (maxModal && !maxModal.classList.contains("hidden")) return;
     if (e.key === "Escape") {
       closeQrModal();
       return;
@@ -1532,6 +1914,12 @@ function initShareAndQrModule() {
 
   if (qrModalMaxBtn) {
     qrModalMaxBtn.addEventListener("click", () => shareToMaxMessenger(siteSharePayload));
+  }
+
+  if (qrModalDownloadBtn) {
+    qrModalDownloadBtn.addEventListener("click", () => {
+      downloadSchoolQrPoster();
+    });
   }
 
   if (qrModalPrintBtn) {
@@ -1546,7 +1934,6 @@ function initShareAndQrModule() {
     });
   }
 }
-
 function initLiveDateTimeClockAndAmbient() {
   const dateEl = document.getElementById("live-date-display");
   const timeEl = document.getElementById("live-time-display");
@@ -2366,7 +2753,8 @@ function initPublicationModalEvents() {
   document.addEventListener("keydown", (e) => {
     if (modal.classList.contains("hidden")) return;
     const lb = document.getElementById("gallery-lightbox");
-    if (lb && !lb.classList.contains("hidden")) return;
+    const maxM = document.getElementById("max-share-modal");
+    if ((lb && !lb.classList.contains("hidden")) || (maxM && !maxM.classList.contains("hidden"))) return;
 
     if (e.key === "Escape") {
       closeModal();
