@@ -75,6 +75,9 @@ jobs:
                   },
               )
               with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
+                  final_url = resp.geturl()
+                  if not str(final_url).startswith("https://"):
+                      raise RuntimeError(f"Insecure redirect blocked: {final_url}")
                   status = getattr(resp, "status", 200)
                   if status != 200:
                       raise RuntimeError(f"HTTP {status}")
@@ -126,8 +129,11 @@ jobs:
           def looks_like_private_feedback_sheet(rows) -> bool:
               if not rows:
                   return False
-              first_row_lower = " ".join(c.lower() for c in rows[0])
-              return all(marker in first_row_lower for marker in FORBIDDEN_FEEDBACK_HEADERS)
+              for row in rows[:5]:
+                  row_lower = " ".join(c.lower() for c in row)
+                  if all(marker in row_lower for marker in FORBIDDEN_FEEDBACK_HEADERS):
+                      return True
+              return False
 
 
           def detect_image_ext(data: bytes):
@@ -322,6 +328,23 @@ jobs:
               json.dump(snapshot_payload, f, ensure_ascii=False, indent=2)
               f.write("\n")
 
+          # Автообновление даты lastmod главной страницы в sitemap.xml
+          sitemap_path = "sitemap.xml"
+          if os.path.isfile(sitemap_path):
+              with open(sitemap_path, "r", encoding="utf-8") as sm_f:
+                  sm_text = sm_f.read()
+              today_iso = now_msk.strftime("%Y-%m-%d")
+              sm_updated = re.sub(
+                  r"(<loc>https://sergievposadprimoauxiliumsta-crypto\.github\.io/yambirno-school/</loc>\s*<lastmod>)[^<]+(</lastmod>)",
+                  rf"\g<1>{today_iso}\g<2>",
+                  sm_text,
+                  count=1,
+              )
+              if sm_updated != sm_text:
+                  with open(sitemap_path, "w", encoding="utf-8", newline="\n") as sm_f:
+                      sm_f.write(sm_updated)
+                  print(f"[OK] Updated sitemap.xml lastmod -> {today_iso}")
+
           print(
               f"[OK] Wrote snapshot v2 ({os.path.getsize(SNAPSHOT_PATH)} bytes, "
               f"{len(media_map)} mirrored photos)"
@@ -333,7 +356,7 @@ jobs:
       - name: Commit and push snapshot and mirrored media if changed
         id: commit_snapshot
         run: |
-          STATUS="$(git status --porcelain -- data/school-snapshot.json data/media 2>/dev/null || true)"
+          STATUS="$(git status --porcelain -- data/school-snapshot.json data/media sitemap.xml 2>/dev/null || true)"
           if [ -z "$STATUS" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No snapshot or media changes to commit."
@@ -342,7 +365,7 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/school-snapshot.json data/media
+          git add -A data/school-snapshot.json data/media sitemap.xml
           git commit -m "chore(data): update school snapshot and media mirror"
 
           BRANCH="$(git rev-parse --abbrev-ref HEAD)"
