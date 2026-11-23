@@ -16,6 +16,7 @@ const FEEDBACK_CONSENT_SESSION_KEY = "yambirno_feedback_consent_session_v1";
 const MEDIA_MAP_CACHE_KEY = "yambirno_media_map_v1";
 
 const SITE_CANONICAL_URL = "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/";
+const HERO_FALLBACK_IMAGE_URL = "og-cover.jpg";
 const MAX_SHARE_DEEPLINK_BASE = "https://max.ru/:share";
 const MAX_WEB_URL = "https://web.max.ru/";
 // При появлении официального школьного чата/канала в MAX укажите его HTTPS-адрес ниже:
@@ -219,6 +220,7 @@ const glidePillRefreshers = [];
 let isGlideResizeBound = false;
 let glideResizeRafId = 0;
 let chalkboardSyncCallback = null;
+let refreshClockStatusCallback = null;
 let imageLoadSequence = 0;
 
 function getMoscowTimeParts(baseMs = Date.now()) {
@@ -282,16 +284,26 @@ function setElementChild(el, childNode) {
   if (childNode) el.appendChild(childNode);
 }
 
-function safeStorageGet(storage, key) {
+function getStorageSafe(kind) {
   try {
+    return kind === "session" ? window.sessionStorage : window.localStorage;
+  } catch (_) {
+    return null;
+  }
+}
+
+function safeStorageGet(kind, key) {
+  try {
+    const storage = getStorageSafe(kind);
     return storage ? storage.getItem(key) : null;
   } catch (_) {
     return null;
   }
 }
 
-function safeStorageSet(storage, key, value) {
+function safeStorageSet(kind, key, value) {
   try {
+    const storage = getStorageSafe(kind);
     if (storage) storage.setItem(key, value);
   } catch (_) {}
 }
@@ -363,7 +375,7 @@ function isSafeMirroredMediaPath(pathStr) {
 
 function loadCachedMediaMap() {
   try {
-    const raw = safeStorageGet(window.localStorage, MEDIA_MAP_CACHE_KEY);
+    const raw = safeStorageGet("local", MEDIA_MAP_CACHE_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object") return {};
@@ -389,7 +401,7 @@ function updateSnapshotMediaMap(rawMap) {
   });
   if (Object.keys(clean).length > 0) {
     snapshotMediaMap = clean;
-    safeStorageSet(window.localStorage, MEDIA_MAP_CACHE_KEY, JSON.stringify(clean));
+    safeStorageSet("local", MEDIA_MAP_CACHE_KEY, JSON.stringify(clean));
   }
 }
 
@@ -458,7 +470,7 @@ function getDefaultSchoolWeekday() {
 }
 
 function getSavedGradeSelection() {
-  const raw = safeStorageGet(window.localStorage, GRADE_STORAGE_KEY);
+  const raw = safeStorageGet("local", GRADE_STORAGE_KEY);
   const saved = parseInt(raw || "", 10);
   if (saved >= 1 && saved <= 9) {
     hasExplicitSavedGrade = true;
@@ -485,23 +497,6 @@ function sanitizeInput(rawString, maxLength = 1000) {
     .replace(/javascript:|data:|vbscript:/gi, "")
     .trim()
     .slice(0, maxLength);
-}
-
-function generateSecureTicketNumber() {
-  const parts = getMoscowTimeParts();
-  const dd = String(parts.day).padStart(2, "0");
-  const mm = String(parts.month + 1).padStart(2, "0");
-  const yyyy = String(parts.year);
-  const datePart = `${dd}${mm}${yyyy}`;
-  let randomPart;
-  if (window.crypto && typeof window.crypto.getRandomValues === "function") {
-    const buf = new Uint32Array(1);
-    window.crypto.getRandomValues(buf);
-    randomPart = String(100000 + (buf[0] % 900000));
-  } else {
-    randomPart = String(100000 + Math.floor(Math.random() * 900000));
-  }
-  return `ЯМБ-${datePart}-${randomPart}`;
 }
 
 async function copyTextToClipboard(text) {
@@ -797,14 +792,22 @@ function initHeroBackdropFallback() {
   const scrim = document.querySelector(".hero-scrim");
   if (!backdrop || !img) return;
 
-  const hideBackdrop = () => {
+  let triedCoverFallback = false;
+
+  const handleImageError = () => {
+    if (!triedCoverFallback) {
+      triedCoverFallback = true;
+      backdrop.querySelectorAll("source").forEach((srcEl) => srcEl.remove());
+      img.src = HERO_FALLBACK_IMAGE_URL;
+      return;
+    }
     backdrop.classList.add("hidden");
     if (scrim) scrim.classList.add("hidden");
   };
 
-  img.addEventListener("error", hideBackdrop, { once: true });
+  img.addEventListener("error", handleImageError);
   if (img.complete && img.naturalWidth === 0) {
-    hideBackdrop();
+    handleImageError();
   }
 }
 
@@ -1438,11 +1441,9 @@ function getSchoolQrPosterAsset() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    // Фон плаката
     ctx.fillStyle = "#f8fafc";
     ctx.fillRect(0, 0, W, H);
 
-    // Верхний фирменный баннер
     drawCanvasRoundedRect(ctx, 48, 48, W - 96, 256, 36);
     ctx.fillStyle = "#1e3a8a";
     ctx.fill();
@@ -1461,7 +1462,6 @@ function getSchoolQrPosterAsset() {
     ctx.fillText("Ямбирнский филиал", W / 2, 166);
     ctx.fillText("МОУ «Лесно-Конобеевская СШ»", W / 2, 228);
 
-    // Белая карточка для QR-кода
     drawCanvasRoundedRect(ctx, 130, 355, W - 260, 860, 40);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
@@ -1469,7 +1469,6 @@ function getSchoolQrPosterAsset() {
     ctx.strokeStyle = "#cbd5e1";
     ctx.stroke();
 
-    // Отрисовка чётких модулей QR (45x45 viewBox с тихой зоной 4)
     const vb = 45;
     const qrScale = 18;
     const qrPx = vb * qrScale;
@@ -1489,7 +1488,6 @@ function getSchoolQrPosterAsset() {
       ctx.fillRect(qrX0 + rx * qrScale, qrY0 + ry * qrScale, rw * qrScale, qrScale);
     }
 
-    // Подписи под QR-кодом
     ctx.fillStyle = "#1e40af";
     ctx.font = '800 36px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
     ctx.fillText("Наведите камеру смартфона", W / 2, 1266);
@@ -1880,7 +1878,6 @@ function initShareAndQrModule() {
     qrModal.classList.remove("hidden");
     qrModal.removeAttribute("hidden");
     if (qrModalClose) qrModalClose.focus();
-    // Фоновая предгенерация PNG-плаката, чтобы скачивание и копирование были мгновенными
     getSchoolQrPosterAsset();
   };
 
@@ -1934,6 +1931,7 @@ function initShareAndQrModule() {
     });
   }
 }
+
 function initLiveDateTimeClockAndAmbient() {
   const dateEl = document.getElementById("live-date-display");
   const timeEl = document.getElementById("live-time-display");
@@ -2007,6 +2005,7 @@ function initLiveDateTimeClockAndAmbient() {
     }
   };
 
+  refreshClockStatusCallback = updateClock;
   updateClock();
   setInterval(() => {
     if (!document.hidden) updateClock();
@@ -2201,8 +2200,8 @@ function initAccessibilityMode() {
   let settings = { ...defaultSettings };
   try {
     const rawSettings =
-      safeStorageGet(window.localStorage, A11Y_SETTINGS_KEY) ||
-      safeStorageGet(window.localStorage, "yambirno_a11y_settings_v1");
+      safeStorageGet("local", A11Y_SETTINGS_KEY) ||
+      safeStorageGet("local", "yambirno_a11y_settings_v1");
     if (rawSettings) {
       const parsed = JSON.parse(rawSettings);
       settings = { ...defaultSettings, ...parsed };
@@ -2210,7 +2209,7 @@ function initAccessibilityMode() {
   } catch (_) {}
 
   const saveSettings = () => {
-    safeStorageSet(window.localStorage, A11Y_SETTINGS_KEY, JSON.stringify(settings));
+    safeStorageSet("local", A11Y_SETTINGS_KEY, JSON.stringify(settings));
   };
 
   const applySettings = () => {
@@ -2286,14 +2285,14 @@ function initAccessibilityMode() {
     }
   };
 
-  const savedState = safeStorageGet(window.localStorage, A11Y_STORAGE_KEY) === "true";
+  const savedState = safeStorageGet("local", A11Y_STORAGE_KEY) === "true";
   applySettings();
   applyMode(savedState, false);
 
   toggleBtn.addEventListener("click", () => {
     const nextState = !document.body.classList.contains("visually-impaired");
     applyMode(nextState, true);
-    safeStorageSet(window.localStorage, A11Y_STORAGE_KEY, String(nextState));
+    safeStorageSet("local", A11Y_STORAGE_KEY, String(nextState));
   });
 
   sizeBtns.forEach((btn) => {
@@ -2404,7 +2403,7 @@ function parseMultiplePhotoUrls(rawCell) {
 function parseScheduleDateTime(rawDateStr) {
   const cleaned = sanitizeInput(rawDateStr || "", 60);
   if (!cleaned) {
-    return { timestamp: 0, displayStr: "", isFuture: false };
+    return { timestamp: 0, displayStr: "", isoDate: "", isFuture: false };
   }
 
   let day = 0;
@@ -2443,7 +2442,7 @@ function parseScheduleDateTime(rawDateStr) {
       hasTimePart = true;
     }
   } else {
-    return { timestamp: 0, displayStr: cleaned, isFuture: false };
+    return { timestamp: 0, displayStr: cleaned, isoDate: "", isFuture: false };
   }
 
   if (
@@ -2458,7 +2457,7 @@ function parseScheduleDateTime(rawDateStr) {
     minutes < 0 ||
     minutes > 59
   ) {
-    return { timestamp: 0, displayStr: cleaned, isFuture: false };
+    return { timestamp: 0, displayStr: cleaned, isoDate: "", isFuture: false };
   }
 
   const checkDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
@@ -2467,21 +2466,24 @@ function parseScheduleDateTime(rawDateStr) {
     checkDate.getUTCMonth() !== month - 1 ||
     checkDate.getUTCDate() !== day
   ) {
-    return { timestamp: 0, displayStr: cleaned, isFuture: false };
+    return { timestamp: 0, displayStr: cleaned, isoDate: "", isFuture: false };
   }
 
   const targetMs = Date.UTC(year, month - 1, day, hours - 3, minutes, 0);
   const dd = String(day).padStart(2, "0");
-  const monthWord = RU_MONTHS_GENITIVE[month - 1] || String(month).padStart(2, "0");
+  const mmNum = String(month).padStart(2, "0");
+  const monthWord = RU_MONTHS_GENITIVE[month - 1] || mmNum;
   const hh = String(hours).padStart(2, "0");
   const mm = String(minutes).padStart(2, "0");
   const displayStr = hasTimePart
     ? `${dd} ${monthWord} ${year} г. в ${hh}:${mm}`
     : `${dd} ${monthWord} ${year} г.`;
+  const isoDate = `${year}-${mmNum}-${dd}T${hh}:${mm}:00+03:00`;
 
   return {
     timestamp: targetMs,
     displayStr,
+    isoDate,
     isFuture: targetMs > Date.now()
   };
 }
@@ -2601,6 +2603,60 @@ function attachSafeImageFallback(imgEl, resolved, loadingContainer = null) {
   }
 }
 
+function syncPublicationsStructuredData(publications) {
+  const existing = document.getElementById("publications-jsonld");
+  if (!Array.isArray(publications) || publications.length === 0) {
+    if (existing) existing.remove();
+    return;
+  }
+
+  const items = publications.slice(0, 20).map((pub, idx) => {
+    const article = {
+      "@type": "NewsArticle",
+      headline: pub.title,
+      articleSection: pub.badge,
+      inLanguage: "ru-RU",
+      url: `${SITE_CANONICAL_URL}#pub-${pub.id}`,
+      mainEntityOfPage: `${SITE_CANONICAL_URL}#pub-${pub.id}`,
+      publisher: {
+        "@id": `${SITE_CANONICAL_URL}#school`
+      }
+    };
+    if (pub.isoDate) article.datePublished = pub.isoDate;
+    if (pub.text) article.description = truncateAtWordBoundary(pub.text, 220).short;
+    if (Array.isArray(pub.photos) && pub.photos.length > 0) {
+      const resolved = resolveImageLinkSource(pub.photos[0], "", 1000);
+      if (resolved.src && !resolved.src.startsWith("data:")) {
+        article.image = resolved.src.startsWith("https://")
+          ? resolved.src
+          : `${SITE_CANONICAL_URL}${resolved.src}`;
+      }
+    }
+    return {
+      "@type": "ListItem",
+      position: idx + 1,
+      item: article
+    };
+  });
+
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${SITE_CANONICAL_URL}#publications-list`,
+    name: "Актуальные материалы и публикации Ямбирнского филиала",
+    itemListElement: items
+  };
+
+  let scriptEl = existing;
+  if (!scriptEl) {
+    scriptEl = document.createElement("script");
+    scriptEl.id = "publications-jsonld";
+    scriptEl.type = "application/ld+json";
+    document.head.appendChild(scriptEl);
+  }
+  scriptEl.textContent = JSON.stringify(payload);
+}
+
 function openPublicationModal(pubItem, updateUrlHash = true) {
   const modal = document.getElementById("publication-modal");
   const badgeEl = document.getElementById("pub-modal-badge");
@@ -2706,9 +2762,9 @@ function tryOpenPublicationFromUrl() {
 
   let pubId = "";
   try {
-    const hashMatch = window.location.hash.match(/^#pub-([a-zA-Z0-9_-]+)$/);
+    const hashMatch = window.location.hash.match(/^#(?:pub|post)-([a-zA-Z0-9_-]+)$/);
     const searchParams = new URLSearchParams(window.location.search);
-    pubId = (hashMatch && hashMatch[1]) || searchParams.get("pub") || "";
+    pubId = (hashMatch && hashMatch[1]) || searchParams.get("pub") || searchParams.get("post") || "";
   } catch (_) {}
 
   if (!pubId) return;
@@ -2737,7 +2793,7 @@ function initPublicationModalEvents() {
     modal.setAttribute("hidden", "");
     activePublicationModalItem = null;
     try {
-      if (window.location.hash.startsWith("#pub-")) {
+      if (window.location.hash.startsWith("#pub-") || window.location.hash.startsWith("#post-")) {
         history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
       }
     } catch (_) {}
@@ -2764,7 +2820,7 @@ function initPublicationModalEvents() {
   });
 
   window.addEventListener("hashchange", () => {
-    if (window.location.hash.startsWith("#pub-")) {
+    if (window.location.hash.startsWith("#pub-") || window.location.hash.startsWith("#post-")) {
       tryOpenPublicationFromUrl();
     }
   });
@@ -3010,11 +3066,12 @@ function renderPublicationCards(publications) {
       if (splitText.isTruncated) {
         expandWrap = document.createElement("div");
         expandWrap.className = "pub-expand-wrap";
+        expandWrap.setAttribute("aria-hidden", "true");
         const expandInner = document.createElement("div");
         expandInner.className = "pub-expand-inner";
         const restP = document.createElement("p");
-        restP.className = "pub-card-excerpt";
-        restP.textContent = pub.text;
+        restP.className = "pub-card-excerpt pub-card-excerpt-rest";
+        restP.textContent = splitText.rest;
         expandInner.appendChild(restP);
         expandWrap.appendChild(expandInner);
         content.appendChild(expandWrap);
@@ -3037,7 +3094,9 @@ function renderPublicationCards(publications) {
       toggleExpandBtn.addEventListener("click", () => {
         const nextOpen = !expandWrap.classList.contains("is-open");
         expandWrap.classList.toggle("is-open", nextOpen);
-        excerptEl.classList.toggle("hidden", nextOpen);
+        expandWrap.setAttribute("aria-hidden", String(!nextOpen));
+        excerptEl.classList.toggle("is-expanded", nextOpen);
+        excerptEl.textContent = nextOpen ? splitText.short : `${splitText.short}...`;
         toggleExpandBtn.setAttribute("aria-expanded", String(nextOpen));
         toggleLabel.textContent = nextOpen ? "Свернуть текст" : "Читать полностью";
       });
@@ -3098,6 +3157,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
   if (!Array.isArray(rowsArray) || rowsArray.length <= 1) {
     lastRenderedPublicationsSignature = "[]";
     activePublicationsCache = [];
+    syncPublicationsStructuredData([]);
     clearElement(gridEl);
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
@@ -3135,19 +3195,22 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
       badge: rawBadgeCell || "Информация",
       text: rawTextCell,
       dateDisplay: scheduleInfo.displayStr,
+      isoDate: scheduleInfo.isoDate,
       docUrl: rawDocCell
     });
   }
 
   activePublicationsCache = activePublications;
 
-  const nextSignature = JSON.stringify(activePublications);
+  const mediaSignature = Object.keys(snapshotMediaMap || {}).length;
+  const nextSignature = `${mediaSignature}|${JSON.stringify(activePublications)}`;
   if (!forceRender && nextSignature === lastRenderedPublicationsSignature) {
     return;
   }
   lastRenderedPublicationsSignature = nextSignature;
 
   if (activePublications.length === 0) {
+    syncPublicationsStructuredData([]);
     clearElement(gridEl);
     sectionEl.classList.add("hidden");
     sectionEl.setAttribute("hidden", "");
@@ -3163,6 +3226,7 @@ function renderSheet3Publications(rowsArray, forceRender = false) {
     navLinkEl.classList.remove("hidden");
   }
 
+  syncPublicationsStructuredData(activePublications);
   renderPublicationFilters(activePublications);
   renderPublicationCards(activePublications);
 
@@ -3177,7 +3241,7 @@ async function loadSheet3PublicationsData(isManualRefresh = false) {
   if (!sectionEl) return;
 
   try {
-    const rawCache = safeStorageGet(window.localStorage, SHEET3_CACHE_KEY);
+    const rawCache = safeStorageGet("local", SHEET3_CACHE_KEY);
     if (rawCache) {
       const cachedRows = JSON.parse(rawCache);
       latestRawSheet3Rows = cachedRows;
@@ -3185,8 +3249,16 @@ async function loadSheet3PublicationsData(isManualRefresh = false) {
     }
   } catch (_) {}
 
+  const [snapshotRes, csvRes] = await Promise.allSettled([
+    fetchSchoolSnapshotOnce(isManualRefresh),
+    fetchWithTimeout(SHEET3_CSV_URL, { cache: "no-store" }, 6500)
+  ]);
+
+  const snapshot = snapshotRes.status === "fulfilled" ? snapshotRes.value : null;
+
   try {
-    const response = await fetchWithTimeout(SHEET3_CSV_URL, { cache: "no-store" }, 6500);
+    if (csvRes.status !== "fulfilled") throw new Error("Sheet3 fetch failed");
+    const response = csvRes.value;
     if (!response.ok) throw new Error(`Sheet3 HTTP ${response.status}`);
 
     const csvText = await response.text();
@@ -3197,13 +3269,12 @@ async function loadSheet3PublicationsData(isManualRefresh = false) {
     const rows = parseCSVPreserveRowIndex(csvText);
     latestRawSheet3Rows = rows;
     renderSheet3Publications(rows, false);
-    safeStorageSet(window.localStorage, SHEET3_CACHE_KEY, JSON.stringify(rows));
+    safeStorageSet("local", SHEET3_CACHE_KEY, JSON.stringify(rows));
   } catch (_) {
-    const snapshot = await fetchSchoolSnapshotOnce(isManualRefresh);
     if (snapshot && Array.isArray(snapshot.publicationsRows) && snapshot.publicationsRows.length > 1) {
       latestRawSheet3Rows = snapshot.publicationsRows;
       renderSheet3Publications(snapshot.publicationsRows, false);
-      safeStorageSet(window.localStorage, SHEET3_CACHE_KEY, JSON.stringify(snapshot.publicationsRows));
+      safeStorageSet("local", SHEET3_CACHE_KEY, JSON.stringify(snapshot.publicationsRows));
     }
   }
 }
@@ -3658,15 +3729,22 @@ function initGlidePills() {
 
     const updateIndicator = () => {
       const active = group.querySelector(".day-pill.active");
-      if (!active || isReducedMotionPreferred() || group.classList.contains("hidden") || active.offsetWidth === 0) {
+      const totalWidth = group.clientWidth;
+      if (
+        !active ||
+        !totalWidth ||
+        isReducedMotionPreferred() ||
+        group.classList.contains("hidden") ||
+        active.offsetWidth === 0
+      ) {
         group.classList.remove("has-glide");
-        indicator.style.opacity = "0";
         return;
       }
+      const leftPx = active.offsetLeft;
+      const rightPx = Math.max(0, totalWidth - (leftPx + active.offsetWidth));
       group.classList.add("has-glide");
-      indicator.style.opacity = "1";
-      indicator.style.width = `${active.offsetWidth}px`;
-      indicator.style.transform = `translate3d(${active.offsetLeft}px, 0, 0)`;
+      indicator.style.setProperty("--glide-left", `${leftPx.toFixed(1)}px`);
+      indicator.style.setProperty("--glide-right", `${rightPx.toFixed(1)}px`);
     };
 
     glidePillRefreshers.push(updateIndicator);
@@ -3721,7 +3799,7 @@ function initWeekdayAndGradeSwitchers() {
       currentSelectedGrade = gradeNum;
       hasExplicitSavedGrade = true;
       hideGradeAutoHint();
-      safeStorageSet(window.localStorage, GRADE_STORAGE_KEY, String(gradeNum));
+      safeStorageSet("local", GRADE_STORAGE_KEY, String(gradeNum));
       syncDayAndGradeUI(currentSelectedWeekday, currentSelectedGrade);
       if (latestParsedSheetData) {
         renderDaySpecificScheduleAndMenu(latestParsedSheetData, currentSelectedWeekday, currentSelectedGrade);
@@ -3744,12 +3822,19 @@ function initWeekdayAndGradeSwitchers() {
 }
 
 function syncDayAndGradeUI(dayNum, gradeNum) {
+  const mskToday = getMoscowTimeParts().weekday;
   const allDayPills = document.querySelectorAll(".day-pill[data-day]");
   allDayPills.forEach((pill) => {
     const pDay = parseInt(pill.getAttribute("data-day") || "0", 10);
     const isActive = pDay === dayNum;
+    const isToday = pDay === mskToday;
     pill.classList.toggle("active", isActive);
+    pill.classList.toggle("is-today", isToday);
     pill.setAttribute("aria-pressed", String(isActive));
+    const baseName = DAY_NAMES_FULL[pDay] || "";
+    if (baseName) {
+      pill.setAttribute("title", isToday ? `${baseName} (сегодня)` : baseName);
+    }
   });
 
   const allGradePills = document.querySelectorAll(".grade-pill");
@@ -3768,7 +3853,6 @@ function syncDayAndGradeUI(dayNum, gradeNum) {
     wPill.setAttribute("aria-pressed", String(isActive));
   });
 
-  const mskToday = getMoscowTimeParts().weekday;
   const dayName = DAY_NAMES_FULL[dayNum] || "Понедельник";
   const dayLabelText = mskToday === dayNum ? `${dayName}, ${gradeNum} класс` : `${dayName} (${gradeNum} класс)`;
 
@@ -4125,8 +4209,9 @@ function initLiveSheetWidgetAndMenu() {
     newsEl.textContent = dataObj.col1News || "На сегодня дополнительных объявлений нет";
     importantEl.textContent = dataObj.col3Important || "Желаем хорошего дня!";
 
-    if (dataObj.col4Status) {
-      customSheetSchoolStatus = dataObj.col4Status;
+    customSheetSchoolStatus = dataObj.col4Status || "";
+    if (typeof refreshClockStatusCallback === "function") {
+      refreshClockStatusCallback();
     }
 
     maybeAutoSelectFilledGrade(dataObj);
@@ -4157,7 +4242,7 @@ function initLiveSheetWidgetAndMenu() {
 
   let hasHydratedCache = false;
   try {
-    const rawCache = safeStorageGet(window.localStorage, SHEET_CACHE_KEY);
+    const rawCache = safeStorageGet("local", SHEET_CACHE_KEY);
     if (rawCache) {
       const cached = JSON.parse(rawCache);
       renderWidgetData(cached, "cache");
@@ -4180,11 +4265,19 @@ function initLiveSheetWidgetAndMenu() {
       statusEl.textContent = "Синхронизация...";
     }
 
-    fetchSchoolSnapshotOnce(isManualRefresh).catch(() => {});
+    const snapshotPromise = fetchSchoolSnapshotOnce(isManualRefresh);
     loadSheet3PublicationsData(isManualRefresh);
 
+    const [snapshotRes, csvRes] = await Promise.allSettled([
+      snapshotPromise,
+      fetchWithTimeout(SHEET_CSV_URL, { cache: "no-store" }, 6500)
+    ]);
+
+    const snapshot = snapshotRes.status === "fulfilled" ? snapshotRes.value : null;
+
     try {
-      const response = await fetchWithTimeout(SHEET_CSV_URL, { cache: "no-store" }, 6500);
+      if (csvRes.status !== "fulfilled") throw new Error("Panel CSV fetch failed");
+      const response = csvRes.value;
       if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
 
       const csvText = await response.text();
@@ -4198,17 +4291,16 @@ function initLiveSheetWidgetAndMenu() {
 
       renderWidgetData(parsedData, "live");
       hasHydratedCache = true;
-      safeStorageSet(window.localStorage, SHEET_CACHE_KEY, JSON.stringify(parsedData));
+      safeStorageSet("local", SHEET_CACHE_KEY, JSON.stringify(parsedData));
     } catch (_) {
       [newsEl, scheduleEl, importantEl].forEach((el) => el.classList.remove("is-loading-shimmer"));
 
-      const snapshot = await fetchSchoolSnapshotOnce(isManualRefresh);
       if (snapshot && Array.isArray(snapshot.panelRows) && snapshot.panelRows.length >= 3) {
         const snapshotLabel = sanitizeInput(snapshot.updatedLabel || "сохранено", 40);
         const parsedSnapshot = parsePanelRowsToDataObject(snapshot.panelRows, snapshotLabel);
         renderWidgetData(parsedSnapshot, "snapshot");
         hasHydratedCache = true;
-        safeStorageSet(window.localStorage, SHEET_CACHE_KEY, JSON.stringify(parsedSnapshot));
+        safeStorageSet("local", SHEET_CACHE_KEY, JSON.stringify(parsedSnapshot));
       } else if (hasHydratedCache && latestParsedSheetData) {
         if (statusEl) {
           statusEl.classList.add("is-offline");
@@ -4535,7 +4627,7 @@ function initFeedbackForm() {
       stepsProgressBar.classList.add("is-complete");
     }
 
-    safeStorageSet(window.sessionStorage, FEEDBACK_CONSENT_SESSION_KEY, "confirmed");
+    safeStorageSet("session", FEEDBACK_CONSENT_SESSION_KEY, "confirmed");
 
     if (!isRestoredFromSession) {
       showDynamicIslandToast("Согласие подтверждено — форма открыта");
@@ -4553,7 +4645,7 @@ function initFeedbackForm() {
     }
   };
 
-  if (safeStorageGet(window.sessionStorage, FEEDBACK_CONSENT_SESSION_KEY) === "confirmed") {
+  if (safeStorageGet("session", FEEDBACK_CONSENT_SESSION_KEY) === "confirmed") {
     unlockFormStep(true);
   }
 
@@ -4665,7 +4757,7 @@ function initFeedbackForm() {
       return;
     }
 
-    const lastSentTs = parseInt(safeStorageGet(window.localStorage, FEEDBACK_COOLDOWN_KEY) || "0", 10);
+    const lastSentTs = parseInt(safeStorageGet("local", FEEDBACK_COOLDOWN_KEY) || "0", 10);
     const secondsSinceLast = Math.floor((Date.now() - lastSentTs) / 1000);
     if (lastSentTs && secondsSinceLast < 60) {
       const waitSec = 60 - secondsSinceLast;
@@ -4737,7 +4829,7 @@ function initFeedbackForm() {
       const ticketNum = sanitizeInput(String(payload.ticketId), 60);
 
       lastRegisteredTicketId = ticketNum;
-      safeStorageSet(window.localStorage, FEEDBACK_COOLDOWN_KEY, String(Date.now()));
+      safeStorageSet("local", FEEDBACK_COOLDOWN_KEY, String(Date.now()));
 
       if (receiptBox && receiptFio && receiptContact && receiptComment && receiptMeta) {
         receiptMeta.textContent = `Талон № ${ticketNum} • ${formatMoscowFullDateTime(getMoscowTimeParts())}`;
