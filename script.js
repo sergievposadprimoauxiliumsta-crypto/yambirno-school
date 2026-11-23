@@ -13,6 +13,12 @@ const SHEET_CACHE_KEY = "yambirno_live_sheet_cache_v15";
 const SHEET3_CACHE_KEY = "yambirno_publications_cache_v3";
 const FEEDBACK_COOLDOWN_KEY = "yambirno_feedback_last_sent";
 const FEEDBACK_CONSENT_SESSION_KEY = "yambirno_feedback_consent_session_v1";
+const MEDIA_MAP_CACHE_KEY = "yambirno_media_map_v1";
+
+const SITE_CANONICAL_URL = "https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/";
+const MAX_WEB_URL = "https://web.max.ru/";
+// При появлении официального школьного чата/канала в MAX укажите его HTTPS-адрес ниже:
+const MAX_SCHOOL_CHAT_URL = "";
 
 const ALLOWED_DOC_HOSTS = [
   "drive.google.com",
@@ -188,6 +194,7 @@ let customSheetSchoolStatus = "";
 let latestParsedSheetData = null;
 let latestRawSheet3Rows = null;
 let latestSnapshotPromise = null;
+let snapshotMediaMap = loadCachedMediaMap();
 let activePublicationsCache = [];
 let activePublicationModalItem = null;
 let activePubFilterKey = "all";
@@ -343,6 +350,42 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 6500) {
   }
 }
 
+function isSafeMirroredMediaPath(pathStr) {
+  return typeof pathStr === "string" && /^data\/media\/[a-zA-Z0-9_-]{10,80}\.(jpg|jpeg|png|webp|gif)$/i.test(pathStr);
+}
+
+function loadCachedMediaMap() {
+  try {
+    const raw = safeStorageGet(window.localStorage, MEDIA_MAP_CACHE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+    const clean = {};
+    Object.keys(parsed).forEach((k) => {
+      if (/^[a-zA-Z0-9_-]{10,80}$/.test(k) && isSafeMirroredMediaPath(parsed[k])) {
+        clean[k] = parsed[k];
+      }
+    });
+    return clean;
+  } catch (_) {
+    return {};
+  }
+}
+
+function updateSnapshotMediaMap(rawMap) {
+  if (!rawMap || typeof rawMap !== "object") return;
+  const clean = {};
+  Object.keys(rawMap).forEach((k) => {
+    if (/^[a-zA-Z0-9_-]{10,80}$/.test(k) && isSafeMirroredMediaPath(rawMap[k])) {
+      clean[k] = rawMap[k];
+    }
+  });
+  if (Object.keys(clean).length > 0) {
+    snapshotMediaMap = clean;
+    safeStorageSet(window.localStorage, MEDIA_MAP_CACHE_KEY, JSON.stringify(clean));
+  }
+}
+
 function fetchSchoolSnapshotOnce(forceReload = false) {
   if (!forceReload && latestSnapshotPromise) {
     return latestSnapshotPromise;
@@ -363,6 +406,7 @@ function fetchSchoolSnapshotOnce(forceReload = false) {
         if (latestSnapshotPromise === pendingPromise) latestSnapshotPromise = null;
         return null;
       }
+      if (data.mediaMap) updateSnapshotMediaMap(data.mediaMap);
       return data;
     } catch (_) {
       if (latestSnapshotPromise === pendingPromise) latestSnapshotPromise = null;
@@ -542,9 +586,11 @@ function lockPageScrollForModal(rememberTrigger = true) {
 function unlockPageScrollAfterModal(customFocusTarget = null) {
   const pubModal = document.getElementById("publication-modal");
   const lbModal = document.getElementById("gallery-lightbox");
+  const qrModal = document.getElementById("qr-modal");
   const isAnyModalOpen =
     Boolean(pubModal && !pubModal.classList.contains("hidden")) ||
-    Boolean(lbModal && !lbModal.classList.contains("hidden"));
+    Boolean(lbModal && !lbModal.classList.contains("hidden")) ||
+    Boolean(qrModal && !qrModal.classList.contains("hidden"));
 
   if (!isAnyModalOpen) {
     document.documentElement.classList.remove("modal-open");
@@ -635,6 +681,14 @@ function resolveImageLinkSource(rawUrlCell, fallbackSvg, driveWidth = 640) {
       parsed.search.match(/[?&]id=([a-zA-Z0-9_-]+)/);
     if (driveMatch && driveMatch[1]) {
       const fileId = driveMatch[1];
+      const mirroredPath = snapshotMediaMap && snapshotMediaMap[fileId];
+      if (isSafeMirroredMediaPath(mirroredPath)) {
+        return {
+          src: mirroredPath,
+          altTry: `https://drive.google.com/thumbnail?id=${fileId}&sz=w${driveWidth}`,
+          fallback: fallbackSvg
+        };
+      }
       return {
         src: `https://drive.google.com/thumbnail?id=${fileId}&sz=w${driveWidth}`,
         altTry: `https://lh3.googleusercontent.com/d/${fileId}=w${driveWidth}`,
@@ -717,6 +771,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initWeekdayAndGradeSwitchers();
   initGlidePills();
   initShareScheduleToChat();
+  initShareAndQrModule();
   initCopyButtons();
   initGalleryLightbox();
   initPublicationModalEvents();
@@ -1290,58 +1345,206 @@ function renderDiaryLessonCards(containerEl, rawScheduleText, selectedDayNum, sk
   });
 }
 
+function buildCurrentScheduleSharePayload() {
+  const dayName = DAY_NAMES_FULL[currentSelectedWeekday] || "Понедельник";
+  let rawSchedule = "";
+  if (
+    latestParsedSheetData &&
+    latestParsedSheetData.scheduleByGradeAndDay &&
+    latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade] &&
+    latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday]
+  ) {
+    rawSchedule = latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday];
+  }
+
+  const lessons = parseRawScheduleIntoLessons(rawSchedule);
+  if (lessons.length === 0) return null;
+
+  const formattedLessons = lessons
+    .map((l) => {
+      const bell = getBellForLessonNumber(l.num);
+      const timeStr = bell ? ` (${bell.start}–${bell.end})` : "";
+      return `${l.num}. ${l.title}${timeStr}`;
+    })
+    .join("\n");
+
+  const tomTemp = document.getElementById("weather-tomorrow-temp");
+  const advice = document.getElementById("weather-parent-advice");
+  const weatherHeading = isTomorrowWeekendWeather
+    ? "Погода в с. Ямбирно завтра утром (выходной, 08:00):"
+    : "Погода в с. Ямбирно к 1-му уроку:";
+  const weatherLine =
+    tomTemp && advice && tomTemp.textContent.trim() !== "..."
+      ? `\n\n${weatherHeading} ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
+      : "";
+
+  const textForChat =
+    `Расписание уроков — ${dayName} (${currentSelectedGrade} класс):\n` +
+    formattedLessons +
+    weatherLine +
+    `\n\nПортал школы: ${SITE_CANONICAL_URL}`;
+
+  return {
+    title: `Расписание ${currentSelectedGrade} класса (${dayName}) — Школа с. Ямбирно`,
+    text: textForChat,
+    url: `${SITE_CANONICAL_URL}#live-widget-card`
+  };
+}
+
+async function shareToMaxMessenger(payload) {
+  const title = (payload && payload.title) || "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»";
+  const url = (payload && payload.url) || SITE_CANONICAL_URL;
+  const text = (payload && payload.text) || `Информационный портал школы с. Ямбирно: расписание 1–9 классов, меню питания и новости.\n${url}`;
+  const fullClipboardText = text.includes(url) ? text : `${text}\n${url}`;
+
+  const copied = await copyTextToClipboard(fullClipboardText);
+
+  if (navigator.share && !isDesktopHoverPointer()) {
+    try {
+      await navigator.share({ title, text, url });
+      showDynamicIslandToast("Готово к отправке в MAX");
+      return;
+    } catch (err) {
+      if (err && err.name === "AbortError") {
+        if (copied) showDynamicIslandToast("Текст скопирован — можно вставить в чат MAX");
+        return;
+      }
+    }
+  }
+
+  const targetMaxUrl =
+    MAX_SCHOOL_CHAT_URL && /^https:\/\/[a-z0-9.-]*max\.ru(\/|$)/i.test(MAX_SCHOOL_CHAT_URL)
+      ? MAX_SCHOOL_CHAT_URL
+      : MAX_WEB_URL;
+
+  const popup = window.open(targetMaxUrl, "_blank", "noopener,noreferrer");
+  if (copied) {
+    showDynamicIslandToast(
+      popup
+        ? "Скопировано! Вставьте (Ctrl+V) в чат MAX"
+        : "Скопировано! Откройте MAX и вставьте в чат"
+    );
+  } else {
+    showDynamicIslandToast("Откройте MAX и перешлите ссылку на портал школы");
+  }
+}
+
 function initShareScheduleToChat() {
   const shareBtn = document.getElementById("share-schedule-btn");
-  if (!shareBtn) return;
+  const shareMaxBtn = document.getElementById("share-schedule-max-btn");
 
-  shareBtn.addEventListener("click", async () => {
-    const dayName = DAY_NAMES_FULL[currentSelectedWeekday] || "Понедельник";
-    let rawSchedule = "";
-    if (
-      latestParsedSheetData &&
-      latestParsedSheetData.scheduleByGradeAndDay &&
-      latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade] &&
-      latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday]
-    ) {
-      rawSchedule = latestParsedSheetData.scheduleByGradeAndDay[currentSelectedGrade][currentSelectedWeekday];
-    }
+  if (shareBtn) {
+    shareBtn.addEventListener("click", async () => {
+      const payload = buildCurrentScheduleSharePayload();
+      if (!payload) {
+        showDynamicIslandToast(`Расписание для ${currentSelectedGrade} класса пока уточняется`);
+        return;
+      }
+      const copied = await copyTextToClipboard(payload.text);
+      showDynamicIslandToast(
+        copied
+          ? `Расписание ${currentSelectedGrade} класса скопировано для чата`
+          : "Не удалось скопировать — выделите расписание вручную"
+      );
+    });
+  }
 
-    const lessons = parseRawScheduleIntoLessons(rawSchedule);
-    if (lessons.length === 0) {
-      showDynamicIslandToast(`Расписание для ${currentSelectedGrade} класса пока уточняется`);
+  if (shareMaxBtn) {
+    shareMaxBtn.addEventListener("click", async () => {
+      const payload = buildCurrentScheduleSharePayload();
+      if (!payload) {
+        showDynamicIslandToast(`Расписание для ${currentSelectedGrade} класса пока уточняется`);
+        return;
+      }
+      await shareToMaxMessenger(payload);
+    });
+  }
+}
+
+function initShareAndQrModule() {
+  const shareSiteMaxBtn = document.getElementById("share-site-max-btn");
+  const copySiteUrlBtn = document.getElementById("copy-site-url-btn");
+  const openQrModalBtn = document.getElementById("open-qr-modal-btn");
+  const qrCardPreviewBtn = document.getElementById("qr-card-preview-btn");
+  const footerQrBtn = document.getElementById("footer-qr-btn");
+
+  const qrModal = document.getElementById("qr-modal");
+  const qrModalClose = document.getElementById("qr-modal-close");
+  const qrModalMaxBtn = document.getElementById("qr-modal-max-btn");
+  const qrModalPrintBtn = document.getElementById("qr-modal-print-btn");
+
+  const siteSharePayload = {
+    title: "Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»",
+    text: `Информационный портал Ямбирнского филиала (с. Ямбирно): расписание 1–9 классов, погода к 1-му уроку, меню питания, Дневник и Учи.ру:\n${SITE_CANONICAL_URL}`,
+    url: SITE_CANONICAL_URL
+  };
+
+  if (shareSiteMaxBtn) {
+    shareSiteMaxBtn.addEventListener("click", () => shareToMaxMessenger(siteSharePayload));
+  }
+
+  if (copySiteUrlBtn) {
+    copySiteUrlBtn.addEventListener("click", async () => {
+      const copied = await copyTextToClipboard(SITE_CANONICAL_URL);
+      showDynamicIslandToast(
+        copied
+          ? "Ссылка на портал школы скопирована"
+          : "Не удалось скопировать — скопируйте адрес из строки браузера"
+      );
+    });
+  }
+
+  if (!qrModal) return;
+
+  const openQrModal = () => {
+    lockPageScrollForModal(true);
+    qrModal.classList.remove("hidden");
+    qrModal.removeAttribute("hidden");
+    if (qrModalClose) qrModalClose.focus();
+  };
+
+  const closeQrModal = () => {
+    if (qrModal.classList.contains("hidden")) return;
+    document.body.classList.remove("printing-qr");
+    qrModal.classList.add("hidden");
+    qrModal.setAttribute("hidden", "");
+    unlockPageScrollAfterModal();
+  };
+
+  [openQrModalBtn, qrCardPreviewBtn, footerQrBtn].filter(Boolean).forEach((btn) => {
+    btn.addEventListener("click", openQrModal);
+  });
+
+  if (qrModalClose) qrModalClose.addEventListener("click", closeQrModal);
+
+  qrModal.addEventListener("click", (e) => {
+    if (e.target === qrModal) closeQrModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (qrModal.classList.contains("hidden")) return;
+    if (e.key === "Escape") {
+      closeQrModal();
       return;
     }
-
-    const formattedLessons = lessons
-      .map((l) => {
-        const bell = getBellForLessonNumber(l.num);
-        const timeStr = bell ? ` (${bell.start}–${bell.end})` : "";
-        return `${l.num}. ${l.title}${timeStr}`;
-      })
-      .join("\n");
-
-    const tomTemp = document.getElementById("weather-tomorrow-temp");
-    const advice = document.getElementById("weather-parent-advice");
-    const weatherHeading = isTomorrowWeekendWeather
-      ? "Погода в с. Ямбирно завтра утром (выходной, 08:00):"
-      : "Погода в с. Ямбирно к 1-му уроку:";
-    const weatherLine =
-      tomTemp && advice && tomTemp.textContent.trim() !== "..."
-        ? `\n\n${weatherHeading} ${tomTemp.textContent.trim()}\n${advice.textContent.trim()}`
-        : "";
-
-    const textForChat =
-      `Расписание уроков — ${dayName} (${currentSelectedGrade} класс):\n` +
-      formattedLessons +
-      weatherLine;
-
-    const copied = await copyTextToClipboard(textForChat);
-    showDynamicIslandToast(
-      copied
-        ? `Расписание ${currentSelectedGrade} класса скопировано для чата`
-        : "Не удалось скопировать — выделите расписание вручную"
-    );
+    handleModalFocusTrap(e, qrModal);
   });
+
+  if (qrModalMaxBtn) {
+    qrModalMaxBtn.addEventListener("click", () => shareToMaxMessenger(siteSharePayload));
+  }
+
+  if (qrModalPrintBtn) {
+    qrModalPrintBtn.addEventListener("click", () => {
+      document.body.classList.add("printing-qr");
+      window.addEventListener(
+        "afterprint",
+        () => document.body.classList.remove("printing-qr"),
+        { once: true }
+      );
+      window.print();
+    });
+  }
 }
 
 function initLiveDateTimeClockAndAmbient() {
@@ -2135,6 +2338,7 @@ function initPublicationModalEvents() {
   const closeBtn = document.getElementById("pub-modal-close");
   const copyBtn = document.getElementById("pub-modal-copy-btn");
   const copyLinkBtn = document.getElementById("pub-modal-link-btn");
+  const pubMaxBtn = document.getElementById("pub-modal-max-btn");
   const titleEl = document.getElementById("pub-modal-title");
   const bodyEl = document.getElementById("pub-modal-body");
 
@@ -2189,6 +2393,21 @@ function initPublicationModalEvents() {
           ? "Прямая ссылка на материал скопирована"
           : "Не удалось скопировать ссылку — скопируйте её из адресной строки"
       );
+    });
+  }
+
+  if (pubMaxBtn) {
+    pubMaxBtn.addEventListener("click", async () => {
+      const item = activePublicationModalItem;
+      const pubId = item && item.id;
+      const directUrl = pubId ? `${SITE_CANONICAL_URL}#pub-${pubId}` : SITE_CANONICAL_URL;
+      const pubTitle = (item && item.title) || (titleEl ? titleEl.textContent : "Новость школы");
+      const excerpt = item && item.text ? truncateAtWordBoundary(item.text, 180).short + "..." : "";
+      await shareToMaxMessenger({
+        title: `${pubTitle} — Школа с. Ямбирно`,
+        text: `${pubTitle}${excerpt ? "\n" + excerpt : ""}\nПодробнее: ${directUrl}`,
+        url: directUrl
+      });
     });
   }
 
@@ -3573,6 +3792,7 @@ function initLiveSheetWidgetAndMenu() {
       statusEl.textContent = "Синхронизация...";
     }
 
+    fetchSchoolSnapshotOnce(isManualRefresh).catch(() => {});
     loadSheet3PublicationsData(isManualRefresh);
 
     try {
@@ -4084,8 +4304,6 @@ function initFeedbackForm() {
     const sanitizedFio = sanitizeInput(fioInput.value, 120).replace(/\s+/g, " ");
     const sanitizedContact = sanitizeInput(contactInput.value, 100);
     const sanitizedComment = sanitizeInput(`${selectedTopicPrefix}${commentInput.value}`, 2000);
-    const fallbackTicketNum = generateSecureTicketNumber();
-
     isSubmitting = true;
     submitBtn.disabled = true;
     submitBtnText.textContent = "Отправка сообщения...";
@@ -4095,7 +4313,6 @@ function initFeedbackForm() {
     formDataParams.append("fio", sanitizedFio);
     formDataParams.append("contact", sanitizedContact);
     formDataParams.append("comment", sanitizedComment);
-    formDataParams.append("ticket", fallbackTicketNum);
     formDataParams.append("consent_152fz", "confirmed");
     formDataParams.append("website_hp", hpInput ? hpInput.value : "");
 
@@ -4113,19 +4330,23 @@ function initFeedbackForm() {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      let ticketNum = fallbackTicketNum;
-      const contentType = response.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        const payload = await response.json();
-        if (payload && payload.ok === false) {
-          const serverErr = new Error(sanitizeInput(String(payload.error || "Сервер отклонил обращение"), 240));
-          serverErr.isServerMessage = true;
-          throw serverErr;
-        }
-        if (payload && payload.ticketId) {
-          ticketNum = sanitizeInput(String(payload.ticketId), 60) || fallbackTicketNum;
-        }
+      const contentType = (response.headers.get("content-type") || "").toLowerCase();
+      if (!contentType.includes("application/json")) {
+        const formatErr = new Error("Сервер приёмной вернул некорректный ответ. Попробуйте позже или позвоните в школу: 8 (49147) 2-63-68.");
+        formatErr.isServerMessage = true;
+        throw formatErr;
       }
+
+      const payload = await response.json();
+      if (!payload || payload.ok !== true || !payload.ticketId) {
+        const serverErr = new Error(
+          sanitizeInput(String((payload && payload.error) || "Сервер отклонил регистрацию обращения"), 240)
+        );
+        serverErr.isServerMessage = true;
+        throw serverErr;
+      }
+
+      const ticketNum = sanitizeInput(String(payload.ticketId), 60);
 
       lastRegisteredTicketId = ticketNum;
       safeStorageSet(window.localStorage, FEEDBACK_COOLDOWN_KEY, String(Date.now()));
