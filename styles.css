@@ -4390,7 +4390,7 @@ body.visually-impaired textarea:-webkit-autofill {
   -webkit-text-fill-color: var(--a11y-fg) !important;
 }
 
-body.visually-impaired:not(.a11y-show-images) img:not(.logo-img) {
+body.visually-impaired:not(.a11y-show-images) img:not(.logo-img):not(.qr-code-img) {
   display: none !important;
 }
 
@@ -4404,7 +4404,7 @@ body.visually-impaired:not(.a11y-show-images) .chalk-pieces {
   display: none !important;
 }
 
-body.visually-impaired.a11y-show-images img:not(.logo-img) {
+body.visually-impaired.a11y-show-images img:not(.logo-img):not(.qr-code-img) {
   filter: grayscale(100%) contrast(1.15);
 }
 
@@ -4863,5 +4863,286 @@ body.visually-impaired .reveal.reveal-pending {
     animation: none !important;
     transition: none !important;
     transform: none !important;
+  }
+}
+
+/* === QR-код портала и интеграция с мессенджером MAX === */
+.btn-max {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.btn-max .ui-ico {
+  color: #ffffff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-max:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+    color: #ffffff;
+  }
+}
+
+.btn-max-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #6d28d9;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: transform var(--dur-micro) var(--ease-out-expo), opacity var(--dur-micro) ease;
+}
+
+.btn-max-mini .ui-ico {
+  color: #ffffff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-max-mini:hover {
+    opacity: 0.92;
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+.qr-share-banner {
+  margin-top: 26px;
+  padding: 26px 28px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: center;
+  border-left: 5px solid #4f46e5;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 65%, #eff6ff 100%);
+}
+
+.qr-code-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--dur-ui) var(--ease-out-expo), border-color var(--dur-micro) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .qr-code-frame:hover {
+    border-color: #4f46e5;
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+.qr-code-img {
+  display: block;
+  width: 164px;
+  height: 164px;
+  border-radius: 6px;
+  background: #ffffff;
+  image-rendering: crisp-edges;
+}
+
+.qr-code-img--large {
+  width: min(260px, 68vw);
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.qr-zoom-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.qr-share-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.qr-share-title {
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  color: var(--text-main);
+  margin-bottom: 8px;
+  line-height: 1.28;
+}
+
+.qr-share-text {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  max-width: var(--measure-prose);
+}
+
+.qr-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.qr-modal-dialog {
+  width: 100%;
+  max-width: min(520px, 100%);
+  max-height: 92vh;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  animation: modalSpringIn 360ms var(--ease-out-expo);
+}
+
+.qr-modal-body {
+  padding: 24px 22px;
+  text-align: center;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.qr-print-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+}
+
+.qr-modal-title {
+  font-size: 1.24rem;
+  line-height: 1.3;
+  color: var(--text-main);
+}
+
+.qr-modal-canvas {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  box-shadow: var(--shadow-sm);
+}
+
+.qr-modal-caption {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  max-width: 44ch;
+}
+
+.qr-modal-url {
+  display: inline-block;
+  font-size: 0.76rem;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 5px 10px;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.qr-modal-footer {
+  justify-content: center;
+}
+
+.footer-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Совместимость QR-кода с версией для слабовидящих (QR остаётся сканируемым) */
+body.visually-impaired img.qr-code-img,
+body.visually-impaired.a11y-show-images img.qr-code-img {
+  display: block !important;
+  background-color: #ffffff !important;
+  padding: 6px !important;
+  filter: none !important;
+}
+
+body.visually-impaired .btn-max,
+body.visually-impaired .btn-max-mini,
+body.visually-impaired .qr-code-frame {
+  border: 2px solid var(--a11y-fg) !important;
+}
+
+@media (pointer: coarse) {
+  .btn-max-mini {
+    min-height: 44px;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .qr-share-banner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    padding: 22px 18px;
+    gap: 18px;
+  }
+
+  .qr-share-info {
+    align-items: center;
+  }
+
+  .qr-share-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qr-share-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Чистая печать QR-листовки для школьного стенда */
+@media print {
+  body.printing-qr > *:not(#qr-modal) {
+    display: none !important;
+  }
+
+  body.printing-qr #qr-modal {
+    position: static !important;
+    display: block !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+
+  body.printing-qr .qr-modal-dialog {
+    max-width: 100% !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: 2px solid #0f172a !important;
+  }
+
+  body.printing-qr .pub-modal-header,
+  body.printing-qr .qr-modal-footer {
+    display: none !important;
+  }
+
+  body.printing-qr .qr-code-img--large {
+    width: 340px !important;
+    height: 340px !important;
   }
 }
