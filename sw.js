@@ -1,4 +1,4 @@
-const CACHE_NAME = "yambirno-school-v11";
+const CACHE_NAME = "yambirno-school-v12";
 const NETWORK_TIMEOUT_MS = 4000;
 const SNAPSHOT_TIMEOUT_MS = 4500;
 
@@ -17,6 +17,8 @@ const OPTIONAL_ASSETS = [
   "./data/school-snapshot.json",
   "./icon.svg",
   "./assets/img/icon-192.png",
+  "./assets/img/icon-512.png",
+  "./assets/img/qr-school.svg",
   "./assets/img/apple-touch-icon.png",
   "./assets/img/hero-school-1280.webp",
   "./assets/img/hero-school-1280.jpg"
