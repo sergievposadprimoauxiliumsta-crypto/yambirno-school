@@ -6,7 +6,8 @@
   <meta name="color-scheme" content="light">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#1e40af">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com https://skrinshoter.ru https://*.skrinshoter.ru https://*.userapi.com https://*.yandex.net; connect-src 'self' https://docs.google.com https://*.googleusercontent.com https://api.open-meteo.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;">
+  <meta name="robots" content="index, follow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com https://skrinshoter.ru https://*.skrinshoter.ru https://*.userapi.com https://*.yandex.net; connect-src 'self' https://docs.google.com https://*.googleusercontent.com https://api.open-meteo.com; font-src 'self' data:; object-src 'none'; frame-src 'none'; media-src 'none'; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;">
 
   <title>Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» — Информационный портал</title>
   <meta name="description" content="Ямбирнский филиал МОУ «Лесно-Конобеевская СШ» (с. Ямбирно, Шацкий район): расписание 1–9 классов, меню питания, педагоги, новости и гид по Дневнику и Учи.ру.">
@@ -75,6 +76,14 @@
           "@type": "GeoCoordinates",
           "latitude": 54.1286,
           "longitude": 41.9708
+        },
+        "hasMap": "https://yandex.ru/maps/?pt=41.9708,54.1286&z=16&l=map",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+7-49147-2-63-68",
+          "contactType": "customer support",
+          "areaServed": "RU",
+          "availableLanguage": "Russian"
         },
         "openingHoursSpecification": [
           {
@@ -438,6 +447,31 @@
       <polyline points="1.5 19.8 1.5 13.8 7.5 13.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M3.6 9.2a9 9 0 0 1 14.8-3.4l4.1 4.4M1.5 13.8l4.2 4.4a9 9 0 0 0 14.8-3.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
+
+    <symbol id="ico-qr" viewBox="0 0 24 24">
+      <rect class="ico-base" x="3" y="3" width="7" height="7" rx="1.4" fill="currentColor" opacity="0.18"/>
+      <rect class="ico-accent" x="3" y="3" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="5.3" y="5.3" width="2.4" height="2.4" fill="currentColor"/>
+      <rect class="ico-base" x="14" y="3" width="7" height="7" rx="1.4" fill="currentColor" opacity="0.18"/>
+      <rect class="ico-accent" x="14" y="3" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="16.3" y="5.3" width="2.4" height="2.4" fill="currentColor"/>
+      <rect class="ico-base" x="3" y="14" width="7" height="7" rx="1.4" fill="currentColor" opacity="0.18"/>
+      <rect class="ico-accent" x="3" y="14" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="5.3" y="16.3" width="2.4" height="2.4" fill="currentColor"/>
+      <path class="ico-part-moving" d="M14 14h2.5v2.5H14V14Zm4.5 0H21v2.5h-2.5V14ZM16.5 16.5H19V19h-2.5v-2.5ZM14 19h2.5v2H14v-2Zm4.5 0H21v2h-2.5v-2Z" fill="url(#yamb-g-amber)"/>
+    </symbol>
+
+    <symbol id="ico-max" viewBox="0 0 24 24">
+      <path class="ico-base" d="M12 3C6.9 3 3 6.6 3 11.2c0 2.5 1.2 4.7 3.1 6.2-.2 1.4-.9 2.7-1.7 3.5 1.9-.1 3.7-.7 5-1.6.8.2 1.7.3 2.6.3 5.1 0 9-3.6 9-8.4S17.1 3 12 3Z" fill="currentColor" opacity="0.22"/>
+      <path class="ico-accent" d="M12 3C6.9 3 3 6.6 3 11.2c0 2.5 1.2 4.7 3.1 6.2-.2 1.4-.9 2.7-1.7 3.5 1.9-.1 3.7-.7 5-1.6.8.2 1.7.3 2.6.3 5.1 0 9-3.6 9-8.4S17.1 3 12 3Z" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linejoin="round"/>
+      <path class="ico-part-moving" d="M7.8 14V8.8l4.2 3.4 4.2-3.4V14" fill="none" stroke="currentColor" stroke-width="1.95" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ico-print" viewBox="0 0 24 24">
+      <path class="ico-base" d="M6 9V4h12v5" fill="currentColor" opacity="0.16"/>
+      <path class="ico-accent" d="M6 9V4h12v5M6 17H4.5A1.5 1.5 0 0 1 3 15.5v-5A1.5 1.5 0 0 1 4.5 9h15A1.5 1.5 0 0 1 21 10.5v5a1.5 1.5 0 0 1-1.5 1.5H18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <rect class="ico-part-moving" x="6" y="14" width="12" height="6" rx="1" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.8"/>
+    </symbol>
   </svg>
 
   <a href="#main-content" class="skip-link">Перейти к основному содержанию</a>
@@ -531,7 +565,6 @@
           class="logo-img"
           width="58"
           height="58"
-          fetchpriority="high"
           decoding="async"
         >
         <div class="brand-text">
@@ -752,8 +785,12 @@
                   <h3>Дневник уроков: <span id="schedule-day-label" class="day-accent-label">Сегодня</span></h3>
                 </div>
                 <div class="schedule-head-controls">
+                  <button type="button" id="share-schedule-max-btn" class="btn-max-mini" title="Отправить расписание и погоду в мессенджер MAX">
+                    <svg class="ui-ico" width="14" height="14" aria-hidden="true"><use href="#ico-max"></use></svg>
+                    <span>В MAX</span>
+                  </button>
                   <button type="button" id="share-schedule-btn" class="btn-share-chat" title="Скопировать расписание и погоду для родительского чата">
-                    <svg class="ui-ico ui-ico--send" width="14" height="14" aria-hidden="true"><use href="#ico-send"></use></svg>
+                    <svg class="ui-ico" width="14" height="14" aria-hidden="true"><use href="#ico-copy"></use></svg>
                     <span>В чат</span>
                   </button>
                   <div class="weekday-pills" id="schedule-weekday-pills" role="group" aria-label="Выбор дня недели для расписания">
@@ -1587,6 +1624,55 @@
             </span>
           </div>
         </div>
+
+        <div class="qr-share-banner surface-card elevate-card reveal" id="qr-share-block" aria-labelledby="qr-share-title">
+          <button
+            type="button"
+            id="qr-card-preview-btn"
+            class="qr-code-frame"
+            aria-label="Открыть крупный QR-код портала школы для сканирования и печати"
+            title="Нажмите, чтобы увеличить QR-код на весь экран или распечатать для стенда"
+          >
+            <img
+              src="assets/img/qr-school.svg"
+              alt="QR-код для быстрого перехода на портал Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
+              class="qr-code-img"
+              width="164"
+              height="164"
+              loading="lazy"
+              decoding="async"
+            >
+            <span class="qr-zoom-hint">
+              <svg class="ui-ico" width="13" height="13" aria-hidden="true"><use href="#ico-zoom"></use></svg>
+              <span>Крупнее / Печать</span>
+            </span>
+          </button>
+
+          <div class="qr-share-info">
+            <span class="badge">
+              <svg class="ui-ico" width="15" height="15" aria-hidden="true"><use href="#ico-qr"></use></svg>
+              <span>Быстрый вход со смартфона</span>
+            </span>
+            <h3 id="qr-share-title" class="qr-share-title">Портал школы по QR-коду и в мессенджере MAX</h3>
+            <p class="qr-share-text">
+              Наведите камеру телефона на QR-код, чтобы открыть расписание 1–9 классов, меню питания и новости без ввода адреса, или перешлите ссылку родителям и ученикам прямо в мессенджер <strong>MAX</strong>.
+            </p>
+            <div class="qr-share-actions">
+              <button type="button" id="share-site-max-btn" class="btn btn-max">
+                <svg class="ui-ico" width="18" height="18" aria-hidden="true"><use href="#ico-max"></use></svg>
+                <span>Отправить в MAX</span>
+              </button>
+              <button type="button" id="copy-site-url-btn" class="btn btn-secondary">
+                <svg class="ui-ico" width="16" height="16" aria-hidden="true"><use href="#ico-link"></use></svg>
+                <span>Скопировать ссылку</span>
+              </button>
+              <button type="button" id="open-qr-modal-btn" class="btn btn-secondary">
+                <svg class="ui-ico" width="16" height="16" aria-hidden="true"><use href="#ico-print"></use></svg>
+                <span>QR для стенда</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1661,6 +1747,10 @@
           <svg class="ui-ico" width="16" height="16" aria-hidden="true"><use href="#ico-doc-pdf"></use></svg>
           <span>Открыть / Скачать прикреплённый документ ↗</span>
         </a>
+        <button type="button" id="pub-modal-max-btn" class="btn btn-max">
+          <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-max"></use></svg>
+          <span>Отправить в MAX</span>
+        </button>
         <button type="button" id="pub-modal-link-btn" class="btn btn-secondary">
           <svg class="ui-ico" width="16" height="16" aria-hidden="true"><use href="#ico-link"></use></svg>
           <span>Скопировать ссылку</span>
@@ -1699,6 +1789,50 @@
     </div>
   </div>
 
+  <div id="qr-modal" class="lightbox-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title" hidden>
+    <div class="qr-modal-dialog surface-card">
+      <div class="pub-modal-header">
+        <div class="pub-modal-meta">
+          <span class="teacher-badge">QR-код портала школы</span>
+        </div>
+        <button type="button" id="qr-modal-close" class="pub-modal-close-btn" aria-label="Закрыть окно с QR-кодом">✕ Закрыть</button>
+      </div>
+
+      <div class="qr-modal-body" id="qr-print-sheet">
+        <span class="qr-print-eyebrow">Шацкий район • Рязанская область • с. Ямбирно</span>
+        <h3 id="qr-modal-title" class="qr-modal-title">Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</h3>
+        <div class="qr-modal-canvas">
+          <img
+            src="assets/img/qr-school.svg"
+            alt="Крупный QR-код портала Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
+            class="qr-code-img qr-code-img--large"
+            width="260"
+            height="260"
+            decoding="async"
+          >
+        </div>
+        <p class="qr-modal-caption">
+          Наведите камеру смартфона, чтобы открыть расписание 1–9 классов, погоду, меню питания, новости и электронную приёмную.
+        </p>
+        <code class="qr-modal-url">https://sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/</code>
+      </div>
+
+      <div class="pub-modal-footer qr-modal-footer">
+        <button type="button" id="qr-modal-max-btn" class="btn btn-max">
+          <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-max"></use></svg>
+          <span>Отправить в MAX</span>
+        </button>
+        <button type="button" id="qr-modal-print-btn" class="btn btn-primary">
+          <svg class="ui-ico" width="16" height="16" aria-hidden="true"><use href="#ico-print"></use></svg>
+          <span>Распечатать для стенда</span>
+        </button>
+        <a href="assets/img/qr-school-stand.png" download="QR-Shkola-Yambirno.png" class="btn btn-secondary">
+          <span>Скачать плакат (PNG)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <button type="button" id="scroll-top-btn" class="scroll-top-btn" aria-label="Вернуться к началу страницы" title="Наверх">
     <svg class="progress-ring" width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
       <circle class="progress-ring-bg" cx="23" cy="23" r="19" fill="none" stroke-width="3"></circle>
@@ -1712,6 +1846,7 @@
       <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11.</p>
       <p>
         Заведующий филиалом: Попихина Елена Александровна •
+        <button type="button" id="footer-qr-btn" class="footer-link footer-link-btn">QR-код и MAX</button> •
         <a href="privacy.html" class="footer-link">Политика ПДн</a> •
         <a href="https://sh-lesno-konobeevskaya-r62.gosweb.gosuslugi.ru/" target="_blank" rel="noopener noreferrer" class="footer-link">Сведения об ОО (Госвеб) ↗</a>
       </p>
