@@ -100,6 +100,29 @@ body {
   word-wrap: break-word;
 }
 
+@supports (animation-timeline: scroll()) {
+  @keyframes readingProgressScale {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary) 0%, #2563eb 55%, var(--accent) 100%);
+    transform-origin: left center;
+    transform: scaleX(0);
+    z-index: 1900;
+    pointer-events: none;
+    animation: readingProgressScale linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
@@ -932,7 +955,16 @@ section[id],
   object-fit: cover;
   object-position: 72% center;
   transform: scale(1.05) translate3d(0, var(--hero-parallax, 0px), 0);
-  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-backdrop-img {
+    will-change: transform;
+  }
+
+  .hero-section.ambient-paused .hero-backdrop-img {
+    will-change: auto;
+  }
 }
 
 .hero-scrim {
@@ -942,10 +974,10 @@ section[id],
   pointer-events: none;
   background: linear-gradient(
     102deg,
-    rgba(248, 250, 252, 0.92) 0%,
-    rgba(248, 250, 252, 0.80) 44%,
-    rgba(239, 246, 255, 0.36) 72%,
-    rgba(30, 58, 138, 0.10) 100%
+    rgba(248, 250, 252, 0.94) 0%,
+    rgba(248, 250, 252, 0.82) 40%,
+    rgba(239, 246, 255, 0.24) 70%,
+    rgba(15, 23, 42, 0.06) 100%
   );
 }
 
@@ -1034,12 +1066,20 @@ section[id],
   align-items: center;
   gap: 14px;
   padding: 13px 16px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(203, 213, 225, 0.9);
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), var(--shadow-sm);
   margin-bottom: 20px;
+}
+
+@supports ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+  .director-note {
+    background: rgba(255, 255, 255, 0.84);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
 }
 
 .director-avatar-badge {
@@ -1341,13 +1381,21 @@ section[id],
 
 .live-widget {
   padding: 24px 22px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), var(--shadow-lg);
   border: 2px solid #bfdbfe;
   position: relative;
   overflow: hidden;
   min-width: 0;
   max-width: 100%;
   background: rgba(255, 255, 255, 0.96);
+}
+
+@supports ((backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px))) {
+  .live-widget {
+    background: rgba(255, 255, 255, 0.88);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
 }
 
 .live-widget::before {
@@ -1902,6 +1950,42 @@ section[id],
     radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
     linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
   background-size: 40px 40px, 60px 60px, 100% 100%;
+}
+
+.widget-weather-card.weather-sky-clear #weather-now-icon .ico-part-moving {
+  animation: weatherSunSpin 22s linear infinite;
+}
+
+.widget-weather-card.weather-sky-rain #weather-now-icon .ico-part-moving {
+  animation: weatherPrecipFall 1.9s var(--ease-in-out) infinite;
+}
+
+.widget-weather-card.weather-sky-snow #weather-now-icon .ico-part-moving {
+  animation: weatherSnowFloat 4.2s var(--ease-in-out) infinite;
+}
+
+.widget-weather-card:not(.weather-sky-clear):not(.weather-sky-rain):not(.weather-sky-snow) #weather-now-icon .ico-part-moving {
+  animation: weatherCloudDrift 4.6s var(--ease-in-out) infinite;
+}
+
+@keyframes weatherSunSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes weatherPrecipFall {
+  0%, 100% { transform: translate3d(0, -1px, 0); opacity: 0.95; }
+  50% { transform: translate3d(-0.8px, 1.8px, 0); opacity: 0.55; }
+}
+
+@keyframes weatherSnowFloat {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(24deg) scale(1.06); }
+}
+
+@keyframes weatherCloudDrift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(1.5px, -0.6px, 0); }
 }
 
 .weather-top-row {
@@ -2751,6 +2835,7 @@ section[id],
 .pub-modal-scroll-area {
   padding: 24px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   flex: 1;
 }
@@ -2826,7 +2911,7 @@ section[id],
   justify-content: flex-end;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 14px 22px;
+  padding: 14px 22px calc(14px + var(--safe-bottom));
   background: var(--bg-alt);
   border-top: 1px solid var(--border);
 }
@@ -2853,6 +2938,17 @@ section[id],
 .section-subtitle {
   color: var(--text-muted);
   font-size: 1.04rem;
+}
+
+@keyframes panelRevealIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .digital-tabs {
@@ -2903,6 +2999,10 @@ section[id],
 .digital-panel {
   padding: 30px 26px;
   border: 2px solid #dbeafe;
+}
+
+.digital-panel.active {
+  animation: panelRevealIn 320ms var(--ease-out-expo);
 }
 
 .digital-panel-header {
@@ -3408,6 +3508,13 @@ section[id],
   transition: opacity var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
 }
 
+@media (hover: none) {
+  .gallery-zoom-badge {
+    opacity: 0.92;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 .gallery-item:focus-visible .gallery-zoom-badge {
   opacity: 1;
   transform: translate3d(0, 0, 0);
@@ -3565,6 +3672,7 @@ section[id],
 
 .lightbox-img-container.is-zoomed {
   overflow: auto;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   cursor: zoom-out;
 }
@@ -3992,6 +4100,10 @@ section[id],
   border-top: 5px solid var(--primary);
   scroll-margin-top: 64px;
   transition: border-color 300ms ease, transform 340ms var(--ease-out-expo), opacity 280ms ease;
+}
+
+#form-step:not(.hidden) {
+  animation: panelRevealIn 340ms var(--ease-out-expo);
 }
 
 .feedback-card.topic-theme-thanks {
@@ -4532,6 +4644,10 @@ section[id],
   transform: translate3d(0, 0, 0);
 }
 
+.elevate-card.reveal.visible {
+  transition: transform var(--dur-ui) var(--ease-out-expo), border-color var(--dur-micro) ease, opacity 440ms var(--ease-out-expo);
+}
+
 body.visually-impaired {
   color-scheme: dark;
   --a11y-bg: #000000;
@@ -4543,6 +4659,11 @@ body.visually-impaired {
   font-size: 1.2rem !important;
   line-height: 1.7 !important;
   letter-spacing: 0.02em;
+}
+
+body.visually-impaired::after {
+  display: none !important;
+  animation: none !important;
 }
 
 body.visually-impaired.a11y-theme-white {
@@ -4863,6 +4984,13 @@ body.visually-impaired .reveal.reveal-pending {
     min-height: 44px;
   }
 
+  .footer-link-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 4px 2px;
+  }
+
   .a11y-opt-btn {
     min-width: 44px;
   }
@@ -5147,9 +5275,12 @@ body.visually-impaired .reveal.reveal-pending {
     right: 8px;
   }
 
-  .pub-modal-header,
-  .pub-modal-footer {
+  .pub-modal-header {
     padding: 12px 16px;
+  }
+
+  .pub-modal-footer {
+    padding: 12px 16px calc(12px + var(--safe-bottom));
   }
 }
 
@@ -5240,6 +5371,11 @@ body.visually-impaired .reveal.reveal-pending {
     scroll-behavior: auto;
   }
 
+  body::after {
+    display: none !important;
+    animation: none !important;
+  }
+
   *,
   *::before,
   *::after {
@@ -5251,6 +5387,9 @@ body.visually-impaired .reveal.reveal-pending {
   .hero-backdrop-img,
   .tilt-card,
   .pill-glide-indicator,
+  .digital-panel.active,
+  #form-step:not(.hidden),
+  .widget-weather-card #weather-now-icon .ico-part-moving,
   .skeleton-row::after,
   .skeleton-line::after,
   .pub-card-media.is-loading::after,
@@ -5413,6 +5552,8 @@ body.visually-impaired .reveal.reveal-pending {
   padding: 24px 22px;
   text-align: center;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -5519,6 +5660,10 @@ body.visually-impaired .qr-code-frame {
 
 /* Чистая печать QR-листовки для школьного стенда */
 @media print {
+  body::after {
+    display: none !important;
+  }
+
   body.printing-qr > *:not(#qr-modal) {
     display: none !important;
   }
@@ -5574,8 +5719,10 @@ body.visually-impaired .qr-code-frame {
 }
 
 .max-modal-body {
-  padding: 20px 22px 24px;
+  padding: 20px 22px calc(24px + var(--safe-bottom));
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -5637,6 +5784,7 @@ body.visually-impaired .qr-code-frame {
   white-space: pre-line;
   max-height: 112px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   overflow-wrap: anywhere;
   line-height: 1.42;
 }
@@ -5658,7 +5806,7 @@ body.visually-impaired .qr-code-frame {
 
 @media (max-width: 520px) {
   .max-modal-body {
-    padding: 16px;
+    padding: 16px 16px calc(16px + var(--safe-bottom));
   }
 
   .max-poster-wrap {
