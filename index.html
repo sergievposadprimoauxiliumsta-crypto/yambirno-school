@@ -1850,7 +1850,7 @@
 
       <div class="max-modal-body">
         <h3 id="max-modal-title" class="max-modal-title">Отправить в мессенджер MAX</h3>
-        <p id="max-modal-subtitle" class="max-modal-subtitle">Выберите, как открыть MAX: через установленное приложение или в браузере.</p>
+        <p id="max-modal-subtitle" class="max-modal-subtitle">Выберите удобный способ отправки в чат или канал MAX.</p>
 
         <div id="max-modal-poster-wrap" class="max-poster-wrap hidden">
           <img
@@ -1863,7 +1863,7 @@
             decoding="async"
           >
           <p id="max-poster-hint" class="max-poster-hint">
-            При нажатии на кнопку ниже <strong>QR-плакат (PNG)</strong> скопируется в буфер обмена, а ссылка и подпись передадутся в MAX. В выбранном чате просто нажмите <strong>Ctrl+V</strong>, чтобы прикрепить плакат.
+            Готовый <strong>QR-плакат (PNG)</strong> со ссылкой и описанием портала школы. На телефоне нажмите кнопку ниже — откроется выбор чатов MAX с прикреплённой картинкой; на компьютере плакат копируется в буфер для вставки через <strong>Ctrl+V</strong>.
           </p>
         </div>
 
@@ -1872,17 +1872,22 @@
         <div class="max-choice-grid">
           <button type="button" id="max-share-native-btn" class="btn btn-max btn-full hidden">
             <svg class="ui-ico" width="18" height="18" aria-hidden="true"><use href="#ico-max"></use></svg>
-            <span id="max-share-native-label">Отправить плакат и ссылку в MAX</span>
+            <span id="max-share-native-label">Отправить QR-плакат (PNG) в MAX</span>
           </button>
 
-          <button type="button" id="max-share-app-btn" class="btn btn-max btn-full">
-            <svg class="ui-ico" width="18" height="18" aria-hidden="true"><use href="#ico-max"></use></svg>
-            <span>Открыть приложение MAX</span>
+          <button type="button" id="max-share-link-only-btn" class="btn btn-secondary btn-full hidden">
+            <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-link"></use></svg>
+            <span>Отправить только ссылку (без плаката)</span>
           </button>
 
-          <button type="button" id="max-share-web-btn" class="btn btn-secondary btn-full">
+          <button type="button" id="max-share-web-btn" class="btn btn-max btn-full">
             <svg class="ui-ico" width="17" height="17" aria-hidden="true"><use href="#ico-laptop"></use></svg>
-            <span>Открыть MAX в браузере</span>
+            <span id="max-share-web-label">Скопировать и открыть MAX в браузере</span>
+          </button>
+
+          <button type="button" id="max-share-app-btn" class="btn btn-secondary btn-full">
+            <svg class="ui-ico" width="18" height="18" aria-hidden="true"><use href="#ico-max"></use></svg>
+            <span id="max-share-app-label">Скопировать и открыть приложение MAX</span>
           </button>
         </div>
 
