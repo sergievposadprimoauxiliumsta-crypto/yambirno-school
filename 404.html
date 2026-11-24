@@ -1,381 +1,240 @@
-name: Sync School Snapshot & Media Mirror (RF Resilience)
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <base href="/yambirno-school/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#1e40af">
+  <meta name="robots" content="noindex, follow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self' data:; object-src 'none'; frame-src 'none'; media-src 'none'; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;">
 
-on:
-  schedule:
-    # Проверка обновлений Google Таблицы каждые 30 минут (коммит только при реальных изменениях)
-    - cron: '*/30 * * * *'
-  workflow_dispatch:
+  <title>Страница не найдена (404) — Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</title>
+  <meta name="description" content="Запрошенная страница не найдена. Перейдите на главную страницу информационного портала Ямбирнского филиала МОУ «Лесно-Конобеевская СШ» или в электронную приёмную.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3C/svg%3E">
 
-permissions:
-  contents: write
-  pages: write
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body class="paper-texture">
 
-concurrency:
-  group: sync-school-snapshot
-  cancel-in-progress: false
+  <svg id="yambirno-icon-sprite" class="svg-sprite-defs" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true">
+    <defs>
+      <linearGradient id="yamb-404-sapphire" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#60a5fa"/>
+        <stop offset="52%" stop-color="#2563eb"/>
+        <stop offset="100%" stop-color="#1e3a8a"/>
+      </linearGradient>
+      <linearGradient id="yamb-404-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fef08a"/>
+        <stop offset="48%" stop-color="#fbbf24"/>
+        <stop offset="100%" stop-color="#d97706"/>
+      </linearGradient>
+      <linearGradient id="yamb-404-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6ee7b7"/>
+        <stop offset="50%" stop-color="#10b981"/>
+        <stop offset="100%" stop-color="#047857"/>
+      </linearGradient>
+      <linearGradient id="yamb-404-glass" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.88"/>
+        <stop offset="55%" stop-color="#ffffff" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04"/>
+      </linearGradient>
+    </defs>
 
-jobs:
-  sync-snapshot:
-    name: Обновление JSON-снапшота и зеркала фото
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
+    <symbol id="ico-calendar" viewBox="0 0 24 24">
+      <rect class="ico-base" x="3" y="5" width="18" height="16" rx="3.2" fill="currentColor" opacity="0.16"/>
+      <path class="ico-base" d="M3 8.2A3.2 3.2 0 0 1 6.2 5h11.6A3.2 3.2 0 0 1 21 8.2V10H3V8.2Z" fill="url(#yamb-404-amber)" opacity="0.32"/>
+      <rect class="ico-accent" x="3" y="5" width="18" height="16" rx="3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path class="ico-highlight" d="M5.5 7.2h13" stroke="url(#yamb-404-glass)" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M3 10h18M8 2.8v3.8M16 2.8v3.8" stroke="url(#yamb-404-amber)" stroke-width="1.9" stroke-linecap="round"/>
+      <rect class="ico-part-moving" x="7.2" y="13" width="4.2" height="4.2" rx="1.1" fill="url(#yamb-404-amber)"/>
+      <circle cx="15.2" cy="15.1" r="1.2" fill="currentColor" opacity="0.55"/>
+    </symbol>
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+    <symbol id="ico-eye" viewBox="0 0 24 24">
+      <path class="ico-base" d="M1.5 12s4-7.4 10.5-7.4S22.5 12 22.5 12s-4 7.4-10.5 7.4S1.5 12 1.5 12Z" fill="currentColor" opacity="0.14"/>
+      <path d="M1.5 12s4-7.4 10.5-7.4S22.5 12 22.5 12s-4 7.4-10.5 7.4S1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="11.1" cy="11.1" r="1" fill="currentColor"/>
+    </symbol>
 
-      - name: Fetch CSV sheets and mirror public Drive photos
-        id: build_snapshot
-        env:
-          SHEET_PANEL_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv'
-          SHEET_PUBS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?gid=809598510&single=true&output=csv'
-          SNAPSHOT_PATH: 'data/school-snapshot.json'
-          MEDIA_DIR: 'data/media'
-        run: |
-          python3 - <<'PYEOF'
-          import csv
-          import datetime
-          import io
-          import json
-          import os
-          import re
-          import sys
-          import urllib.error
-          import urllib.request
+    <symbol id="ico-question" viewBox="0 0 24 24">
+      <circle class="ico-base" cx="12" cy="12" r="9.2" fill="url(#yamb-404-sapphire)" opacity="0.22"/>
+      <circle class="ico-accent" cx="12" cy="12" r="9.2" fill="none" stroke="url(#yamb-404-sapphire)" stroke-width="1.8"/>
+      <path class="ico-highlight" d="M7.2 7.4a6.6 6.6 0 0 1 5.4-2.1" fill="none" stroke="url(#yamb-404-glass)" stroke-width="1.25" stroke-linecap="round"/>
+      <g class="ico-part-moving">
+        <path d="M9.5 9.3a2.7 2.7 0 0 1 5.1 1.2c0 1.7-2.6 2.1-2.6 3.5" fill="none" stroke="url(#yamb-404-amber)" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="17.1" r="1.2" fill="url(#yamb-404-amber)"/>
+      </g>
+    </symbol>
 
-          PANEL_URL = os.environ["SHEET_PANEL_URL"]
-          PUBS_URL = os.environ["SHEET_PUBS_URL"]
-          SNAPSHOT_PATH = os.environ["SNAPSHOT_PATH"]
-          MEDIA_DIR = os.environ["MEDIA_DIR"]
+    <symbol id="ico-send" viewBox="0 0 24 24">
+      <path class="ico-base" d="m20.8 3.6-8.4 16.8-2.7-6.3-6.3-2.7L20.8 3.6Z" fill="currentColor" opacity="0.22"/>
+      <path class="ico-accent ico-part-moving" d="m20.8 3.6-8.4 16.8-2.7-6.3-6.3-2.7L20.8 3.6Z" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="ico-part-moving" d="M20.4 4 9.8 14.1" fill="none" stroke="url(#yamb-404-amber)" stroke-width="1.85" stroke-linecap="round"/>
+    </symbol>
 
-          MAX_CSV_BYTES = 2 * 1024 * 1024
-          MAX_IMG_BYTES = 900 * 1024  # до 900 КБ на оптимизированный кадр w1000
-          MAX_MIRROR_IMAGES = 60
-          MAX_ROWS = 500
-          MAX_COLS = 15
-          FETCH_TIMEOUT = 15
+    <symbol id="ico-cat-memo" viewBox="0 0 24 24">
+      <path class="ico-base" d="M3.2 6.3c2.9-1.1 6-.6 8.8 1.4 2.8-2 5.9-2.5 8.8-1.4v12.1c-2.9-1.1-6-.6-8.8 1.3-2.8-1.9-5.9-2.4-8.8-1.3V6.3Z" fill="currentColor" opacity="0.18"/>
+      <path class="ico-accent" d="M3.2 6.3c2.9-1.1 6-.6 8.8 1.4 2.8-2 5.9-2.5 8.8-1.4v12.1c-2.9-1.1-6-.6-8.8 1.3-2.8-1.9-5.9-2.4-8.8-1.3V6.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path class="ico-highlight" d="M5.8 9.4c1.4-.2 2.8.1 4 .7" fill="none" stroke="url(#yamb-404-glass)" stroke-width="1.2" stroke-linecap="round"/>
+      <path class="ico-part-moving" d="M12 7.7v12M14.8 10.3h3.2M14.8 13.6h2.6" stroke="url(#yamb-404-emerald)" stroke-width="1.85" stroke-linecap="round"/>
+    </symbol>
+  </svg>
 
-          PANEL_MARKERS = ("новости", "расписание", "класс", "табло", "меню")
-          FORBIDDEN_FEEDBACK_HEADERS = ("номер талона", "контакт", "комментарий")
-          DRIVE_ID_RE = re.compile(
-              r"https://drive\.google\.com/(?:file/d/|open\?id=|uc\?(?:[^\"'\s]*&)?id=|thumbnail\?(?:[^\"'\s]*&)?id=)([a-zA-Z0-9_-]{10,80})",
-              re.IGNORECASE,
-          )
+  <a href="#error-main" class="skip-link">Перейти к навигации по сайту</a>
 
+  <div id="dynamic-island-toast" class="dynamic-island" role="status" aria-live="polite" aria-hidden="true">
+    <span class="island-dot" aria-hidden="true"></span>
+    <span id="dynamic-island-text" class="island-text">Готово</span>
+  </div>
 
-          def fetch_bytes(url: str, max_bytes: int, accept: str) -> bytes:
-              req = urllib.request.Request(
-                  url,
-                  headers={
-                      "User-Agent": "YambirnoSchoolSnapshotBot/2.0 (+GitHubActions)",
-                      "Accept": accept,
-                      "Cache-Control": "no-cache",
-                  },
-              )
-              with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
-                  final_url = resp.geturl()
-                  if not str(final_url).startswith("https://"):
-                      raise RuntimeError(f"Insecure redirect blocked: {final_url}")
-                  status = getattr(resp, "status", 200)
-                  if status != 200:
-                      raise RuntimeError(f"HTTP {status}")
-                  raw = resp.read(max_bytes + 1)
-                  if len(raw) > max_bytes:
-                      raise RuntimeError(f"Response exceeds {max_bytes} byte limit")
-                  return raw
+  <header class="site-header">
+    <div class="top-utility-bar" role="region" aria-label="Панель текущего времени и специальных возможностей">
+      <div class="container utility-inner">
+        <div class="utility-datetime">
+          <span class="utility-icon" aria-hidden="true">
+            <svg class="ui-ico" width="16" height="16"><use href="#ico-calendar"></use></svg>
+          </span>
+          <span id="live-date-display" class="utility-date-text">Загрузка даты...</span>
+          <span class="utility-sep" aria-hidden="true">|</span>
+          <span id="live-time-display" class="live-clock-digits" aria-label="Текущее время">--:--:--</span>
+          <span class="school-status-pill">
+            <svg class="ui-ico ui-ico--book" width="14" height="14" aria-hidden="true"><use href="#ico-cat-memo"></use></svg>
+            <span>Информационный портал школы</span>
+          </span>
+        </div>
 
+        <div class="utility-a11y-slot">
+          <button
+            type="button"
+            id="a11y-toggle"
+            class="btn-a11y"
+            aria-label="Версия для слабовидящих"
+            aria-pressed="false"
+            aria-controls="a11y-panel"
+          >
+            <svg class="icon-eye ui-ico" width="20" height="20" aria-hidden="true"><use href="#ico-eye"></use></svg>
+            <span class="a11y-btn-text">Версия для слабовидящих</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-          def fetch_csv_text(url: str) -> str:
-              raw = fetch_bytes(url, MAX_CSV_BYTES, "text/csv,text/plain;q=0.9,*/*;q=0.1")
-              return raw.decode("utf-8-sig", errors="replace")
+    <div id="a11y-panel" class="a11y-panel hidden" role="region" aria-label="Настройки версии для слабовидящих по ГОСТ Р 52872-2019" hidden>
+      <div class="container a11y-panel-inner">
+        <div class="a11y-group" role="group" aria-label="Размер шрифта">
+          <span class="a11y-group-label">Шрифт:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="normal" aria-pressed="true">А</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="large" aria-pressed="false">А+</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-size="xlarge" aria-pressed="false">А++</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Цветовая схема">
+          <span class="a11y-group-label">Цвета:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="yellow" aria-pressed="true">Ж/Ч</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="white" aria-pressed="false">Ч/Б</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="black" aria-pressed="false">Б/Ч</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-theme="blue" aria-pressed="false">С/Г</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Гарнитура шрифта">
+          <span class="a11y-group-label">Гарнитура:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-font="sans" aria-pressed="true">Без засечек</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-font="serif" aria-pressed="false">С засечками</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Интервал между буквами">
+          <span class="a11y-group-label">Кернинг:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="normal" aria-pressed="true">1x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="medium" aria-pressed="false">1.5x</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-spacing="large" aria-pressed="false">2x</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Межстрочный интервал">
+          <span class="a11y-group-label">Строки:</span>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="normal" aria-pressed="true">1.5</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="medium" aria-pressed="false">1.9</button>
+          <button type="button" class="a11y-opt-btn" data-a11y-lh="large" aria-pressed="false">2.2</button>
+        </div>
+        <div class="a11y-group" role="group" aria-label="Изображения">
+          <span class="a11y-group-label">Фото:</span>
+          <button type="button" class="a11y-opt-btn" id="a11y-images-toggle" aria-pressed="false">Скрыты</button>
+        </div>
+        <button type="button" class="a11y-opt-btn a11y-reset-btn" id="a11y-reset-btn">Сбросить</button>
+      </div>
+    </div>
 
+    <div class="container header-main-inner">
+      <a href="./" class="brand" aria-label="Вернуться на главную страницу школы">
+        <img
+          src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231e3a8a'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='48' cy='48' r='45' fill='url(%23g1)' stroke='%23fbbf24' stroke-width='4'/%3E%3Ccircle cx='48' cy='48' r='39' fill='none' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='1.5'/%3E%3Ccircle cx='48' cy='34' r='11' fill='%23fbbf24'/%3E%3Cpath d='M48 16 V20 M33 22 L36 25 M63 22 L60 25' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M22 46 C32 42 42 45 48 50 C54 45 64 42 74 46 V68 C64 64 54 67 48 72 C42 67 32 64 22 68 Z' fill='%23ffffff'/%3E%3Cpath d='M48 50 V72' stroke='%231e3a8a' stroke-width='2.5'/%3E%3Cpath d='M27 53 C34 51 40 53 44 56 M27 60 C34 58 40 60 44 63 M69 53 C62 51 56 53 52 56 M69 60 C62 58 56 60 52 63' stroke='%232563eb' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"
+          alt="Эмблема Ямбирнского филиала МОУ Лесно-Конобеевская СШ"
+          class="logo-img"
+          width="58"
+          height="58"
+          decoding="async"
+        >
+        <div class="brand-text">
+          <span class="brand-sub">Шацкий муниципальный район Рязанской области</span>
+          <span class="brand-title">Ямбирнский филиал МОУ «Лесно-Конобеевская СШ»</span>
+          <span class="brand-motto">Небольшая школа — большие возможности</span>
+        </div>
+      </a>
 
-          def is_valid_csv(text: str, markers=()) -> bool:
-              if not isinstance(text, str) or len(text.strip()) < 15:
-                  return False
-              head = text[:320].strip().lower()
-              if head.startswith(("<!doctype", "<html", "<head", "<script", "{")):
-                  return False
-              if "," not in text and "\n" not in text:
-                  return False
-              lower_all = text.lower()
-              if markers and not any(m in lower_all for m in markers):
-                  return False
-              return True
+      <div class="header-actions">
+        <a href="./" class="btn btn-secondary">← На главную</a>
+      </div>
+    </div>
+  </header>
 
+  <main id="error-main" class="error-main">
+    <div class="container error-container">
+      <section class="error-card surface-card" aria-labelledby="error-title">
+        <div class="error-icon-wrap" aria-hidden="true">
+          <svg class="ui-ico ui-ico--lg" width="32" height="32"><use href="#ico-question"></use></svg>
+        </div>
+        <div>
+          <span class="error-code-badge">Ошибка 404 • Страница не найдена</span>
+        </div>
+        <h1 id="error-title" class="page-main-title">Такой страницы на портале школы нет</h1>
+        <p class="error-lead">
+          Возможно, ссылка устарела или в адресе допущена опечатка. Вы можете вернуться на главную страницу с расписанием 1–9 классов или написать обращение руководителю филиала.
+        </p>
 
-          def parse_and_trim_csv(text: str, preserve_row_indices: bool = False):
-              reader = csv.reader(io.StringIO(text, newline=""))
-              rows = []
-              for raw_row in reader:
-                  if len(rows) >= MAX_ROWS:
-                      break
-                  cleaned = [cell.strip() for cell in raw_row[:MAX_COLS]]
-                  while cleaned and cleaned[-1] == "":
-                      cleaned.pop()
-                  rows.append(cleaned)
+        <div class="error-actions">
+          <a href="./" class="btn btn-primary">
+            <svg class="ui-ico ui-ico--book" width="18" height="18" aria-hidden="true"><use href="#ico-cat-memo"></use></svg>
+            <span>Перейти на главную страницу</span>
+          </a>
+          <a href="feedback.html" class="btn btn-secondary">
+            <svg class="ui-ico ui-ico--send" width="18" height="18" aria-hidden="true"><use href="#ico-send"></use></svg>
+            <span>Написать в электронную приёмную</span>
+          </a>
+        </div>
 
-              while rows and not any(rows[-1]):
-                  rows.pop()
+        <nav class="error-quick-links" aria-label="Быстрые разделы портала">
+          <a href="./#live-widget-card">Расписание и погода</a>
+          <span aria-hidden="true">•</span>
+          <a href="./#digital-guide">Дневник и Учи.ру</a>
+          <span aria-hidden="true">•</span>
+          <a href="./#school-life">Меню питания</a>
+          <span aria-hidden="true">•</span>
+          <a href="./#contacts">Контакты школы</a>
+        </nav>
+      </section>
+    </div>
+  </main>
 
-              if not preserve_row_indices:
-                  rows = [r for r in rows if any(r)]
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© 2026 Ямбирнский филиал МОУ «Лесно-Конобеевская СШ». Рязанская область, Шацкий район, с. Ямбирно, ул. Школьная, д. 11.</p>
+      <p>
+        <a href="privacy.html" class="footer-link">Политика ПДн</a> •
+        <a href="./" class="footer-link">На главную</a>
+      </p>
+    </div>
+  </footer>
 
-              return rows
-
-
-          def looks_like_private_feedback_sheet(rows) -> bool:
-              if not rows:
-                  return False
-              for row in rows[:5]:
-                  row_lower = " ".join(c.lower() for c in row)
-                  if all(marker in row_lower for marker in FORBIDDEN_FEEDBACK_HEADERS):
-                      return True
-              return False
-
-
-          def detect_image_ext(data: bytes):
-              if len(data) < 200:
-                  return None
-              if data.startswith(b"\xff\xd8\xff"):
-                  return ".jpg"
-              if data.startswith(b"\x89PNG\r\n\x1a\n"):
-                  return ".png"
-              if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
-                  return ".webp"
-              if data.startswith((b"GIF87a", b"GIF89a")):
-                  return ".gif"
-              return None
-
-
-          def extract_drive_ids(panel_rows, pubs_rows):
-              ids = []
-              seen = set()
-
-              def scan_text(cell_text):
-                  if not isinstance(cell_text, str) or "drive.google.com" not in cell_text:
-                      return
-                  for match in DRIVE_ID_RE.finditer(cell_text):
-                      fid = match.group(1)
-                      if fid not in seen:
-                          seen.add(fid)
-                          ids.append(fid)
-
-              for row in panel_rows:
-                  for cell in row:
-                      scan_text(cell)
-
-              # В ленте публикаций сканируем только столбец фото (col 0), чтобы не скачивать PDF из col 5
-              for row in pubs_rows[1:]:
-                  if row:
-                      scan_text(row[0])
-
-              return ids[:MAX_MIRROR_IMAGES]
-
-
-          def mirror_drive_images(drive_ids, media_dir: str):
-              os.makedirs(media_dir, exist_ok=True)
-              media_map = {}
-              kept_files = set()
-
-              for fid in drive_ids:
-                  existing_rel = None
-                  for ext in (".jpg", ".webp", ".png", ".gif"):
-                      candidate = os.path.join(media_dir, f"{fid}{ext}")
-                      if os.path.isfile(candidate) and os.path.getsize(candidate) >= 200:
-                          existing_rel = f"{media_dir}/{fid}{ext}"
-                          kept_files.add(f"{fid}{ext}")
-                          break
-
-                  if existing_rel:
-                      media_map[fid] = existing_rel
-                      continue
-
-                  candidates = (
-                      f"https://drive.google.com/thumbnail?id={fid}&sz=w1000",
-                      f"https://lh3.googleusercontent.com/d/{fid}=w1000",
-                  )
-                  saved = False
-                  for img_url in candidates:
-                      try:
-                          raw = fetch_bytes(img_url, MAX_IMG_BYTES, "image/webp,image/jpeg,image/png,*/*;q=0.5")
-                          ext = detect_image_ext(raw)
-                          if not ext:
-                              continue
-                          filename = f"{fid}{ext}"
-                          full_path = os.path.join(media_dir, filename)
-                          with open(full_path, "wb") as img_f:
-                              img_f.write(raw)
-                          media_map[fid] = f"{media_dir}/{filename}"
-                          kept_files.add(filename)
-                          print(f"[OK] Mirrored Drive photo {fid} -> {media_map[fid]} ({len(raw)} bytes)")
-                          saved = True
-                          break
-                      except Exception as exc:
-                          print(f"[WARN] Mirror attempt failed for {fid} ({img_url}): {exc}")
-
-                  if not saved:
-                      print(f"[WARN] Could not mirror Drive photo {fid}; client will use direct fallback")
-
-              # Удаляем устаревшие файлы зеркала, которых больше нет в таблице
-              for entry in os.listdir(media_dir):
-                  if entry.startswith("."):
-                      continue
-                  if entry not in kept_files:
-                      try:
-                          os.remove(os.path.join(media_dir, entry))
-                          print(f"[INFO] Removed obsolete mirrored image: {entry}")
-                      except OSError:
-                          pass
-
-              return media_map
-
-
-          def load_existing_snapshot(path: str):
-              if not os.path.exists(path):
-                  return None
-              try:
-                  with open(path, "r", encoding="utf-8") as f:
-                      data = json.load(f)
-                  if isinstance(data, dict):
-                      return data
-              except Exception as exc:
-                  print(f"[WARN] Could not read existing snapshot: {exc}")
-              return None
-
-
-          existing = load_existing_snapshot(SNAPSHOT_PATH)
-          existing_panel = existing.get("panelRows") if isinstance(existing, dict) else None
-          existing_pubs = existing.get("publicationsRows") if isinstance(existing, dict) else None
-
-          panel_rows = None
-          pubs_rows = None
-          errors = []
-
-          try:
-              panel_csv = fetch_csv_text(PANEL_URL)
-              if not is_valid_csv(panel_csv, PANEL_MARKERS):
-                  raise ValueError("Panel CSV failed structural marker validation")
-              parsed_panel = parse_and_trim_csv(panel_csv, preserve_row_indices=False)
-              if looks_like_private_feedback_sheet(parsed_panel):
-                  raise ValueError("Security block: panel CSV matched private feedback headers")
-              if len(parsed_panel) < 3:
-                  raise ValueError("Panel CSV has fewer than 3 non-empty rows")
-              panel_rows = parsed_panel
-              print(f"[OK] Panel sheet fetched: {len(panel_rows)} active rows")
-          except Exception as exc:
-              errors.append(f"panel: {exc}")
-              print(f"[WARN] Panel fetch failed: {exc}")
-              if isinstance(existing_panel, list) and len(existing_panel) >= 3:
-                  panel_rows = existing_panel
-                  print("[INFO] Preserved previous valid panelRows from snapshot")
-
-          try:
-              pubs_csv = fetch_csv_text(PUBS_URL)
-              if not is_valid_csv(pubs_csv):
-                  raise ValueError("Publications CSV failed validation")
-              parsed_pubs = parse_and_trim_csv(pubs_csv, preserve_row_indices=True)
-              if looks_like_private_feedback_sheet(parsed_pubs):
-                  raise ValueError("Security block: publications CSV matched private feedback headers")
-              pubs_rows = parsed_pubs
-              print(f"[OK] Publications sheet fetched: {len(pubs_rows)} rows (with header)")
-          except Exception as exc:
-              errors.append(f"publications: {exc}")
-              print(f"[WARN] Publications fetch failed: {exc}")
-              if isinstance(existing_pubs, list):
-                  pubs_rows = existing_pubs
-                  print("[INFO] Preserved previous valid publicationsRows from snapshot")
-
-          if panel_rows is None:
-              print("[ERROR] Neither live panel CSV nor previous snapshot is available.")
-              sys.exit(1)
-
-          if pubs_rows is None:
-              pubs_rows = []
-
-          drive_ids = extract_drive_ids(panel_rows, pubs_rows)
-          print(f"[INFO] Found {len(drive_ids)} unique public Drive photo IDs to mirror")
-          media_map = mirror_drive_images(drive_ids, MEDIA_DIR)
-
-          content_changed = (
-              existing is None
-              or existing.get("schemaVersion") != 2
-              or existing.get("panelRows") != panel_rows
-              or existing.get("publicationsRows") != pubs_rows
-              or existing.get("mediaMap") != media_map
-          )
-
-          if not content_changed:
-              print("[OK] Snapshot and media mirror unchanged. Skipping JSON rewrite.")
-              sys.exit(0)
-
-          msk_tz = datetime.timezone(datetime.timedelta(hours=3))
-          now_msk = datetime.datetime.now(msk_tz)
-
-          snapshot_payload = {
-              "schemaVersion": 2,
-              "updatedAt": now_msk.isoformat(timespec="seconds"),
-              "updatedLabel": now_msk.strftime("%d.%m.%Y %H:%M"),
-              "panelRows": panel_rows,
-              "publicationsRows": pubs_rows,
-              "mediaMap": media_map,
-          }
-
-          os.makedirs(os.path.dirname(SNAPSHOT_PATH), exist_ok=True)
-          with open(SNAPSHOT_PATH, "w", encoding="utf-8", newline="\n") as f:
-              json.dump(snapshot_payload, f, ensure_ascii=False, indent=2)
-              f.write("\n")
-
-          # Автообновление даты lastmod главной страницы в sitemap.xml
-          sitemap_path = "sitemap.xml"
-          if os.path.isfile(sitemap_path):
-              with open(sitemap_path, "r", encoding="utf-8") as sm_f:
-                  sm_text = sm_f.read()
-              today_iso = now_msk.strftime("%Y-%m-%d")
-              sm_updated = re.sub(
-                  r"(<loc>https://sergievposadprimoauxiliumsta-crypto\.github\.io/yambirno-school/</loc>\s*<lastmod>)[^<]+(</lastmod>)",
-                  rf"\g<1>{today_iso}\g<2>",
-                  sm_text,
-                  count=1,
-              )
-              if sm_updated != sm_text:
-                  with open(sitemap_path, "w", encoding="utf-8", newline="\n") as sm_f:
-                      sm_f.write(sm_updated)
-                  print(f"[OK] Updated sitemap.xml lastmod -> {today_iso}")
-
-          print(
-              f"[OK] Wrote snapshot v2 ({os.path.getsize(SNAPSHOT_PATH)} bytes, "
-              f"{len(media_map)} mirrored photos)"
-          )
-          if errors:
-              print(f"[WARN] Completed with partial fallback warnings: {'; '.join(errors)}")
-          PYEOF
-
-      - name: Commit and push snapshot and mirrored media if changed
-        id: commit_snapshot
-        run: |
-          STATUS="$(git status --porcelain -- data/school-snapshot.json data/media sitemap.xml 2>/dev/null || true)"
-          if [ -z "$STATUS" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No snapshot or media changes to commit."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/school-snapshot.json data/media sitemap.xml
-          git commit -m "chore(data): update school snapshot and media mirror"
-
-          BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-          git pull --rebase origin "$BRANCH" || true
-          git push origin "HEAD:$BRANCH"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Trigger GitHub Pages rebuild (if branch deployment)
-        if: steps.commit_snapshot.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/builds" >/dev/null 2>&1 || true
+</body>
+</html>
