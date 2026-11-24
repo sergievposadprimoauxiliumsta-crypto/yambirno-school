@@ -114,6 +114,7 @@ function cloneDefaultBells() {
 }
 
 const CHALKBOARD_CURRICULUM = [
+  // 1 класс (3 задачи по ФГОС)
   {
     grade: 1,
     badge: "1 класс • Арифметика",
@@ -123,6 +124,23 @@ const CHALKBOARD_CURRICULUM = [
     answer: " = 5"
   },
   {
+    grade: 1,
+    badge: "1 класс • Арифметика",
+    topic: "Тема урока: Вычитание в пределах 10",
+    problem: "9 − 4",
+    steps: " = 9 − 2 − 2",
+    answer: " = 5"
+  },
+  {
+    grade: 1,
+    badge: "1 класс • Сложение с переходом",
+    topic: "Тема урока: Сложение с переходом через десяток",
+    problem: "7 + 5",
+    steps: " = 7 + 3 + 2",
+    answer: " = 12"
+  },
+  // 2 класс (3 задачи по ФГОС)
+  {
     grade: 2,
     badge: "2 класс • Математика",
     topic: "Тема урока: Таблица умножения",
@@ -131,13 +149,47 @@ const CHALKBOARD_CURRICULUM = [
     answer: " = 24"
   },
   {
+    grade: 2,
+    badge: "2 класс • Устный счёт",
+    topic: "Тема урока: Сложение двузначных чисел",
+    problem: "35 + 27",
+    steps: " = (30 + 20) + (5 + 7)",
+    answer: " = 62"
+  },
+  {
+    grade: 2,
+    badge: "2 класс • Геометрия",
+    topic: "Тема урока: Периметр прямоугольника",
+    problem: "P = (5 + 3) × 2",
+    steps: " = 8 × 2",
+    answer: " = 16 см"
+  },
+  // 3 класс (3 задачи по ФГОС)
+  {
     grade: 3,
     badge: "3 класс • Математика",
-    topic: "Тема урока: Взаимосвязь умножения и деления",
+    topic: "Тема урока: Табличное деление",
     problem: "48 : 6",
     steps: " (так как 6 × 8 = 48)",
     answer: " = 8"
   },
+  {
+    grade: 3,
+    badge: "3 класс • Порядок действий",
+    topic: "Тема урока: Порядок действий в выражениях",
+    problem: "24 + 6 × 3",
+    steps: " = 24 + 18",
+    answer: " = 42"
+  },
+  {
+    grade: 3,
+    badge: "3 класс • Геометрия",
+    topic: "Тема урока: Площадь прямоугольника S = a · b",
+    problem: "S = 7 см × 4 см",
+    steps: " = 7 · 4",
+    answer: " = 28 см²"
+  },
+  // 4 класс (3 задачи по ФГОС)
   {
     grade: 4,
     badge: "4 класс • Задачи на движение",
@@ -147,13 +199,47 @@ const CHALKBOARD_CURRICULUM = [
     answer: " = 36 км"
   },
   {
+    grade: 4,
+    badge: "4 класс • Задачи на движение",
+    topic: "Тема урока: Нахождение скорости v = S : t",
+    problem: "v = 180 км : 3 ч",
+    steps: " = 180 : 3",
+    answer: " = 60 км/ч"
+  },
+  {
+    grade: 4,
+    badge: "4 класс • Многозначные числа",
+    topic: "Тема урока: Умножение и вычитание в выражениях",
+    problem: "240 × 3 − 120",
+    steps: " = 720 − 120",
+    answer: " = 600"
+  },
+  // 5 класс (3 задачи по ФГОС)
+  {
     grade: 5,
     badge: "5 класс • Обыкновенные дроби",
-    topic: "Тема урока: Сложение дробей с одинаковым знаменателем",
+    topic: "Тема урока: Сложение дробей с общим знаменателем",
     problem: "2/7 + 3/7",
     steps: " = (2 + 3) / 7",
     answer: " = 5/7"
   },
+  {
+    grade: 5,
+    badge: "5 класс • Десятичные дроби",
+    topic: "Тема урока: Сложение десятичных дробей",
+    problem: "3,4 + 2,85",
+    steps: " = 3,40 + 2,85",
+    answer: " = 6,25"
+  },
+  {
+    grade: 5,
+    badge: "5 класс • Проценты",
+    topic: "Тема урока: Нахождение процента от числа",
+    problem: "20% от 150",
+    steps: " = 150 · 0,2",
+    answer: " = 30"
+  },
+  // 6 класс (3 задачи по ФГОС)
   {
     grade: 6,
     badge: "6 класс • Введение в алгебру",
@@ -163,6 +249,23 @@ const CHALKBOARD_CURRICULUM = [
     answer: " → x = 5"
   },
   {
+    grade: 6,
+    badge: "6 класс • Рациональные числа",
+    topic: "Тема урока: Действия с отрицательными числами",
+    problem: "−12 + 19 − 4",
+    steps: " = 7 − 4",
+    answer: " = 3"
+  },
+  {
+    grade: 6,
+    badge: "6 класс • Пропорции",
+    topic: "Тема урока: Основное свойство пропорции",
+    problem: "3 / 4 = x / 20",
+    steps: " → 4x = 3 · 20 → 4x = 60",
+    answer: " → x = 15"
+  },
+  // 7 класс (3 задачи по ФГОС)
+  {
     grade: 7,
     badge: "7 класс • Алгебра",
     topic: "Тема урока: Формулы сокращённого умножения",
@@ -170,6 +273,23 @@ const CHALKBOARD_CURRICULUM = [
     steps: " = (a + b)(a + b)",
     answer: " = a² + 2ab + b²"
   },
+  {
+    grade: 7,
+    badge: "7 класс • Степени",
+    topic: "Тема урока: Умножение степеней с одинаковым основанием",
+    problem: "2³ · 2⁴",
+    steps: " = 2^(3 + 4) = 2⁷",
+    answer: " = 128"
+  },
+  {
+    grade: 7,
+    badge: "7 класс • Линейная функция",
+    topic: "Тема урока: Значение функции y = kx + b",
+    problem: "y = 2x − 3, при x = 4",
+    steps: " → y = 2 · 4 − 3",
+    answer: " → y = 5"
+  },
+  // 8 класс (3 задачи по ФГОС)
   {
     grade: 8,
     badge: "8 класс • Алгебра",
@@ -179,12 +299,45 @@ const CHALKBOARD_CURRICULUM = [
     answer: " → x₁ = 2, x₂ = 3"
   },
   {
+    grade: 8,
+    badge: "8 класс • Квадратные корни",
+    topic: "Тема урока: Корень из произведения",
+    problem: "√(36 · 25)",
+    steps: " = √36 · √25 = 6 · 5",
+    answer: " = 30"
+  },
+  {
+    grade: 8,
+    badge: "8 класс • Геометрия",
+    topic: "Тема урока: Теорема Пифагора",
+    problem: "a = 6, b = 8, c = √(a² + b²)",
+    steps: " = √(36 + 64) = √100",
+    answer: " = 10"
+  },
+  // 9 класс (3 задачи по ФГОС и подготовке к ОГЭ)
+  {
     grade: 9,
     badge: "9 класс • Подготовка к ОГЭ",
-    topic: "Тема урока: Теорема Пифагора",
-    problem: "a = 3, b = 4, c = √(a² + b²)",
-    steps: " = √(9 + 16) = √25",
-    answer: " = 5"
+    topic: "Тема урока: Арифметическая прогрессия",
+    problem: "a₁ = 3, d = 4 → a₅ = a₁ + 4d",
+    steps: " = 3 + 4 · 4 = 3 + 16",
+    answer: " = 19"
+  },
+  {
+    grade: 9,
+    badge: "9 класс • Вероятность (ОГЭ)",
+    topic: "Тема урока: Классическая вероятность события",
+    problem: "P(A) = 3 / 15",
+    steps: " = 1 / 5",
+    answer: " = 0,2"
+  },
+  {
+    grade: 9,
+    badge: "9 класс • Геометрия (ОГЭ)",
+    topic: "Тема урока: Площадь трапеции S = (a + b) / 2 · h",
+    problem: "a = 6, b = 10, h = 4",
+    steps: " → S = (6 + 10) / 2 · 4 = 8 · 4",
+    answer: " = 32"
   }
 ];
 
@@ -222,6 +375,7 @@ let glideResizeRafId = 0;
 let chalkboardSyncCallback = null;
 let refreshClockStatusCallback = null;
 let imageLoadSequence = 0;
+const preloadedImageUrls = new Set();
 
 function getMoscowTimeParts(baseMs = Date.now()) {
   const msk = new Date(baseMs + 3 * 3600000);
@@ -763,6 +917,346 @@ function buildStablePublicationId(rawDateCell, rawTitleCell, usedIdsSet) {
   return candidate;
 }
 
+function appendRichInlineText(parentEl, rawText) {
+  const text = String(rawText || "");
+  if (!text) return;
+
+  const phoneRegex = /(^|[^\d])((?:\+7|8)(?:[\s\-()]*\d){10})(?=$|[^\d])/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = phoneRegex.exec(text)) !== null) {
+    const prefix = match[1] || "";
+    const phoneDisplay = match[2];
+    const phoneStart = match.index + prefix.length;
+
+    if (phoneStart > lastIndex) {
+      parentEl.appendChild(document.createTextNode(text.slice(lastIndex, phoneStart)));
+    }
+
+    const digits = phoneDisplay.replace(/\D/g, "");
+    const telHref =
+      digits.length === 11 && digits.startsWith("8") && !digits.startsWith("8800")
+        ? `tel:+7${digits.slice(1)}`
+        : `tel:${digits.startsWith("7") ? "+" + digits : digits}`;
+
+    const telLink = document.createElement("a");
+    telLink.href = telHref;
+    telLink.className = "pub-tel-link";
+    telLink.textContent = phoneDisplay.trim();
+    parentEl.appendChild(telLink);
+
+    lastIndex = phoneStart + phoneDisplay.length;
+  }
+
+  if (lastIndex < text.length) {
+    parentEl.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+}
+
+function splitTrailingCallout(rawText) {
+  const text = String(rawText || "").trim();
+  if (!text) return { main: "", callout: "" };
+
+  const calloutRegex = /([.!?])\s+((?:Хорошая новость|Берегите|Важно помнить|Помните|Горячая линия|Напоминаем|Обратите внимание|Будьте внимательны|Вывод:|Итог:)[\s\S]+)$/i;
+  const match = text.match(calloutRegex);
+  if (!match || match.index < 20) {
+    return { main: text, callout: "" };
+  }
+
+  return {
+    main: `${text.slice(0, match.index)}${match[1]}`.trim(),
+    callout: match[2].trim()
+  };
+}
+
+function splitLongPlainIntoParagraphs(rawText) {
+  const clean = String(rawText || "").trim();
+  if (!clean) return [];
+
+  const manualParts = clean.split(/\n+/).map((p) => p.trim()).filter(Boolean);
+  const result = [];
+
+  manualParts.forEach((part) => {
+    if (part.length <= 320) {
+      result.push(part);
+      return;
+    }
+
+    const sentences = part.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g);
+    if (!sentences || sentences.length <= 2) {
+      result.push(part);
+      return;
+    }
+
+    let bucket = "";
+    let countInBucket = 0;
+    sentences.forEach((sent) => {
+      const trimmed = sent.trim();
+      if (!trimmed) return;
+      if (bucket && (countInBucket >= 2 || bucket.length + trimmed.length > 340)) {
+        result.push(bucket);
+        bucket = trimmed;
+        countInBucket = 1;
+      } else {
+        bucket = bucket ? `${bucket} ${trimmed}` : trimmed;
+        countInBucket += 1;
+      }
+    });
+    if (bucket) result.push(bucket);
+  });
+
+  return result;
+}
+
+function splitIntroAndHeadingBeforeList(introText) {
+  const clean = String(introText || "").trim();
+  if (!clean) return { paragraphs: [], heading: "" };
+
+  if (clean.endsWith(":")) {
+    const lastBreakMatch = clean.match(/([\s\S]*?[.!?])\s+([^.!?]{4,140}:)$/);
+    if (lastBreakMatch) {
+      return {
+        paragraphs: splitLongPlainIntoParagraphs(lastBreakMatch[1]),
+        heading: lastBreakMatch[2].trim()
+      };
+    }
+    if (clean.length <= 160) {
+      return { paragraphs: [], heading: clean };
+    }
+  }
+
+  return { paragraphs: splitLongPlainIntoParagraphs(clean), heading: "" };
+}
+
+function parseNumberedItemHeading(itemText) {
+  const clean = String(itemText || "").trim().replace(/;+\s*$/, "");
+  const colonMatch = clean.match(/^([^.!?:]{3,65}:)\s+([\s\S]+)$/);
+  if (colonMatch) {
+    return { title: colonMatch[1].trim(), body: colonMatch[2].trim() };
+  }
+  const dashMatch = clean.match(/^([^.!?—–-]{3,55}\s+[—–])\s+([\s\S]+)$/);
+  if (dashMatch) {
+    return { title: dashMatch[1].trim(), body: dashMatch[2].trim() };
+  }
+  return { title: "", body: clean };
+}
+
+function parsePublicationRichBlocks(rawText) {
+  const text = String(rawText || "").replace(/\r\n?/g, "\n").trim();
+  if (!text) return [];
+
+  const blocks = [];
+
+  // 1. Формат «МИФ / ПРАВДА» или «ВОПРОС / ОТВЕТ»
+  const mythRegex = /(?:^|\s)(МИФ(?:\s*№?\s*\d+)?|ВОПРОС(?:\s*№?\s*\d+)?)\s*[:—–-]\s*([\s\S]*?)\s+(ПРАВДА|ФАКТ|ОТВЕТ)\s*[:—–-]\s*([\s\S]*?)(?=(?:\s+(?:МИФ|ВОПРОС)(?:\s*№?\s*\d+)?\s*[:—–-])|$)/gi;
+  const mythMatches = [];
+  let m;
+  while ((m = mythRegex.exec(text)) !== null) {
+    mythMatches.push({
+      index: m.index,
+      mythLabel: m[1].trim(),
+      mythText: m[2].trim(),
+      truthLabel: m[3].trim(),
+      truthText: m[4].trim()
+    });
+  }
+
+  if (mythMatches.length > 0) {
+    const introRaw = text.slice(0, mythMatches[0].index).trim();
+    if (introRaw) {
+      splitLongPlainIntoParagraphs(introRaw).forEach((p, idx) => {
+        blocks.push({ type: "paragraph", text: p, isLead: idx === 0 });
+      });
+    }
+
+    let trailingCallout = "";
+    const lastMyth = mythMatches[mythMatches.length - 1];
+    const splitLast = splitTrailingCallout(lastMyth.truthText);
+    if (splitLast.callout) {
+      lastMyth.truthText = splitLast.main;
+      trailingCallout = splitLast.callout;
+    }
+
+    blocks.push({ type: "myth-list", items: mythMatches });
+    if (trailingCallout) {
+      blocks.push({ type: "callout", text: trailingCallout });
+    }
+    return blocks;
+  }
+
+  // 2. Нумерованный список «1) ... 2) ... 3) ...»
+  const numRegex = /(?:^|\s)(\d{1,2})\)\s+([\s\S]*?)(?=(?:\s+\d{1,2}\)\s+)|$)/g;
+  const numMatches = [];
+  let n;
+  while ((n = numRegex.exec(text)) !== null) {
+    numMatches.push({
+      index: n.index,
+      num: n[1],
+      rawBody: n[2].trim()
+    });
+  }
+
+  if (numMatches.length >= 2) {
+    const introRaw = text.slice(0, numMatches[0].index).trim();
+    const introParsed = splitIntroAndHeadingBeforeList(introRaw);
+
+    introParsed.paragraphs.forEach((p, idx) => {
+      blocks.push({ type: "paragraph", text: p, isLead: idx === 0 });
+    });
+    if (introParsed.heading) {
+      blocks.push({ type: "subheading", text: introParsed.heading });
+    }
+
+    let trailingCallout = "";
+    const lastItem = numMatches[numMatches.length - 1];
+    const splitLast = splitTrailingCallout(lastItem.rawBody);
+    if (splitLast.callout) {
+      lastItem.rawBody = splitLast.main;
+      trailingCallout = splitLast.callout;
+    }
+
+    const listItems = numMatches.map((entry) => {
+      const parsedItem = parseNumberedItemHeading(entry.rawBody);
+      return { num: entry.num, title: parsedItem.title, body: parsedItem.body };
+    });
+    blocks.push({ type: "ordered-list", items: listItems });
+
+    if (trailingCallout) {
+      blocks.push({ type: "callout", text: trailingCallout });
+    }
+    return blocks;
+  }
+
+  // 3. Обычный текст с выделением абзацев и финальной памятки
+  const splitPlain = splitTrailingCallout(text);
+  splitLongPlainIntoParagraphs(splitPlain.main).forEach((p, idx) => {
+    blocks.push({ type: "paragraph", text: p, isLead: idx === 0 });
+  });
+  if (splitPlain.callout) {
+    blocks.push({ type: "callout", text: splitPlain.callout });
+  }
+  return blocks;
+}
+
+function renderFormattedPublicationBody(containerEl, rawText, isCompact = false) {
+  if (!containerEl) return;
+  clearElement(containerEl);
+
+  const blocks = parsePublicationRichBlocks(rawText);
+  if (blocks.length === 0) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = isCompact ? "pub-rich-body pub-rich-body--compact" : "pub-rich-body";
+
+  blocks.forEach((block) => {
+    if (block.type === "paragraph") {
+      const p = document.createElement("p");
+      p.className = block.isLead ? "pub-rich-p pub-rich-lead" : "pub-rich-p";
+      appendRichInlineText(p, block.text);
+      wrapper.appendChild(p);
+    } else if (block.type === "subheading") {
+      const h = document.createElement("h4");
+      h.className = "pub-rich-subheading";
+      h.textContent = block.text;
+      wrapper.appendChild(h);
+    } else if (block.type === "ordered-list") {
+      const ol = document.createElement("ol");
+      ol.className = "pub-rich-list";
+      block.items.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "pub-rich-list-item";
+
+        const badge = document.createElement("span");
+        badge.className = "pub-rich-num";
+        badge.setAttribute("aria-hidden", "true");
+        badge.textContent = item.num;
+
+        const textWrap = document.createElement("div");
+        textWrap.className = "pub-rich-item-text";
+        if (item.title) {
+          const strong = document.createElement("strong");
+          strong.className = "pub-rich-item-title";
+          strong.textContent = `${item.title} `;
+          textWrap.appendChild(strong);
+        }
+        appendRichInlineText(textWrap, item.body);
+
+        li.appendChild(badge);
+        li.appendChild(textWrap);
+        ol.appendChild(li);
+      });
+      wrapper.appendChild(ol);
+    } else if (block.type === "myth-list") {
+      const list = document.createElement("div");
+      list.className = "pub-myth-list";
+      block.items.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "pub-myth-card";
+
+        const mythRow = document.createElement("div");
+        mythRow.className = "pub-myth-row";
+        const mythPill = document.createElement("span");
+        mythPill.className = "pub-pill-myth";
+        mythPill.textContent = item.mythLabel;
+        const mythP = document.createElement("p");
+        mythP.className = "pub-myth-text";
+        appendRichInlineText(mythP, item.mythText);
+        mythRow.appendChild(mythPill);
+        mythRow.appendChild(mythP);
+
+        const truthRow = document.createElement("div");
+        truthRow.className = "pub-truth-row";
+        const truthPill = document.createElement("span");
+        truthPill.className = "pub-pill-truth";
+        truthPill.textContent = item.truthLabel;
+        const truthP = document.createElement("p");
+        truthP.className = "pub-truth-text";
+        appendRichInlineText(truthP, item.truthText);
+        truthRow.appendChild(truthPill);
+        truthRow.appendChild(truthP);
+
+        card.appendChild(mythRow);
+        card.appendChild(truthRow);
+        list.appendChild(card);
+      });
+      wrapper.appendChild(list);
+    } else if (block.type === "callout") {
+      const box = document.createElement("div");
+      box.className = "pub-callout";
+      appendRichInlineText(box, block.text);
+      wrapper.appendChild(box);
+    }
+  });
+
+  containerEl.appendChild(wrapper);
+}
+
+function formatPublicationPlainTextForCopy(pubItem) {
+  if (!pubItem) return "";
+  const lines = [];
+  if (pubItem.title) lines.push(pubItem.title);
+  const blocks = parsePublicationRichBlocks(pubItem.text || "");
+  blocks.forEach((block) => {
+    if (block.type === "paragraph" || block.type === "subheading" || block.type === "callout") {
+      lines.push(block.text);
+    } else if (block.type === "ordered-list") {
+      lines.push(
+        block.items
+          .map((item) => `${item.num}) ${item.title ? `${item.title} ` : ""}${item.body}`)
+          .join("\n")
+      );
+    } else if (block.type === "myth-list") {
+      lines.push(
+        block.items
+          .map((item) => `${item.mythLabel}: ${item.mythText}\n${item.truthLabel}: ${item.truthText}`)
+          .join("\n\n")
+      );
+    }
+  });
+  return lines.filter(Boolean).join("\n\n").trim();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initHeroBackdropFallback();
   initAccessibilityMode();
@@ -861,6 +1355,7 @@ function initChalkboardEngine() {
   const counterEl = document.getElementById("chalkboard-step-counter");
   const quizToggleBtn = document.getElementById("chalkboard-quiz-toggle");
   const quizLabelEl = document.getElementById("chalkboard-quiz-label");
+  const nextTaskBtn = document.getElementById("chalkboard-next-task-btn");
   const nextBtn = document.getElementById("chalkboard-next-btn");
   const revealBtn = document.getElementById("chalkboard-reveal-btn");
 
@@ -873,6 +1368,13 @@ function initChalkboardEngine() {
   let revealResolver = null;
   let pauseWaiters = [];
   const totalSteps = CHALKBOARD_CURRICULUM.length;
+
+  const formatCounterLabel = (idx) => {
+    const item = CHALKBOARD_CURRICULUM[idx];
+    const gradeItems = CHALKBOARD_CURRICULUM.filter((entry) => entry.grade === item.grade);
+    const posInGrade = gradeItems.indexOf(item) + 1;
+    return `${item.grade} класс • Задача ${posInGrade} из ${gradeItems.length}`;
+  };
 
   const flushPauseWaiters = () => {
     if (pauseWaiters.length === 0) return;
@@ -949,13 +1451,14 @@ function initChalkboardEngine() {
     return true;
   };
 
-  const renderStaticReducedItem = (item) => {
+  const renderStaticReducedItem = (idx) => {
+    const item = CHALKBOARD_CURRICULUM[idx];
     contentWrap.classList.remove("erasing");
     wetWipeEl.classList.remove("wiping");
     if (cursorEl) cursorEl.classList.add("hidden");
     if (badgeEl) badgeEl.textContent = item.badge;
     if (topicEl) topicEl.textContent = item.topic;
-    if (counterEl) counterEl.textContent = `Ступень ${item.grade} из ${totalSteps}`;
+    if (counterEl) counterEl.textContent = formatCounterLabel(idx);
     problemEl.textContent = item.problem;
 
     if (isQuizMode) {
@@ -973,7 +1476,7 @@ function initChalkboardEngine() {
 
   const runStageLoop = async (token) => {
     if (isReducedMotionPreferred()) {
-      renderStaticReducedItem(CHALKBOARD_CURRICULUM[currentIdx]);
+      renderStaticReducedItem(currentIdx);
       return;
     }
 
@@ -990,7 +1493,7 @@ function initChalkboardEngine() {
 
       if (badgeEl) badgeEl.textContent = item.badge;
       if (topicEl) topicEl.textContent = item.topic;
-      if (counterEl) counterEl.textContent = `Ступень ${item.grade} из ${totalSteps}`;
+      if (counterEl) counterEl.textContent = formatCounterLabel(currentIdx);
 
       if (statusEl) statusEl.textContent = "Пишет условие у доски...";
       const ok1 = await typeChalkString(problemEl, item.problem, token, 62);
@@ -1066,7 +1569,7 @@ function initChalkboardEngine() {
           : "Включён автоматический показ решений на доске"
       );
       if (isReducedMotionPreferred()) {
-        renderStaticReducedItem(CHALKBOARD_CURRICULUM[currentIdx]);
+        renderStaticReducedItem(currentIdx);
         return;
       }
       if (!isQuizMode && revealResolver) {
@@ -1089,9 +1592,19 @@ function initChalkboardEngine() {
     });
   }
 
+  if (nextTaskBtn) {
+    nextTaskBtn.addEventListener("click", () => {
+      currentIdx = (currentIdx + 1) % totalSteps;
+      restartFromCurrent();
+    });
+  }
+
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
-      currentIdx = (currentIdx + 1) % totalSteps;
+      const currentGrade = CHALKBOARD_CURRICULUM[currentIdx].grade;
+      const nextGrade = (currentGrade % 9) + 1;
+      const targetIdx = CHALKBOARD_CURRICULUM.findIndex((entry) => entry.grade === nextGrade);
+      currentIdx = targetIdx !== -1 ? targetIdx : (currentIdx + 1) % totalSteps;
       restartFromCurrent();
     });
   }
@@ -1931,7 +2444,6 @@ function initShareAndQrModule() {
     });
   }
 }
-
 function initLiveDateTimeClockAndAmbient() {
   const dateEl = document.getElementById("live-date-display");
   const timeEl = document.getElementById("live-time-display");
@@ -2548,7 +3060,7 @@ function buildPublicationLightboxSlides(pubItem) {
   const fallbackSvg = buildPublicationFallbackSvg(pubItem.title);
   const totalPhotos = Array.isArray(pubItem.photos) ? pubItem.photos.length : 0;
   return (pubItem.photos || []).map((rawUrl, idx) => {
-    const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1600);
+    const resolved = resolveImageLinkSource(rawUrl, fallbackSvg, 1200);
     return {
       src: resolved.src,
       altTry: resolved.altTry,
@@ -2562,6 +3074,16 @@ function buildPublicationLightboxSlides(pubItem) {
   });
 }
 
+function preloadSlideImage(slide) {
+  if (!slide || !slide.src || slide.src.startsWith("data:")) return;
+  if (preloadedImageUrls.has(slide.src)) return;
+  preloadedImageUrls.add(slide.src);
+  const preloader = new Image();
+  preloader.referrerPolicy = "no-referrer";
+  preloader.decoding = "async";
+  preloader.src = slide.src;
+}
+
 function attachSafeImageFallback(imgEl, resolved, loadingContainer = null) {
   const seq = String(++imageLoadSequence);
   imgEl.dataset.loadSeq = seq;
@@ -2573,8 +3095,11 @@ function attachSafeImageFallback(imgEl, resolved, loadingContainer = null) {
     if (loadingContainer) loadingContainer.classList.remove("is-loading");
   };
 
+  const isDataUri = Boolean(resolved && typeof resolved.src === "string" && resolved.src.startsWith("data:"));
+
   if (loadingContainer) {
-    loadingContainer.classList.add("is-loading");
+    if (isDataUri) loadingContainer.classList.remove("is-loading");
+    else loadingContainer.classList.add("is-loading");
   }
 
   imgEl.onload = () => {
@@ -2674,7 +3199,7 @@ function openPublicationModal(pubItem, updateUrlHash = true) {
   if (badgeEl) badgeEl.textContent = pubItem.badge || "Информация";
   if (dateEl) dateEl.textContent = pubItem.dateDisplay || "";
   titleEl.textContent = pubItem.title || "Объявление школы";
-  bodyEl.textContent = pubItem.text || "";
+  renderFormattedPublicationBody(bodyEl, pubItem.text || "", false);
 
   if (galleryEl) {
     clearElement(galleryEl);
@@ -2857,7 +3382,9 @@ function initPublicationModalEvents() {
 
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
-      const fullText = `${titleEl ? titleEl.textContent : ""}\n\n${bodyEl ? bodyEl.textContent : ""}`.trim();
+      const fullText = activePublicationModalItem
+        ? formatPublicationPlainTextForCopy(activePublicationModalItem)
+        : `${titleEl ? titleEl.textContent : ""}\n\n${bodyEl ? bodyEl.textContent : ""}`.trim();
       if (!fullText) return;
       const copied = await copyTextToClipboard(fullText);
       showDynamicIslandToast(
@@ -2958,7 +3485,7 @@ function renderPublicationCards(publications) {
       img.loading = "lazy";
       img.decoding = "async";
       img.width = 600;
-      img.height = 375;
+      img.height = 450;
       img.alt = pub.title;
 
       attachSafeImageFallback(img, resolveImageLinkSource(pub.photos[0], fallbackSvg, 640), mediaWrap);
@@ -3056,25 +3583,24 @@ function renderPublicationCards(publications) {
     let excerptEl = null;
 
     if (pub.text) {
-      excerptEl = document.createElement("p");
-      excerptEl.className = splitText.isTruncated
-        ? "pub-card-excerpt pub-excerpt-masked"
-        : "pub-card-excerpt";
-      excerptEl.textContent = splitText.isTruncated ? `${splitText.short}...` : pub.text;
-      content.appendChild(excerptEl);
-
       if (splitText.isTruncated) {
+        excerptEl = document.createElement("p");
+        excerptEl.className = "pub-card-excerpt pub-excerpt-masked";
+        excerptEl.textContent = `${splitText.short}...`;
+        content.appendChild(excerptEl);
+
         expandWrap = document.createElement("div");
         expandWrap.className = "pub-expand-wrap";
         expandWrap.setAttribute("aria-hidden", "true");
         const expandInner = document.createElement("div");
         expandInner.className = "pub-expand-inner";
-        const restP = document.createElement("p");
-        restP.className = "pub-card-excerpt pub-card-excerpt-rest";
-        restP.textContent = splitText.rest;
-        expandInner.appendChild(restP);
+        renderFormattedPublicationBody(expandInner, pub.text, true);
         expandWrap.appendChild(expandInner);
         content.appendChild(expandWrap);
+      } else {
+        const shortRichSlot = document.createElement("div");
+        renderFormattedPublicationBody(shortRichSlot, pub.text, true);
+        content.appendChild(shortRichSlot);
       }
     }
 
@@ -3096,7 +3622,6 @@ function renderPublicationCards(publications) {
         expandWrap.classList.toggle("is-open", nextOpen);
         expandWrap.setAttribute("aria-hidden", String(!nextOpen));
         excerptEl.classList.toggle("is-expanded", nextOpen);
-        excerptEl.textContent = nextOpen ? splitText.short : `${splitText.short}...`;
         toggleExpandBtn.setAttribute("aria-expanded", String(nextOpen));
         toggleLabel.textContent = nextOpen ? "Свернуть текст" : "Читать полностью";
       });
@@ -3348,7 +3873,7 @@ function updateGalleryFromSheetRows(galleryArray) {
 
     if (imgEl && itemData.url) {
       const resolvedThumb = resolveImageLinkSource(itemData.url, defaultSvg, 640);
-      const resolvedFull = resolveImageLinkSource(itemData.url, defaultSvg, 1600);
+      const resolvedFull = resolveImageLinkSource(itemData.url, defaultSvg, 1200);
       figure.setAttribute("data-full-src", resolvedFull.src);
       if (resolvedFull.altTry) {
         figure.setAttribute("data-full-alt", resolvedFull.altTry);
@@ -3437,6 +3962,13 @@ function initGalleryLightbox() {
     const hasMultiple = activeSlides.length > 1;
     if (prevBtn) prevBtn.classList.toggle("hidden", !hasMultiple);
     if (nextBtn) nextBtn.classList.toggle("hidden", !hasMultiple);
+
+    if (hasMultiple) {
+      const nextIdx = (currentSlideIdx + 1) % activeSlides.length;
+      const prevIdx = (currentSlideIdx - 1 + activeSlides.length) % activeSlides.length;
+      preloadSlideImage(activeSlides[nextIdx]);
+      preloadSlideImage(activeSlides[prevIdx]);
+    }
   };
 
   const openLightboxWithSlides = (slides, startIdx = 0) => {
@@ -3630,6 +4162,7 @@ function createNewTeacherCardElement() {
 }
 
 function populateSingleTeacherCard(card, rowData, idx) {
+  const photoWrap = card.querySelector(".teacher-photo-wrap");
   const photoEl = card.querySelector(".teacher-photo");
   const badgeEl = card.querySelector(".teacher-badge");
   const nameEl = card.querySelector(".teacher-name");
@@ -3671,7 +4204,7 @@ function populateSingleTeacherCard(card, rowData, idx) {
   if (photoEl && (newPhotoRaw || rowData.fio)) {
     photoEl.setAttribute("referrerpolicy", "no-referrer");
     const resolved = resolveTeacherPhotoSource(newPhotoRaw, newFio, idx);
-    attachSafeImageFallback(photoEl, resolved);
+    attachSafeImageFallback(photoEl, resolved, photoWrap);
     photoEl.alt = `Фото педагога: ${newFio}`;
   }
 }
