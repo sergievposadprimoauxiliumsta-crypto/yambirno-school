@@ -1,7 +1,7 @@
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?output=csv";
 const SHEET3_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1w6Z_wfOYJVKxtMHhz9ut6euiLY3YtkkOGNj1Wd_Pr0yJTdmKruN19uZYEyXpLZQSQPQgGHH9i84a/pub?gid=809598510&single=true&output=csv";
 const SNAPSHOT_JSON_URL = "data/school-snapshot.json";
-const FEEDBACK_POST_URL = "https://script.google.com/macros/s/AKfycbzCzPpC8lYIeG_GkCYJKTJAhXjM4Ti0vO_9njDpi7lPdC1Rr2Ue8REEE38Tv_dou3X1Kg/exec";
+const FEEDBACK_POST_URL = "https://functions.yandexcloud.net/d4ed8oi32f8gjqdng5lt";
 
 const YAMBIRNO_LAT = 54.1286;
 const YAMBIRNO_LON = 41.9708;
@@ -21,7 +21,6 @@ const MAX_SHARE_DEEPLINK_BASE = "https://max.ru/:share";
 const MAX_WEB_URL = "https://web.max.ru/";
 // При появлении официального школьного чата/канала в MAX укажите его HTTPS-адрес ниже:
 const MAX_SCHOOL_CHAT_URL = "";
-const SCHOOL_QR_SVG_URL = "assets/img/qr-school.svg";
 const SCHOOL_QR_POSTER_FILENAME = "QR-Shkola-Yambirno.png";
 const SCHOOL_QR_PATH_FALLBACK = "M4,4h7v1h-7zM16,4h1v1h-1zM18,4h1v1h-1zM20,4h1v1h-1zM27,4h1v1h-1zM32,4h1v1h-1zM34,4h7v1h-7zM4,5h1v1h-1zM10,5h1v1h-1zM18,5h1v1h-1zM20,5h3v1h-3zM24,5h1v1h-1zM26,5h1v1h-1zM31,5h1v1h-1zM34,5h1v1h-1zM40,5h1v1h-1zM4,6h1v1h-1zM6,6h3v1h-3zM10,6h1v1h-1zM12,6h2v1h-2zM15,6h6v1h-6zM25,6h3v1h-3zM34,6h1v1h-1zM36,6h3v1h-3zM40,6h1v1h-1zM4,7h1v1h-1zM6,7h3v1h-3zM10,7h1v1h-1zM12,7h1v1h-1zM14,7h8v1h-8zM24,7h1v1h-1zM26,7h7v1h-7zM34,7h1v1h-1zM36,7h3v1h-3zM40,7h1v1h-1zM4,8h1v1h-1zM6,8h3v1h-3zM10,8h1v1h-1zM12,8h1v1h-1zM14,8h1v1h-1zM16,8h1v1h-1zM18,8h1v1h-1zM20,8h2v1h-2zM23,8h2v1h-2zM27,8h1v1h-1zM29,8h1v1h-1zM32,8h1v1h-1zM34,8h1v1h-1zM36,8h3v1h-3zM40,8h1v1h-1zM4,9h1v1h-1zM10,9h1v1h-1zM12,9h2v1h-2zM15,9h2v1h-2zM18,9h4v1h-4zM24,9h1v1h-1zM26,9h1v1h-1zM31,9h1v1h-1zM34,9h1v1h-1zM40,9h1v1h-1zM4,10h7v1h-7zM12,10h1v1h-1zM14,10h1v1h-1zM16,10h1v1h-1zM18,10h1v1h-1zM20,10h1v1h-1zM22,10h1v1h-1zM24,10h1v1h-1zM26,10h1v1h-1zM28,10h1v1h-1zM30,10h1v1h-1zM32,10h1v1h-1zM34,10h7v1h-7zM12,11h1v1h-1zM14,11h1v1h-1zM17,11h1v1h-1zM19,11h4v1h-4zM24,11h3v1h-3zM30,11h1v1h-1zM32,11h1v1h-1zM4,12h1v1h-1zM6,12h5v1h-5zM14,12h1v1h-1zM17,12h1v1h-1zM20,12h1v1h-1zM23,12h1v1h-1zM26,12h6v1h-6zM34,12h5v1h-5zM8,13h1v1h-1zM11,13h2v1h-2zM14,13h1v1h-1zM16,13h1v1h-1zM19,13h1v1h-1zM22,13h1v1h-1zM24,13h2v1h-2zM27,13h1v1h-1zM29,13h2v1h-2zM32,13h1v1h-1zM35,13h1v1h-1zM39,13h1v1h-1zM6,14h1v1h-1zM10,14h1v1h-1zM13,14h1v1h-1zM15,14h1v1h-1zM17,14h1v1h-1zM19,14h2v1h-2zM23,14h1v1h-1zM25,14h1v1h-1zM28,14h5v1h-5zM34,14h1v1h-1zM36,14h1v1h-1zM38,14h3v1h-3zM6,15h1v1h-1zM12,15h1v1h-1zM14,15h2v1h-2zM18,15h2v1h-2zM22,15h5v1h-5zM28,15h1v1h-1zM30,15h4v1h-4zM35,15h2v1h-2zM40,15h1v1h-1zM5,16h1v1h-1zM8,16h1v1h-1zM10,16h1v1h-1zM13,16h2v1h-2zM19,16h3v1h-3zM23,16h1v1h-1zM26,16h5v1h-5zM32,16h9v1h-9zM4,17h1v1h-1zM7,17h3v1h-3zM11,17h3v1h-3zM15,17h1v1h-1zM18,17h1v1h-1zM20,17h1v1h-1zM22,17h3v1h-3zM26,17h2v1h-2zM30,17h1v1h-1zM32,17h1v1h-1zM35,17h1v1h-1zM4,18h2v1h-2zM7,18h1v1h-1zM9,18h4v1h-4zM17,18h3v1h-3zM22,18h1v1h-1zM24,18h3v1h-3zM29,18h1v1h-1zM31,18h2v1h-2zM35,18h3v1h-3zM39,18h2v1h-2zM6,19h1v1h-1zM9,19h1v1h-1zM13,19h2v1h-2zM16,19h1v1h-1zM19,19h1v1h-1zM24,19h2v1h-2zM28,19h1v1h-1zM31,19h6v1h-6zM4,20h1v1h-1zM6,20h2v1h-2zM10,20h1v1h-1zM12,20h2v1h-2zM15,20h5v1h-5zM22,20h1v1h-1zM24,20h1v1h-1zM27,20h5v1h-5zM33,20h2v1h-2zM36,20h1v1h-1zM38,20h2v1h-2zM7,21h1v1h-1zM9,21h1v1h-1zM12,21h2v1h-2zM18,21h3v1h-3zM25,21h1v1h-1zM27,21h1v1h-1zM32,21h1v1h-1zM37,21h3v1h-3zM4,22h2v1h-2zM7,22h2v1h-2zM10,22h1v1h-1zM12,22h4v1h-4zM17,22h2v1h-2zM22,22h1v1h-1zM24,22h3v1h-3zM29,22h1v1h-1zM31,22h4v1h-4zM36,22h1v1h-1zM39,22h2v1h-2zM4,23h1v1h-1zM6,23h1v1h-1zM12,23h1v1h-1zM14,23h5v1h-5zM20,23h1v1h-1zM25,23h4v1h-4zM30,23h2v1h-2zM33,23h2v1h-2zM40,23h1v1h-1zM4,24h5v1h-5zM10,24h3v1h-3zM15,24h1v1h-1zM17,24h2v1h-2zM20,24h3v1h-3zM24,24h1v1h-1zM26,24h1v1h-1zM28,24h4v1h-4zM33,24h2v1h-2zM36,24h1v1h-1zM38,24h1v1h-1zM4,25h3v1h-3zM9,25h1v1h-1zM11,25h4v1h-4zM16,25h1v1h-1zM20,25h5v1h-5zM26,25h2v1h-2zM29,25h1v1h-1zM32,25h2v1h-2zM37,25h1v1h-1zM4,26h2v1h-2zM7,26h2v1h-2zM10,26h5v1h-5zM16,26h1v1h-1zM18,26h4v1h-4zM24,26h1v1h-1zM26,26h1v1h-1zM28,26h6v1h-6zM35,26h3v1h-3zM40,26h1v1h-1zM4,27h1v1h-1zM6,27h3v1h-3zM12,27h3v1h-3zM16,27h4v1h-4zM21,27h2v1h-2zM25,27h4v1h-4zM31,27h1v1h-1zM33,27h1v1h-1zM35,27h2v1h-2zM39,27h1v1h-1zM5,28h4v1h-4zM10,28h2v1h-2zM13,28h2v1h-2zM17,28h2v1h-2zM20,28h1v1h-1zM23,28h1v1h-1zM25,28h1v1h-1zM28,28h3v1h-3zM34,28h1v1h-1zM36,28h1v1h-1zM38,28h2v1h-2zM4,29h1v1h-1zM6,29h4v1h-4zM11,29h1v1h-1zM13,29h2v1h-2zM16,29h2v1h-2zM19,29h1v1h-1zM21,29h2v1h-2zM24,29h1v1h-1zM27,29h1v1h-1zM32,29h1v1h-1zM35,29h1v1h-1zM4,30h1v1h-1zM6,30h1v1h-1zM9,30h5v1h-5zM15,30h1v1h-1zM19,30h2v1h-2zM23,30h1v1h-1zM25,30h1v1h-1zM31,30h2v1h-2zM34,30h2v1h-2zM37,30h1v1h-1zM39,30h2v1h-2zM4,31h1v1h-1zM7,31h1v1h-1zM12,31h2v1h-2zM16,31h1v1h-1zM18,31h2v1h-2zM23,31h3v1h-3zM27,31h2v1h-2zM30,31h2v1h-2zM35,31h1v1h-1zM4,32h1v1h-1zM6,32h1v1h-1zM9,32h3v1h-3zM13,32h1v1h-1zM15,32h2v1h-2zM18,32h4v1h-4zM23,32h1v1h-1zM26,32h1v1h-1zM29,32h2v1h-2zM32,32h9v1h-9zM12,33h3v1h-3zM16,33h1v1h-1zM18,33h1v1h-1zM20,33h1v1h-1zM22,33h3v1h-3zM27,33h1v1h-1zM29,33h1v1h-1zM31,33h2v1h-2zM36,33h2v1h-2zM4,34h7v1h-7zM15,34h2v1h-2zM19,34h1v1h-1zM22,34h1v1h-1zM26,34h1v1h-1zM28,34h3v1h-3zM32,34h1v1h-1zM34,34h1v1h-1zM36,34h1v1h-1zM38,34h3v1h-3zM4,35h1v1h-1zM10,35h1v1h-1zM12,35h2v1h-2zM16,35h3v1h-3zM24,35h1v1h-1zM28,35h1v1h-1zM30,35h1v1h-1zM32,35h1v1h-1zM36,35h2v1h-2zM40,35h1v1h-1zM4,36h1v1h-1zM6,36h3v1h-3zM10,36h1v1h-1zM12,36h1v1h-1zM14,36h2v1h-2zM18,36h2v1h-2zM22,36h5v1h-5zM29,36h1v1h-1zM31,36h6v1h-6zM38,36h3v1h-3zM4,37h1v1h-1zM6,37h3v1h-3zM10,37h1v1h-1zM12,37h1v1h-1zM14,37h3v1h-3zM18,37h3v1h-3zM27,37h1v1h-1zM32,37h3v1h-3zM36,37h3v1h-3zM40,37h1v1h-1zM4,38h1v1h-1zM6,38h3v1h-3zM10,38h1v1h-1zM12,38h1v1h-1zM16,38h1v1h-1zM18,38h1v1h-1zM21,38h2v1h-2zM24,38h2v1h-2zM30,38h1v1h-1zM37,38h1v1h-1zM39,38h2v1h-2zM4,39h1v1h-1zM10,39h1v1h-1zM13,39h1v1h-1zM16,39h3v1h-3zM20,39h1v1h-1zM25,39h2v1h-2zM32,39h2v1h-2zM36,39h1v1h-1zM40,39h1v1h-1zM4,40h7v1h-7zM12,40h5v1h-5zM18,40h1v1h-1zM20,40h2v1h-2zM26,40h2v1h-2zM29,40h2v1h-2zM33,40h1v1h-1zM36,40h1v1h-1zM38,40h3v1h-3z";
 
@@ -367,7 +366,7 @@ let toastTimeoutId = null;
 let lastModalTriggerEl = null;
 let maxModalTriggerEl = null;
 let activeMaxSharePayload = null;
-let cachedQrPosterPromise = null;
+let cachedQrPosterAsset = null;
 let openLightboxSlidesFn = null;
 const glidePillRefreshers = [];
 let isGlideResizeBound = false;
@@ -476,6 +475,14 @@ function isDesktopHoverPointer() {
   return Boolean(
     window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches
   );
+}
+
+function isMobileShareContext() {
+  const coarsePointer = Boolean(
+    window.matchMedia && window.matchMedia("(pointer: coarse)").matches
+  );
+  const mobileUa = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+  return coarsePointer || mobileUa;
 }
 
 function runViewTransition(updateDomFn) {
@@ -781,7 +788,7 @@ function showDynamicIslandToast(message) {
   toastTimeoutId = setTimeout(() => {
     toast.classList.remove("show");
     toast.setAttribute("aria-hidden", "true");
-  }, 2600);
+  }, 3200);
 }
 
 function buildInitialsSvgDataUri(initials, index = 0) {
@@ -1927,25 +1934,28 @@ function drawCanvasRoundedRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-async function resolveQrPathDataForCanvas() {
+function dataUrlToBlobSync(dataUrl) {
   try {
-    const resp = await fetchWithTimeout(SCHOOL_QR_SVG_URL, { cache: "default" }, 3000);
-    if (resp && resp.ok) {
-      const svgText = await resp.text();
-      const match = svgText.match(/<path[^>]*\bd="([^"]+)"/i);
-      if (match && match[1] && /M\d+,\d+h\d+v1h-\d+z/.test(match[1])) {
-        return match[1];
-      }
+    const parts = String(dataUrl || "").split(",");
+    if (parts.length < 2) return null;
+    const mimeMatch = parts[0].match(/data:([^;]+);base64/i);
+    const mime = mimeMatch ? mimeMatch[1] : "image/png";
+    const binaryStr = atob(parts[1]);
+    const len = binaryStr.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
     }
-  } catch (_) {}
-  return SCHOOL_QR_PATH_FALLBACK;
+    return new Blob([bytes], { type: mime });
+  } catch (_) {
+    return null;
+  }
 }
 
-function getSchoolQrPosterAsset() {
-  if (cachedQrPosterPromise) return cachedQrPosterPromise;
+function getSchoolQrPosterAssetSync() {
+  if (cachedQrPosterAsset) return cachedQrPosterAsset;
 
-  cachedQrPosterPromise = (async () => {
-    const pathData = await resolveQrPathDataForCanvas();
+  try {
     const W = 1200;
     const H = 1500;
     const canvas = document.createElement("canvas");
@@ -1994,7 +2004,7 @@ function getSchoolQrPosterAsset() {
     ctx.fillStyle = "#0f172a";
     const runRegex = /M(\d+),(\d+)h(\d+)v1h-\d+z/g;
     let m;
-    while ((m = runRegex.exec(pathData)) !== null) {
+    while ((m = runRegex.exec(SCHOOL_QR_PATH_FALLBACK)) !== null) {
       const rx = parseInt(m[1], 10);
       const ry = parseInt(m[2], 10);
       const rw = parseInt(m[3], 10);
@@ -2015,26 +2025,34 @@ function getSchoolQrPosterAsset() {
     ctx.fillText("sergievposadprimoauxiliumsta-crypto.github.io/yambirno-school/", W / 2, 1432);
 
     const dataUrl = canvas.toDataURL("image/png");
-    const blob = await new Promise((resolve) => {
-      if (typeof canvas.toBlob === "function") {
-        canvas.toBlob((b) => resolve(b), "image/png");
-      } else {
-        resolve(null);
-      }
-    });
+    const blob = dataUrlToBlobSync(dataUrl);
+    if (!blob) return null;
 
-    if (!blob) {
-      cachedQrPosterPromise = null;
-      return null;
+    let file = null;
+    try {
+      if (typeof File === "function") {
+        file = new File([blob], SCHOOL_QR_POSTER_FILENAME, { type: "image/png" });
+      }
+    } catch (_) {
+      file = null;
     }
 
-    return { blob, dataUrl };
-  })().catch(() => {
-    cachedQrPosterPromise = null;
+    cachedQrPosterAsset = { blob, dataUrl, file };
+    return cachedQrPosterAsset;
+  } catch (_) {
     return null;
-  });
+  }
+}
 
-  return cachedQrPosterPromise;
+function canShareFileNatively(file) {
+  if (!file || !navigator.share || typeof navigator.canShare !== "function") {
+    return false;
+  }
+  try {
+    return Boolean(navigator.canShare({ files: [file] }));
+  } catch (_) {
+    return false;
+  }
 }
 
 async function copyImageBlobToClipboard(blob) {
@@ -2049,10 +2067,12 @@ async function copyImageBlobToClipboard(blob) {
   }
 }
 
-async function downloadSchoolQrPoster() {
-  const asset = await getSchoolQrPosterAsset();
+function downloadSchoolQrPoster(silentToast = false) {
+  const asset = getSchoolQrPosterAssetSync();
   if (!asset || !asset.blob) {
-    showDynamicIslandToast("Не удалось сформировать плакат — воспользуйтесь печатью");
+    if (!silentToast) {
+      showDynamicIslandToast("Не удалось сформировать плакат — воспользуйтесь печатью");
+    }
     return false;
   }
 
@@ -2064,7 +2084,9 @@ async function downloadSchoolQrPoster() {
   link.click();
   document.body.removeChild(link);
   setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
-  showDynamicIslandToast("QR-плакат (PNG) сохранён на устройство");
+  if (!silentToast) {
+    showDynamicIslandToast("QR-плакат (PNG) сохранён на устройство");
+  }
   return true;
 }
 
@@ -2080,15 +2102,27 @@ function getMaxWebTargetUrl() {
   return MAX_WEB_URL;
 }
 
-async function shareToMaxMessenger(payload) {
+function setButtonStyleVariant(btnEl, isPrimaryMax) {
+  if (!btnEl) return;
+  btnEl.classList.toggle("btn-max", Boolean(isPrimaryMax));
+  btnEl.classList.toggle("btn-secondary", !isPrimaryMax);
+}
+
+function shareToMaxMessenger(payload) {
   const modal = document.getElementById("max-share-modal");
   const titleEl = document.getElementById("max-modal-title");
   const subtitleEl = document.getElementById("max-modal-subtitle");
   const posterWrap = document.getElementById("max-modal-poster-wrap");
   const posterImg = document.getElementById("max-modal-poster-img");
+  const posterHint = document.getElementById("max-poster-hint");
   const textPreview = document.getElementById("max-modal-text-preview");
   const nativeBtn = document.getElementById("max-share-native-btn");
   const nativeLabel = document.getElementById("max-share-native-label");
+  const linkOnlyBtn = document.getElementById("max-share-link-only-btn");
+  const webBtn = document.getElementById("max-share-web-btn");
+  const webLabel = document.getElementById("max-share-web-label");
+  const appBtn = document.getElementById("max-share-app-btn");
+  const appLabel = document.getElementById("max-share-app-label");
   const copyPosterBtn = document.getElementById("max-copy-poster-btn");
   const downloadPosterBtn = document.getElementById("max-download-poster-btn");
   const closeBtn = document.getElementById("max-modal-close");
@@ -2099,17 +2133,24 @@ async function shareToMaxMessenger(payload) {
   const fullText = rawText.includes(url) ? rawText : `${rawText}\n${url}`;
   const includeQrPoster = Boolean(payload && payload.includeQrPoster);
 
+  const posterAsset = includeQrPoster ? getSchoolQrPosterAssetSync() : null;
+  const isMobile = isMobileShareContext();
+  const canNativeShare = Boolean(navigator.share);
+  const canNativePoster = Boolean(includeQrPoster && posterAsset && posterAsset.file && canShareFileNatively(posterAsset.file));
+
   activeMaxSharePayload = {
     title,
     url,
     text: fullText,
     includeQrPoster,
-    posterBlob: null
+    posterBlob: posterAsset ? posterAsset.blob : null,
+    posterFile: posterAsset ? posterAsset.file : null,
+    canNativePoster
   };
 
   if (!modal) {
-    await copyTextToClipboard(fullText);
-    window.open(buildMaxDeepLinkUrl(fullText), "_blank", "noopener,noreferrer");
+    copyTextToClipboard(fullText);
+    window.open(getMaxWebTargetUrl(), "_blank", "noopener,noreferrer");
     return;
   }
 
@@ -2118,27 +2159,85 @@ async function shareToMaxMessenger(payload) {
       ? "Отправить QR-плакат и ссылку в MAX"
       : "Отправить в мессенджер MAX";
   }
-  if (subtitleEl) {
-    subtitleEl.textContent = includeQrPoster
-      ? "Выберите: открыть приложение MAX, браузерную версию или отправить файл плаката напрямую."
-      : "Выберите удобный способ: через приложение MAX или через веб-версию в браузере.";
-  }
-  if (textPreview) {
-    textPreview.textContent = fullText;
-  }
 
   if (posterWrap) posterWrap.classList.toggle("hidden", !includeQrPoster);
   if (copyPosterBtn) copyPosterBtn.classList.toggle("hidden", !includeQrPoster);
   if (downloadPosterBtn) downloadPosterBtn.classList.toggle("hidden", !includeQrPoster);
 
-  const canNativeShare = Boolean(navigator.share);
-  if (nativeBtn) {
-    nativeBtn.classList.toggle("hidden", !canNativeShare);
+  if (includeQrPoster && posterImg && posterAsset && posterAsset.dataUrl) {
+    posterImg.src = posterAsset.dataUrl;
   }
-  if (nativeLabel) {
-    nativeLabel.textContent = includeQrPoster
-      ? "Отправить плакат и ссылку (через MAX)"
-      : "Поделиться через установленный MAX";
+
+  if (textPreview) {
+    textPreview.textContent = fullText;
+  }
+
+  if (includeQrPoster) {
+    if (isMobile) {
+      if (nativeBtn) nativeBtn.classList.remove("hidden");
+      if (linkOnlyBtn) linkOnlyBtn.classList.remove("hidden");
+      setButtonStyleVariant(nativeBtn, true);
+      setButtonStyleVariant(webBtn, false);
+      setButtonStyleVariant(appBtn, false);
+
+      if (canNativePoster) {
+        if (nativeLabel) nativeLabel.textContent = "Отправить QR-плакат (PNG) в MAX";
+        if (subtitleEl) {
+          subtitleEl.textContent = "Нажмите верхнюю кнопку, выберите MAX и отметьте нужные чаты — отправится готовый QR-плакат (PNG).";
+        }
+        if (posterHint) {
+          posterHint.textContent = "На плакате уже есть QR-код, название школы и адрес портала. Отправится именно картинка стенда (PNG), а не голая ссылка.";
+        }
+      } else {
+        if (nativeLabel) nativeLabel.textContent = "Сохранить QR-плакат (PNG) для MAX";
+        if (subtitleEl) {
+          subtitleEl.textContent = "Этот браузер не передаёт картинки напрямую: сохраните QR-плакат в Галерею и прикрепите его в чате MAX, либо отправьте только ссылку.";
+        }
+        if (posterHint) {
+          posterHint.textContent = "Встроенный браузер ограничивает прямую отправку PNG — нажмите кнопку выше, чтобы сохранить стенд в Галерею.";
+        }
+      }
+
+      if (webLabel) webLabel.textContent = "Открыть MAX в браузере";
+      if (appLabel) appLabel.textContent = "Открыть приложение MAX";
+    } else {
+      if (nativeBtn) nativeBtn.classList.add("hidden");
+      if (linkOnlyBtn) linkOnlyBtn.classList.add("hidden");
+      setButtonStyleVariant(webBtn, true);
+      setButtonStyleVariant(appBtn, false);
+
+      if (subtitleEl) {
+        subtitleEl.textContent = "На компьютере MAX не подставляет вложения автоматически: нажмите кнопку ниже — QR-плакат скопируется в буфер обмена. Выберите нужный чат в MAX и нажмите Ctrl+V.";
+      }
+      if (posterHint) {
+        posterHint.textContent = "Готовый QR-плакат (PNG) скопируется в буфер обмена как картинка. В открывшемся MAX выберите чат и нажмите Ctrl+V.";
+      }
+      if (webLabel) webLabel.textContent = "Скопировать плакат и открыть MAX в браузере";
+      if (appLabel) appLabel.textContent = "Скопировать плакат и открыть приложение MAX";
+    }
+  } else {
+    if (linkOnlyBtn) linkOnlyBtn.classList.add("hidden");
+    if (isMobile && canNativeShare) {
+      if (nativeBtn) nativeBtn.classList.remove("hidden");
+      setButtonStyleVariant(nativeBtn, true);
+      setButtonStyleVariant(webBtn, false);
+      setButtonStyleVariant(appBtn, false);
+      if (nativeLabel) nativeLabel.textContent = "Выбрать чат в MAX";
+      if (subtitleEl) {
+        subtitleEl.textContent = "Нажмите «Выбрать чат в MAX», выберите приложение MAX и отметьте нужные чаты.";
+      }
+      if (webLabel) webLabel.textContent = "Скопировать и открыть MAX в браузере";
+      if (appLabel) appLabel.textContent = "Открыть приложение MAX";
+    } else {
+      if (nativeBtn) nativeBtn.classList.add("hidden");
+      setButtonStyleVariant(webBtn, true);
+      setButtonStyleVariant(appBtn, false);
+      if (subtitleEl) {
+        subtitleEl.textContent = "На компьютере MAX не подставляет текст автоматически: нажмите кнопку ниже — сообщение скопируется в буфер обмена. Выберите чат в MAX и нажмите Ctrl+V.";
+      }
+      if (webLabel) webLabel.textContent = "Скопировать текст и открыть MAX в браузере";
+      if (appLabel) appLabel.textContent = "Скопировать текст и открыть приложение MAX";
+    }
   }
 
   maxModalTriggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -2146,16 +2245,6 @@ async function shareToMaxMessenger(payload) {
   modal.classList.remove("hidden");
   modal.removeAttribute("hidden");
   if (closeBtn) closeBtn.focus();
-
-  if (includeQrPoster) {
-    const asset = await getSchoolQrPosterAsset();
-    if (asset && activeMaxSharePayload && activeMaxSharePayload.includeQrPoster) {
-      activeMaxSharePayload.posterBlob = asset.blob;
-      if (posterImg && asset.dataUrl) {
-        posterImg.src = asset.dataUrl;
-      }
-    }
-  }
 }
 
 function initShareScheduleToChat() {
@@ -2179,13 +2268,13 @@ function initShareScheduleToChat() {
   }
 
   if (shareMaxBtn) {
-    shareMaxBtn.addEventListener("click", async () => {
+    shareMaxBtn.addEventListener("click", () => {
       const payload = buildCurrentScheduleSharePayload();
       if (!payload) {
         showDynamicIslandToast(`Расписание для ${currentSelectedGrade} класса пока уточняется`);
         return;
       }
-      await shareToMaxMessenger({ ...payload, includeQrPoster: false });
+      shareToMaxMessenger({ ...payload, includeQrPoster: false });
     });
   }
 }
@@ -2206,6 +2295,7 @@ function initShareAndQrModule() {
   const maxModal = document.getElementById("max-share-modal");
   const maxModalClose = document.getElementById("max-modal-close");
   const maxNativeBtn = document.getElementById("max-share-native-btn");
+  const maxLinkOnlyBtn = document.getElementById("max-share-link-only-btn");
   const maxAppBtn = document.getElementById("max-share-app-btn");
   const maxWebBtn = document.getElementById("max-share-web-btn");
   const maxCopyPosterBtn = document.getElementById("max-copy-poster-btn");
@@ -2261,115 +2351,142 @@ function initShareAndQrModule() {
 
     if (maxNativeBtn) {
       maxNativeBtn.addEventListener("click", async () => {
-        if (!activeMaxSharePayload || !navigator.share) return;
-        const { title, text, url, includeQrPoster } = activeMaxSharePayload;
-        try {
-          if (includeQrPoster) {
-            let blob = activeMaxSharePayload.posterBlob;
-            if (!blob) {
-              const asset = await getSchoolQrPosterAsset();
-              blob = asset && asset.blob;
-            }
-            if (blob && typeof File !== "undefined") {
-              const posterFile = new File([blob], SCHOOL_QR_POSTER_FILENAME, { type: "image/png" });
-              if (typeof navigator.canShare === "function" && navigator.canShare({ files: [posterFile] })) {
-                await navigator.share({ title, text, files: [posterFile] });
-                showDynamicIslandToast("QR-плакат и ссылка переданы в MAX");
-                closeMaxModal();
-                return;
-              }
-            }
-          }
-          await navigator.share({ title, text, url });
-          showDynamicIslandToast("Готово к отправке в MAX");
-          closeMaxModal();
-        } catch (err) {
-          if (err && err.name === "AbortError") return;
-          showDynamicIslandToast("Выберите приложение или браузер MAX ниже");
-        }
-      });
-    }
-
-    if (maxAppBtn) {
-      maxAppBtn.addEventListener("click", async () => {
         if (!activeMaxSharePayload) return;
-        const { text, includeQrPoster } = activeMaxSharePayload;
-        let posterCopied = false;
+        const { title, text, url, includeQrPoster, posterFile, canNativePoster } = activeMaxSharePayload;
 
         if (includeQrPoster) {
-          let blob = activeMaxSharePayload.posterBlob;
-          if (!blob) {
-            const asset = await getSchoolQrPosterAsset();
-            blob = asset && asset.blob;
+          if (posterFile && canNativePoster && navigator.share) {
+            try {
+              // Передаём строго файл стенда (PNG) без url/text, чтобы Android/iOS и MAX прикрепляли именно картинку
+              await navigator.share({ files: [posterFile] });
+              showDynamicIslandToast("QR-плакат (PNG) передан в MAX");
+              closeMaxModal();
+              return;
+            } catch (err) {
+              if (err && err.name === "AbortError") return;
+            }
           }
-          posterCopied = await copyImageBlobToClipboard(blob);
-          if (!posterCopied) {
-            await copyTextToClipboard(text);
-          }
-        } else {
-          await copyTextToClipboard(text);
+          downloadSchoolQrPoster(true);
+          showDynamicIslandToast("QR-плакат сохранён в Галерею — прикрепите его в чате MAX");
+          return;
         }
 
-        window.open(buildMaxDeepLinkUrl(text), "_blank", "noopener,noreferrer");
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, text, url });
+            showDynamicIslandToast("Готово к отправке в MAX");
+            closeMaxModal();
+            return;
+          } catch (err) {
+            if (err && err.name === "AbortError") return;
+          }
+        }
+
+        const copied = await copyTextToClipboard(text);
         showDynamicIslandToast(
-          includeQrPoster && posterCopied
-            ? "MAX открывается! QR-плакат в буфере — нажмите Ctrl+V в чате"
-            : "Открываем приложение MAX с готовым текстом"
+          copied ? "Текст скопирован — вставьте его в чате MAX" : "Скопируйте текст вручную ниже"
         );
       });
     }
 
-    if (maxWebBtn) {
-      maxWebBtn.addEventListener("click", async () => {
+    if (maxLinkOnlyBtn) {
+      maxLinkOnlyBtn.addEventListener("click", async () => {
         if (!activeMaxSharePayload) return;
-        const { text, includeQrPoster } = activeMaxSharePayload;
-        let posterCopied = false;
-        let textCopied = false;
-
-        if (includeQrPoster) {
-          let blob = activeMaxSharePayload.posterBlob;
-          if (!blob) {
-            const asset = await getSchoolQrPosterAsset();
-            blob = asset && asset.blob;
+        const { title, text, url } = activeMaxSharePayload;
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, text, url });
+            showDynamicIslandToast("Ссылка передана в MAX");
+            closeMaxModal();
+            return;
+          } catch (err) {
+            if (err && err.name === "AbortError") return;
           }
-          posterCopied = await copyImageBlobToClipboard(blob);
-          if (!posterCopied) {
-            textCopied = await copyTextToClipboard(text);
-          }
-        } else {
-          textCopied = await copyTextToClipboard(text);
         }
+        const copied = await copyTextToClipboard(text);
+        showDynamicIslandToast(
+          copied ? "Ссылка скопирована — вставьте её в чате MAX" : "Не удалось скопировать ссылку"
+        );
+      });
+    }
 
-        window.open(getMaxWebTargetUrl(), "_blank", "noopener,noreferrer");
-        if (includeQrPoster && posterCopied) {
-          showDynamicIslandToast("QR-плакат скопирован! Нажмите Ctrl+V в веб-версии MAX");
-        } else if (textCopied) {
-          showDynamicIslandToast("Скопировано! Нажмите Ctrl+V в веб-версии MAX");
-        } else {
-          showDynamicIslandToast("Открыт MAX в браузере — вставьте плакат или ссылку");
+    const handleOpenMaxTarget = async (targetUrl, isAppTarget) => {
+      if (!activeMaxSharePayload) return;
+      const { text, includeQrPoster, posterBlob } = activeMaxSharePayload;
+
+      let posterCopied = false;
+      let posterDownloaded = false;
+      let textCopied = false;
+
+      if (includeQrPoster) {
+        const blob = posterBlob || (getSchoolQrPosterAssetSync() && getSchoolQrPosterAssetSync().blob);
+        posterCopied = await copyImageBlobToClipboard(blob);
+        if (!posterCopied) {
+          posterDownloaded = downloadSchoolQrPoster(true);
+          await copyTextToClipboard(text);
         }
+      } else {
+        textCopied = await copyTextToClipboard(text);
+      }
+
+      const openedWin = window.open(targetUrl, "_blank", "noopener,noreferrer");
+      const maxLabel = isAppTarget ? "приложении MAX" : "веб-версии MAX";
+
+      if (!openedWin) {
+        showDynamicIslandToast(
+          includeQrPoster && posterCopied
+            ? "QR-плакат в буфере! Разрешите открытие окна или вставьте Ctrl+V в MAX"
+            : "Скопировано! Откройте MAX и нажмите Ctrl+V в нужном чате"
+        );
+        return;
+      }
+
+      if (includeQrPoster) {
+        if (posterCopied) {
+          showDynamicIslandToast(`QR-плакат в буфере! Выберите чат в ${maxLabel} и нажмите Ctrl+V`);
+        } else if (posterDownloaded) {
+          showDynamicIslandToast(`QR-плакат скачан (PNG) — прикрепите его в ${maxLabel}`);
+        } else {
+          showDynamicIslandToast(`Открываем ${maxLabel} — ссылка скопирована в буфер`);
+        }
+      } else if (textCopied) {
+        showDynamicIslandToast(`Текст скопирован! Выберите чат в ${maxLabel} и нажмите Ctrl+V`);
+      } else {
+        showDynamicIslandToast(`Открываем ${maxLabel}`);
+      }
+    };
+
+    if (maxWebBtn) {
+      maxWebBtn.addEventListener("click", () => {
+        handleOpenMaxTarget(getMaxWebTargetUrl(), false);
+      });
+    }
+
+    if (maxAppBtn) {
+      maxAppBtn.addEventListener("click", () => {
+        if (!activeMaxSharePayload) return;
+        const appUrl = buildMaxDeepLinkUrl(activeMaxSharePayload.text);
+        handleOpenMaxTarget(appUrl, true);
       });
     }
 
     if (maxCopyPosterBtn) {
       maxCopyPosterBtn.addEventListener("click", async () => {
-        let blob = activeMaxSharePayload && activeMaxSharePayload.posterBlob;
-        if (!blob) {
-          const asset = await getSchoolQrPosterAsset();
-          blob = asset && asset.blob;
-        }
+        const blob =
+          (activeMaxSharePayload && activeMaxSharePayload.posterBlob) ||
+          (getSchoolQrPosterAssetSync() && getSchoolQrPosterAssetSync().blob);
         const ok = await copyImageBlobToClipboard(blob);
         if (ok) {
           showDynamicIslandToast("QR-плакат (картинка) скопирован — вставьте Ctrl+V в MAX");
         } else {
-          await downloadSchoolQrPoster();
+          downloadSchoolQrPoster(false);
         }
       });
     }
 
     if (maxDownloadPosterBtn) {
       maxDownloadPosterBtn.addEventListener("click", () => {
-        downloadSchoolQrPoster();
+        downloadSchoolQrPoster(false);
       });
     }
 
@@ -2391,7 +2508,7 @@ function initShareAndQrModule() {
     qrModal.classList.remove("hidden");
     qrModal.removeAttribute("hidden");
     if (qrModalClose) qrModalClose.focus();
-    getSchoolQrPosterAsset();
+    getSchoolQrPosterAssetSync();
   };
 
   const closeQrModal = () => {
@@ -2428,7 +2545,7 @@ function initShareAndQrModule() {
 
   if (qrModalDownloadBtn) {
     qrModalDownloadBtn.addEventListener("click", () => {
-      downloadSchoolQrPoster();
+      downloadSchoolQrPoster(false);
     });
   }
 
@@ -3366,16 +3483,17 @@ function initPublicationModalEvents() {
   }
 
   if (pubMaxBtn) {
-    pubMaxBtn.addEventListener("click", async () => {
+    pubMaxBtn.addEventListener("click", () => {
       const item = activePublicationModalItem;
       const pubId = item && item.id;
       const directUrl = pubId ? `${SITE_CANONICAL_URL}#pub-${pubId}` : SITE_CANONICAL_URL;
       const pubTitle = (item && item.title) || (titleEl ? titleEl.textContent : "Новость школы");
       const excerpt = item && item.text ? truncateAtWordBoundary(item.text, 180).short + "..." : "";
-      await shareToMaxMessenger({
+      shareToMaxMessenger({
         title: `${pubTitle} — Школа с. Ямбирно`,
         text: `${pubTitle}${excerpt ? "\n" + excerpt : ""}\nПодробнее: ${directUrl}`,
-        url: directUrl
+        url: directUrl,
+        includeQrPoster: false
       });
     });
   }
@@ -5339,21 +5457,34 @@ function initFeedbackForm() {
         12000
       );
 
+      const contentType = (response.headers.get("content-type") || "").toLowerCase();
+      let payload = null;
+      if (contentType.includes("application/json")) {
+        try {
+          payload = await response.json();
+        } catch (_) {
+          payload = null;
+        }
+      }
+
       if (!response.ok) {
+        if (payload && payload.error) {
+          const httpErr = new Error(sanitizeInput(String(payload.error), 240));
+          httpErr.isServerMessage = true;
+          throw httpErr;
+        }
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
 
-      const contentType = (response.headers.get("content-type") || "").toLowerCase();
-      if (!contentType.includes("application/json")) {
+      if (!payload) {
         const formatErr = new Error("Сервер приёмной вернул некорректный ответ. Попробуйте позже или позвоните в школу: 8 (49147) 2-63-68.");
         formatErr.isServerMessage = true;
         throw formatErr;
       }
 
-      const payload = await response.json();
-      if (!payload || payload.ok !== true || !payload.ticketId) {
+      if (payload.ok !== true || !payload.ticketId) {
         const serverErr = new Error(
-          sanitizeInput(String((payload && payload.error) || "Сервер отклонил регистрацию обращения"), 240)
+          sanitizeInput(String(payload.error || "Сервер отклонил регистрацию обращения"), 240)
         );
         serverErr.isServerMessage = true;
         throw serverErr;
@@ -5379,12 +5510,12 @@ function initFeedbackForm() {
           }
         }
       } else {
-        formResponse.textContent = "Спасибо! Ваше сообщение успешно записано в реестр школы.";
+        formResponse.textContent = "Спасибо! Ваше обращение успешно отправлено на официальную почту школы.";
         formResponse.className = "form-response success";
         formResponse.classList.remove("hidden");
       }
 
-      showDynamicIslandToast("Обращение отправлено в школу");
+      showDynamicIslandToast("Обращение отправлено на почту школы");
       form.reset();
       resetFormValidationUI();
     } catch (err) {
