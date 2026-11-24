@@ -1,4 +1,4 @@
-const CACHE_NAME = "yambirno-school-v14";
+const CACHE_NAME = "yambirno-school-v15";
 const NETWORK_TIMEOUT_MS = 4000;
 const SNAPSHOT_TIMEOUT_MS = 4500;
 
@@ -26,7 +26,7 @@ const OPTIONAL_ASSETS = [
   "./assets/img/hero-school-1280.jpg"
 ];
 
-const STATIC_ASSET_REGEX = /\.(css|js|json|png|jpe?g|webp|avif|svg|ico|woff2?)$/i;
+const STATIC_ASSET_REGEX = /\.(css|js|json|png|jpe?g|webp|avif|gif|svg|ico|woff2?)$/i;
 const SNAPSHOT_PATH_SUFFIX = "/data/school-snapshot.json";
 
 function isCacheableResponse(response) {
