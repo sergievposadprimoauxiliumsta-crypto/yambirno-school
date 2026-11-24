@@ -319,6 +319,11 @@
       <path d="M9.4 20.2h5.2" stroke="url(#yamb-g-amber)" stroke-width="1.95" stroke-linecap="round"/>
     </symbol>
 
+    <symbol id="ico-step" viewBox="0 0 24 24">
+      <path class="ico-base" d="M7.2 6.4 17.6 12 7.2 17.6V6.4Z" fill="url(#yamb-g-amber)" opacity="0.34"/>
+      <path class="ico-accent ico-part-moving" d="M7.2 6.4 17.6 12 7.2 17.6V6.4Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.85" stroke-linejoin="round"/>
+    </symbol>
+
     <symbol id="ico-next" viewBox="0 0 24 24">
       <path class="ico-base" d="M4.6 7.2 12 12l-7.4 4.8V7.2ZM13.4 7.2 20.8 12l-7.4 4.8V7.2Z" fill="url(#yamb-g-amber)" opacity="0.34"/>
       <path class="ico-accent ico-part-moving" d="M4.6 7.2 12 12l-7.4 4.8V7.2ZM13.4 7.2 20.8 12l-7.4 4.8V7.2Z" fill="none" stroke="url(#yamb-g-amber)" stroke-width="1.8" stroke-linejoin="round"/>
@@ -661,7 +666,11 @@
                   <svg class="ui-ico" width="14" height="14" aria-hidden="true"><use href="#ico-idea"></use></svg>
                   <span id="chalkboard-quiz-label">Решить самому</span>
                 </button>
-                <button type="button" id="chalkboard-next-btn" class="chalk-btn" title="Переключить на следующий класс">
+                <button type="button" id="chalkboard-next-task-btn" class="chalk-btn" title="Показать следующую задачу">
+                  <svg class="ui-ico" width="14" height="14" aria-hidden="true"><use href="#ico-step"></use></svg>
+                  <span>След. задача</span>
+                </button>
+                <button type="button" id="chalkboard-next-btn" class="chalk-btn" title="Перейти сразу к следующему классу (1–9)">
                   <svg class="ui-ico" width="14" height="14" aria-hidden="true"><use href="#ico-next"></use></svg>
                   <span>След. класс</span>
                 </button>
@@ -670,7 +679,7 @@
 
             <div class="chalkboard-stage" id="chalkboard-stage">
               <div class="chalkboard-content" id="chalkboard-content">
-                <div class="chalk-topic-line" id="chalkboard-topic">Тема урока: Сложение чисел</div>
+                <div class="chalk-topic-line" id="chalkboard-topic">Тема урока: Сложение чисел в пределах 10</div>
                 <div class="chalk-math-line">
                   <span id="chalkboard-problem" class="chalk-problem-text"></span>
                   <span id="chalkboard-steps" class="chalk-steps-text"></span>
@@ -691,7 +700,7 @@
                 <span class="chalk-piece chalk-blue"></span>
                 <span class="chalk-sponge"></span>
               </div>
-              <span class="chalkboard-progress-label" id="chalkboard-step-counter">Ступень 1 из 9</span>
+              <span class="chalkboard-progress-label" id="chalkboard-step-counter">1 класс • Задача 1 из 3</span>
             </div>
           </div>
         </div>
@@ -1182,7 +1191,6 @@
         </div>
       </div>
     </section>
-
     <section id="teachers" class="section">
       <div class="container">
         <div class="section-header reveal">
