@@ -1,4 +1,4 @@
-const CACHE_NAME = "yambirno-school-v17";
+const CACHE_NAME = "yambirno-school-v18";
 const NETWORK_TIMEOUT_MS = 4000;
 const SNAPSHOT_TIMEOUT_MS = 4500;
 
@@ -6,8 +6,12 @@ const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./feedback.html",
+  "./gfx-engine.js",
+  "./tokens.css",
   "./styles.css",
-  "./script.js"
+  "./motion.css",
+  "./script.js",
+  "./motion.js"
 ];
 
 const OPTIONAL_ASSETS = [
@@ -17,6 +21,8 @@ const OPTIONAL_ASSETS = [
   "./data/school-snapshot.json",
   "./og-cover.jpg",
   "./icon.svg",
+  "./assets/img/emblem-header-128.webp",
+  "./assets/img/emblem-header-128.png",
   "./assets/img/icon-192.png",
   "./assets/img/icon-512.png",
   "./assets/img/icon-maskable-512.png",
