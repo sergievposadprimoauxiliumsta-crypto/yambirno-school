@@ -1,0 +1,190 @@
+:root {
+  color-scheme: light;
+
+  /* === Visual Bible: Поверхности и тёплая бумага === */
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-alt: #f1f5f9;
+  --bg-warm: #fdfbf7;
+  --surface-elevated: #ffffff;
+  --surface-tint-blue: #eff6ff;
+  --surface-tint-gold: #fffbeb;
+  --surface-tint-emerald: #f0fdf4;
+  --surface-tint-max: #f5f3ff;
+
+  /* === Стекло и свет (единый источник сверху слева 45 deg) === */
+  --light-angle: 135deg;
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.68);
+  --specular-top: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  --specular-strong: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+
+  /* По умолчанию (до или при balanced) — безопасные плотные поверхности */
+  --header-bg: rgba(255, 255, 255, 0.98);
+  --widget-bg: rgba(255, 255, 255, 0.98);
+  --director-bg: rgba(255, 255, 255, 0.97);
+  --modal-backdrop-bg: rgba(15, 23, 42, 0.94);
+  --backdrop-blur-header: none;
+  --backdrop-blur-panel: none;
+  --backdrop-blur-modal: none;
+
+  /* === Типографика и контраст (WCAG AA >= 4.5:1) === */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-chalk: "Cambria Math", "Segoe Print", "Bradley Hand", Georgia, serif;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-on-dark: #f8fafc;
+  --measure-prose: 65ch;
+
+  /* === Фирменная палитра Ямбирнского филиала === */
+  --primary: #1e40af;
+  --primary-hover: #1e3a8a;
+  --primary-soft: #eff6ff;
+  --primary-border: #bfdbfe;
+
+  --accent: #d97706;
+  --accent-gold: #fbbf24;
+  --accent-gold-hover: #f59e0b;
+  --accent-text: #92400e;
+  --accent-badge: #9a3412;
+  --accent-light: #fef3c7;
+
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --teal: #0f766e;
+  --teal-soft: #ccfbf1;
+
+  --max-start: #4f46e5;
+  --max-end: #7c3aed;
+  --max-hover-start: #4338ca;
+  --max-hover-end: #6d28d9;
+
+  /* === Границы и тени === */
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 10px rgba(15, 23, 42, 0.05), 0 14px 32px rgba(30, 64, 175, 0.10);
+  --shadow-lg: 0 8px 18px rgba(15, 23, 42, 0.06), 0 24px 48px rgba(30, 64, 175, 0.15);
+
+  /* === Скругления (Bento / Modern Editorial) === */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* === Физика движения (fallback для старых браузеров) === */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --dur-micro: 180ms;
+  --dur-ui: 320ms;
+  --dur-enter: 440ms;
+  --stagger-step: 45ms;
+  --stagger-cap: 320ms;
+  --transition: 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* === Слои Z-index === */
+  --z-scroll-top: 90;
+  --z-header: 100;
+  --z-skip-link: 1000;
+  --z-modal: 1500;
+  --z-lightbox: 1600;
+  --z-max-modal: 1700;
+  --z-reading-bar: 1900;
+  --z-toast: 2000;
+
+  /* === Безопасные вырезы (iOS Safari / WebView) === */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Пружинная кривая для современных движков (с fallback выше) */
+@supports (animation-timing-function: linear(0, 1)) {
+  :root {
+    --spring-snappy: linear(
+      0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
+      1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
+      1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
+      0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1
+    );
+  }
+}
+
+/* =====================================================================
+   ЭШЕЛОН 1: HIGH (Ультра — ПК и флагманы)
+   Строго не более 2 слоёв backdrop-filter одновременно:
+   - при прокрутке: шапка (1) + табло на Hero (2)
+   - при открытой модалке: фон модалки (1)
+   ===================================================================== */
+html[data-gfx-tier="high"] {
+  --header-bg: rgba(255, 255, 255, 0.86);
+  --widget-bg: rgba(255, 255, 255, 0.88);
+  --director-bg: rgba(255, 255, 255, 0.94);
+  --modal-backdrop-bg: rgba(15, 23, 42, 0.90);
+  --backdrop-blur-header: blur(14px);
+  --backdrop-blur-panel: blur(12px);
+  --backdrop-blur-modal: blur(8px);
+}
+
+/* =====================================================================
+   ЭШЕЛОН 2: BALANCED (Стандарт — смартфоны и средние ПК)
+   Нулевой backdrop-filter, чистые полупрозрачные поверхности, 60 FPS GPU
+   ===================================================================== */
+html[data-gfx-tier="balanced"] {
+  --header-bg: rgba(255, 255, 255, 0.98);
+  --widget-bg: #ffffff;
+  --director-bg: #ffffff;
+  --modal-backdrop-bg: rgba(15, 23, 42, 0.95);
+  --backdrop-blur-header: none;
+  --backdrop-blur-panel: none;
+  --backdrop-blur-modal: none;
+  --shadow-md: 0 3px 8px rgba(15, 23, 42, 0.06), 0 10px 22px rgba(30, 64, 175, 0.08);
+  --shadow-lg: 0 6px 14px rgba(15, 23, 42, 0.07), 0 16px 32px rgba(30, 64, 175, 0.12);
+  --dur-micro: 160ms;
+  --dur-ui: 260ms;
+  --dur-enter: 340ms;
+}
+
+/* =====================================================================
+   ЭШЕЛОН 3: LITE (Эконом — 2-3 ГБ RAM / Save-Data / Reduced Motion / ГОСТ)
+   Стильный чёткий дизайн без тяжёлых теней, blur и фоновых циклов
+   ===================================================================== */
+html[data-gfx-tier="lite"] {
+  --header-bg: #ffffff;
+  --widget-bg: #ffffff;
+  --director-bg: #ffffff;
+  --modal-backdrop-bg: rgba(15, 23, 42, 0.97);
+  --backdrop-blur-header: none;
+  --backdrop-blur-panel: none;
+  --backdrop-blur-modal: none;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 2px 6px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 4px 12px rgba(15, 23, 42, 0.09);
+  --spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-micro: 90ms;
+  --dur-ui: 110ms;
+  --dur-enter: 120ms;
+  --stagger-step: 0ms;
+  --stagger-cap: 0ms;
+  --transition: 0.1s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --spring-snappy: ease;
+    --dur-micro: 1ms;
+    --dur-ui: 1ms;
+    --dur-enter: 1ms;
+    --stagger-step: 0ms;
+    --stagger-cap: 0ms;
+    --transition: 0.01ms linear;
+  }
+}
