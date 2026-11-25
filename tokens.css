@@ -1,46 +1,59 @@
 :root {
   color-scheme: light;
 
-  /* === Visual Bible: Поверхности и тёплая бумага === */
-  --bg-main: #f8fafc;
+  --bg-main: #f5f7fb;
   --bg-card: #ffffff;
-  --bg-alt: #f1f5f9;
-  --bg-warm: #fdfbf7;
+  --bg-alt: #edf1f8;
+  --bg-warm: #fcf9f2;
+  --bg-obsidian: #070d1f;
+  --bg-night-start: #08122b;
+  --bg-night-mid: #10214d;
+  --bg-night-end: #173073;
+  --bg-chalk-start: #0f241f;
+  --bg-chalk-mid: #0c1d19;
+  --bg-chalk-end: #081411;
+  --chalk-frame: #273732;
+  --chalk-rim: rgba(255, 255, 255, 0.14);
+
   --surface-elevated: #ffffff;
   --surface-tint-blue: #eff6ff;
   --surface-tint-gold: #fffbeb;
   --surface-tint-emerald: #f0fdf4;
   --surface-tint-max: #f5f3ff;
 
-  /* === Стекло и свет (единый источник сверху слева 45 deg) === */
   --light-angle: 135deg;
-  --glass-bg: rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.68);
-  --specular-top: inset 0 1px 0 rgba(255, 255, 255, 0.88);
-  --specular-strong: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  --glass-bg: rgba(255, 255, 255, 0.84);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --specular-top: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --specular-strong: inset 0 1px 0 rgba(255, 255, 255, 0.98), inset 0 0 0 1px rgba(255, 255, 255, 0.56);
 
-  /* По умолчанию (до или при balanced) — безопасные плотные поверхности */
   --header-bg: rgba(255, 255, 255, 0.98);
+  --header-scrolled-bg: rgba(255, 255, 255, 0.98);
   --widget-bg: rgba(255, 255, 255, 0.98);
   --director-bg: rgba(255, 255, 255, 0.97);
-  --modal-backdrop-bg: rgba(15, 23, 42, 0.94);
+  --modal-backdrop-bg: rgba(7, 13, 31, 0.92);
   --backdrop-blur-header: none;
   --backdrop-blur-panel: none;
   --backdrop-blur-modal: none;
 
-  /* === Типографика и контраст (WCAG AA >= 4.5:1) === */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-chalk: "Cambria Math", "Segoe Print", "Bradley Hand", Georgia, serif;
-  --text-main: #0f172a;
+  --text-main: #0b1224;
   --text-muted: #475569;
   --text-on-dark: #f8fafc;
+  --text-on-dark-muted: rgba(226, 232, 240, 0.82);
   --measure-prose: 65ch;
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.025em;
+  --tracking-subhead: -0.015em;
+  --hero-grad-text: linear-gradient(135deg, #0b1224 0%, #173073 56%, #2563eb 100%);
 
-  /* === Фирменная палитра Ямбирнского филиала === */
   --primary: #1e40af;
-  --primary-hover: #1e3a8a;
+  --primary-bright: #2563eb;
+  --primary-hover: #173073;
   --primary-soft: #eff6ff;
-  --primary-border: #bfdbfe;
+  --primary-border: rgba(37, 99, 235, 0.24);
+  --primary-glow: rgba(37, 99, 235, 0.22);
 
   --accent: #d97706;
   --accent-gold: #fbbf24;
@@ -61,35 +74,44 @@
   --max-hover-start: #4338ca;
   --max-hover-end: #6d28d9;
 
-  /* === Границы и тени === */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 10px rgba(15, 23, 42, 0.05), 0 14px 32px rgba(30, 64, 175, 0.10);
-  --shadow-lg: 0 8px 18px rgba(15, 23, 42, 0.06), 0 24px 48px rgba(30, 64, 175, 0.15);
+  --border: rgba(15, 23, 42, 0.085);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-glow: rgba(37, 99, 235, 0.34);
 
-  /* === Скругления (Bento / Modern Editorial) === */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --spotlight-color: rgba(37, 99, 235, 0.09);
+  --spotlight-border: rgba(37, 99, 235, 0.42);
+  --spotlight-gold: rgba(245, 158, 11, 0.15);
+  --spotlight-opacity: 0;
+  --ripple-color: rgba(30, 64, 175, 0.16);
+  --ripple-on-dark: rgba(255, 255, 255, 0.28);
+
+  --shadow-xs: 0 1px 2px rgba(11, 18, 36, 0.04);
+  --shadow-sm: 0 1px 2px rgba(11, 18, 36, 0.03), 0 4px 12px -2px rgba(11, 18, 36, 0.05), 0 12px 24px -8px rgba(30, 64, 175, 0.05);
+  --shadow-md: 0 2px 6px rgba(11, 18, 36, 0.04), 0 12px 28px -6px rgba(11, 18, 36, 0.08), 0 24px 48px -12px rgba(30, 64, 175, 0.13);
+  --shadow-lg: 0 4px 12px rgba(11, 18, 36, 0.05), 0 20px 44px -10px rgba(11, 18, 36, 0.11), 0 36px 72px -18px rgba(30, 64, 175, 0.19);
+  --shadow-pill: 0 2px 10px rgba(30, 64, 175, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
   --radius-pill: 999px;
 
-  /* === Физика движения (fallback для старых браузеров) === */
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring-bouncy: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --dur-micro: 180ms;
+  --dur-micro: 170ms;
   --dur-ui: 320ms;
-  --dur-enter: 440ms;
-  --stagger-step: 45ms;
+  --dur-enter: 520ms;
+  --stagger-step: 48ms;
   --stagger-cap: 320ms;
   --transition: 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* === Слои Z-index === */
   --z-scroll-top: 90;
   --z-header: 100;
   --z-skip-link: 1000;
@@ -99,14 +121,12 @@
   --z-reading-bar: 1900;
   --z-toast: 2000;
 
-  /* === Безопасные вырезы (iOS Safari / WebView) === */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
 }
 
-/* Пружинная кривая для современных движков (с fallback выше) */
 @supports (animation-timing-function: linear(0, 1)) {
   :root {
     --spring-snappy: linear(
@@ -115,60 +135,60 @@
       1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
       0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1
     );
+    --spring-bouncy: linear(
+      0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%,
+      0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50.1%, 1.015 55%,
+      1.017 63.9%, 1.001 85.6%, 1
+    );
   }
 }
 
-/* =====================================================================
-   ЭШЕЛОН 1: HIGH (Ультра — ПК и флагманы)
-   Строго не более 2 слоёв backdrop-filter одновременно:
-   - при прокрутке: шапка (1) + табло на Hero (2)
-   - при открытой модалке: фон модалки (1)
-   ===================================================================== */
 html[data-gfx-tier="high"] {
-  --header-bg: rgba(255, 255, 255, 0.86);
-  --widget-bg: rgba(255, 255, 255, 0.88);
-  --director-bg: rgba(255, 255, 255, 0.94);
-  --modal-backdrop-bg: rgba(15, 23, 42, 0.90);
-  --backdrop-blur-header: blur(14px);
-  --backdrop-blur-panel: blur(12px);
-  --backdrop-blur-modal: blur(8px);
+  --header-bg: rgba(255, 255, 255, 0.76);
+  --header-scrolled-bg: rgba(255, 255, 255, 0.86);
+  --widget-bg: rgba(255, 255, 255, 0.82);
+  --director-bg: rgba(255, 255, 255, 0.90);
+  --modal-backdrop-bg: rgba(7, 13, 31, 0.86);
+  --backdrop-blur-header: saturate(180%) blur(18px);
+  --backdrop-blur-panel: saturate(160%) blur(14px);
+  --backdrop-blur-modal: saturate(140%) blur(10px);
+  --spotlight-opacity: 1;
 }
 
-/* =====================================================================
-   ЭШЕЛОН 2: BALANCED (Стандарт — смартфоны и средние ПК)
-   Нулевой backdrop-filter, чистые полупрозрачные поверхности, 60 FPS GPU
-   ===================================================================== */
 html[data-gfx-tier="balanced"] {
   --header-bg: rgba(255, 255, 255, 0.98);
+  --header-scrolled-bg: #ffffff;
   --widget-bg: #ffffff;
   --director-bg: #ffffff;
-  --modal-backdrop-bg: rgba(15, 23, 42, 0.95);
+  --modal-backdrop-bg: rgba(7, 13, 31, 0.94);
   --backdrop-blur-header: none;
   --backdrop-blur-panel: none;
   --backdrop-blur-modal: none;
-  --shadow-md: 0 3px 8px rgba(15, 23, 42, 0.06), 0 10px 22px rgba(30, 64, 175, 0.08);
-  --shadow-lg: 0 6px 14px rgba(15, 23, 42, 0.07), 0 16px 32px rgba(30, 64, 175, 0.12);
-  --dur-micro: 160ms;
+  --spotlight-opacity: 0;
+  --shadow-md: 0 3px 10px rgba(11, 18, 36, 0.06), 0 12px 24px -6px rgba(30, 64, 175, 0.09);
+  --shadow-lg: 0 6px 16px rgba(11, 18, 36, 0.07), 0 18px 34px -8px rgba(30, 64, 175, 0.13);
+  --dur-micro: 150ms;
   --dur-ui: 260ms;
   --dur-enter: 340ms;
 }
 
-/* =====================================================================
-   ЭШЕЛОН 3: LITE (Эконом — 2-3 ГБ RAM / Save-Data / Reduced Motion / ГОСТ)
-   Стильный чёткий дизайн без тяжёлых теней, blur и фоновых циклов
-   ===================================================================== */
 html[data-gfx-tier="lite"] {
   --header-bg: #ffffff;
+  --header-scrolled-bg: #ffffff;
   --widget-bg: #ffffff;
   --director-bg: #ffffff;
-  --modal-backdrop-bg: rgba(15, 23, 42, 0.97);
+  --modal-backdrop-bg: rgba(7, 13, 31, 0.97);
   --backdrop-blur-header: none;
   --backdrop-blur-panel: none;
   --backdrop-blur-modal: none;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 2px 6px rgba(15, 23, 42, 0.07);
-  --shadow-lg: 0 4px 12px rgba(15, 23, 42, 0.09);
+  --spotlight-opacity: 0;
+  --shadow-xs: none;
+  --shadow-sm: 0 1px 2px rgba(11, 18, 36, 0.05);
+  --shadow-md: 0 2px 6px rgba(11, 18, 36, 0.07);
+  --shadow-lg: 0 4px 12px rgba(11, 18, 36, 0.09);
+  --shadow-pill: none;
   --spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring-bouncy: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-micro: 90ms;
   --dur-ui: 110ms;
   --dur-enter: 120ms;
@@ -180,6 +200,8 @@ html[data-gfx-tier="lite"] {
 @media (prefers-reduced-motion: reduce) {
   :root {
     --spring-snappy: ease;
+    --spring-bouncy: ease;
+    --spotlight-opacity: 0;
     --dur-micro: 1ms;
     --dur-ui: 1ms;
     --dur-enter: 1ms;
