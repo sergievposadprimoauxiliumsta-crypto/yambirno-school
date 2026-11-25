@@ -1,0 +1,742 @@
+.ambient-paused,
+.ambient-paused *,
+.ambient-paused *::before,
+.ambient-paused *::after {
+  animation-play-state: paused !important;
+}
+
+a {
+  transition: color var(--dur-micro) ease;
+}
+
+.dynamic-island {
+  transition: transform 420ms var(--spring-snappy), opacity 240ms ease;
+}
+
+.btn-a11y,
+.nav-cta-btn,
+.btn-max-mini,
+.qr-code-frame,
+.pub-card-thumb-btn,
+.chalk-btn,
+.btn-refresh,
+.gfx-choice-btn {
+  transition:
+    transform var(--dur-micro) var(--ease-out-expo),
+    background-color var(--dur-micro) ease,
+    border-color var(--dur-micro) ease,
+    color var(--dur-micro) ease,
+    opacity var(--dur-micro) ease;
+}
+
+.nav-link,
+.btn-share-chat,
+.btn-copy-mini,
+.btn-copy-ticket,
+.btn-pub-action,
+.pub-filter-chip,
+.day-pill,
+.grade-pill,
+.digital-tab-btn,
+.topic-chip,
+.cta-reason-card,
+.lightbox-zoom-btn,
+.lightbox-close-btn,
+.lightbox-nav-btn,
+.pub-modal-close-btn,
+.step-pill,
+.form-control,
+.widget-block,
+.widget-value {
+  transition:
+    transform var(--dur-micro) var(--ease-out-expo),
+    background-color var(--dur-micro) ease,
+    border-color var(--dur-micro) ease,
+    color var(--dur-micro) ease,
+    opacity var(--dur-micro) ease;
+}
+
+.btn {
+  transition:
+    transform var(--dur-micro) var(--ease-out-expo),
+    background-color var(--dur-micro) ease,
+    border-color var(--dur-micro) ease,
+    color var(--dur-micro) ease;
+}
+
+.logo-img {
+  transition: transform var(--dur-ui) var(--spring-snappy);
+}
+
+.elevate-card {
+  transition: transform var(--dur-ui) var(--ease-out-expo), border-color var(--dur-micro) ease;
+}
+
+.elevate-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--specular-strong), var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-ui) var(--ease-out-expo);
+  z-index: -1;
+}
+
+.pub-card-img,
+.gallery-img,
+.pub-modal-photo-item img {
+  transition: transform 420ms var(--ease-out-expo), opacity 220ms ease;
+}
+
+.teacher-photo {
+  transition: opacity 220ms ease;
+}
+
+.gallery-zoom-badge {
+  transition: opacity var(--dur-micro) ease, transform var(--dur-micro) var(--ease-out-expo);
+}
+
+.lightbox-main-img {
+  transition: transform 240ms var(--ease-out-expo), opacity 220ms ease;
+}
+
+.scroll-top-btn {
+  transition: opacity 260ms ease, transform 300ms var(--ease-out-expo);
+}
+
+.progress-ring-fill {
+  transition: stroke-dashoffset 140ms linear;
+}
+
+.steps-progress-bar {
+  transition: transform 400ms var(--ease-out-expo);
+}
+
+.feedback-card {
+  transition: border-color 280ms ease, transform 320ms var(--ease-out-expo), opacity 240ms ease;
+}
+
+.chalkboard-content {
+  transition: opacity 400ms var(--ease-out-expo), transform 400ms var(--ease-out-expo);
+}
+
+.pill-glide-indicator {
+  transition:
+    clip-path 340ms var(--spring-snappy),
+    -webkit-clip-path 340ms var(--spring-snappy),
+    opacity 180ms ease;
+}
+
+.grade-glide-indicator {
+  transition: transform 320ms var(--spring-snappy), opacity 180ms ease;
+}
+
+.pub-expand-wrap {
+  transition: grid-template-rows 360ms var(--ease-out-expo), opacity 260ms ease;
+}
+
+.reveal {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--dur-enter) var(--ease-out-expo), transform var(--dur-enter) var(--ease-out-expo);
+}
+
+.reveal.reveal-pending {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.elevate-card.reveal.visible {
+  transition:
+    transform var(--dur-ui) var(--ease-out-expo),
+    border-color var(--dur-micro) ease,
+    opacity var(--dur-enter) var(--ease-out-expo);
+}
+
+.spinner {
+  animation: spin 0.75s linear infinite;
+}
+
+.btn-refresh.loading .icon-refresh {
+  animation: spin 0.8s linear infinite;
+}
+
+.pub-modal-dialog,
+.qr-modal-dialog {
+  animation: modalSpringIn 360ms var(--ease-out-expo);
+}
+
+.lightbox-dialog,
+.max-modal-dialog {
+  animation: modalSpringIn 340ms var(--ease-out-expo);
+}
+
+.receipt-box:not(.hidden) {
+  animation: modalSpringIn 380ms var(--ease-out-expo);
+}
+
+.digital-panel.active,
+#form-step:not(.hidden) {
+  animation: panelRevealIn 320ms var(--ease-out-expo);
+}
+
+.widget-value.flash-updated {
+  animation: contentPop 360ms var(--ease-out-expo);
+}
+
+.diary-lesson-row {
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  animation: springCascadeIn 380ms var(--ease-out-expo) forwards;
+  animation-delay: min(calc(var(--step, 0) * var(--stagger-step, 45ms)), var(--stagger-cap, 320ms));
+}
+
+.diary-lesson-row.no-cascade {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+.chalk-cursor {
+  animation: chalkBlink 0.9s infinite;
+}
+
+.chalk-cursor.thinking {
+  background: #fde047;
+  animation: chalkThinkWobble 0.45s ease-in-out infinite alternate;
+}
+
+.chalkboard-wet-wipe.wiping {
+  animation: wetWipeSweep 700ms var(--ease-in-out) forwards;
+}
+
+.skeleton-row::after,
+.skeleton-line::after,
+.pub-card-media.is-loading::after,
+.pub-modal-photo-item.is-loading::before,
+.lightbox-img-container.is-loading::before,
+.teacher-photo-wrap.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.72) 50%,
+    transparent 100%
+  );
+  transform: translate3d(-100%, 0, 0);
+  animation: skeletonSweep 1.35s var(--ease-in-out) infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.pub-card-media.is-loading::after,
+.pub-modal-photo-item.is-loading::before,
+.lightbox-img-container.is-loading::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+}
+
+.pub-modal-photo-item.is-loading::after,
+.lightbox-img-container.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  margin-left: -17px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.22);
+  border-top-color: var(--accent-gold);
+  animation: spin 0.78s linear infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ui-ico--ticket .ico-check-draw {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+}
+
+.receipt-box:not(.hidden) .ui-ico--ticket .ico-check-draw {
+  animation: drawCheck 520ms var(--ease-out-expo) 120ms forwards;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .elevate-card:hover {
+    transform: translate3d(0, -4px, 0);
+    border-color: var(--border-strong);
+  }
+
+  .elevate-card:hover::after {
+    opacity: 1;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .btn-a11y:hover,
+  .nav-cta-btn:hover,
+  .btn-max-mini:hover,
+  .pub-card-thumb-btn:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .btn-max-mini:hover {
+    opacity: 0.92;
+  }
+
+  .digital-tab-btn:hover,
+  .qr-code-frame:hover {
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .cta-reason-card:hover {
+    transform: translate3d(0, -4px, 0);
+  }
+
+  .brand:hover .logo-img {
+    transform: scale(1.06);
+  }
+
+  .digital-tab-btn:hover .ui-ico,
+  .btn-pub-action:hover .ui-ico,
+  .btn-share-chat:hover .ui-ico,
+  .btn-copy-mini:hover .ui-ico {
+    color: #ffffff;
+  }
+
+  .btn-pub-doc:hover .ui-ico {
+    color: var(--primary);
+  }
+
+  .pub-card-media:hover .pub-card-img,
+  .pub-modal-photo-item:hover img {
+    transform: scale(1.03);
+  }
+
+  .gallery-item:hover .gallery-img {
+    transform: scale(1.06);
+  }
+
+  .gallery-item:hover .gallery-zoom-badge {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (hover: none) {
+  .elevate-card:active,
+  .btn:active,
+  .btn-pub-action:active,
+  .topic-chip:active,
+  .day-pill:active,
+  .grade-pill:active,
+  .gfx-choice-btn:active {
+    transform: scale(0.985);
+    transition-duration: 120ms;
+  }
+}
+
+/* Эшелон HIGH: расширенная кинематография, живые SVG, 3D-tilt, параллакс и ambient */
+@supports (animation-timeline: scroll()) {
+  html[data-gfx-tier="high"] body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary) 0%, #2563eb 55%, var(--accent) 100%);
+    transform-origin: left center;
+    transform: scaleX(0);
+    z-index: var(--z-reading-bar);
+    pointer-events: none;
+    animation: readingProgressScale linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+html[data-gfx-tier="high"] .radar-ping {
+  opacity: 0.75;
+  animation: radarPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+html[data-gfx-tier="high"] .lesson-live-pill {
+  animation: softPulse 1.6s infinite;
+}
+
+html[data-gfx-tier="high"] .widget-weather-card.weather-sky-clear #weather-now-icon .ico-part-moving {
+  animation: weatherSunSpin 22s linear infinite;
+}
+
+html[data-gfx-tier="high"] .widget-weather-card.weather-sky-rain #weather-now-icon .ico-part-moving {
+  animation: weatherPrecipFall 1.9s var(--ease-in-out) infinite;
+}
+
+html[data-gfx-tier="high"] .widget-weather-card.weather-sky-snow #weather-now-icon .ico-part-moving {
+  animation: weatherSnowFloat 4.2s var(--ease-in-out) infinite;
+}
+
+html[data-gfx-tier="high"] .widget-weather-card:not(.weather-sky-clear):not(.weather-sky-rain):not(.weather-sky-snow) #weather-now-icon .ico-part-moving {
+  animation: weatherCloudDrift 4.6s var(--ease-in-out) infinite;
+}
+
+html[data-gfx-tier="high"] .ui-ico .ico-part-moving {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--dur-ui) var(--spring-snappy);
+}
+
+html[data-gfx-tier="high"] .btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+  transform: translate3d(-130%, 0, 0);
+  pointer-events: none;
+  transition: transform 520ms var(--ease-out-expo);
+}
+
+html[data-gfx-tier="high"] .tilt-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    280px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.44),
+    rgba(30, 64, 175, 0.05) 45%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-ui) ease;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-gfx-tier="high"] .hero-backdrop-img {
+    transform: scale(1.05) translate3d(0, var(--hero-parallax, 0px), 0);
+    will-change: transform;
+  }
+
+  html[data-gfx-tier="high"] .hero-section.ambient-paused .hero-backdrop-img {
+    will-change: auto;
+  }
+
+  html[data-gfx-tier="high"] .btn:hover:not(:disabled)::after {
+    transform: translate3d(130%, 0, 0);
+  }
+
+  html[data-gfx-tier="high"] .tilt-card:hover {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, -4px, 0);
+  }
+
+  html[data-gfx-tier="high"] .tilt-card:hover::before {
+    opacity: 1;
+  }
+
+  html[data-gfx-tier="high"] a:hover .ui-ico--bell .ico-part-moving,
+  html[data-gfx-tier="high"] button:hover .ui-ico--bell .ico-part-moving,
+  html[data-gfx-tier="high"] .live-badge-capsule:hover .ui-ico--bell .ico-part-moving {
+    animation: bellClapper 540ms var(--ease-out-expo);
+  }
+
+  html[data-gfx-tier="high"] a:hover .ui-ico--send .ico-part-moving,
+  html[data-gfx-tier="high"] button:hover .ui-ico--send .ico-part-moving {
+    transform: translate3d(2px, -2px, 0) scale(1.08);
+  }
+
+  html[data-gfx-tier="high"] a:hover .ui-ico--book .ico-part-moving,
+  html[data-gfx-tier="high"] button:hover .ui-ico--book .ico-part-moving {
+    transform: scaleX(0.86) translateX(1px);
+  }
+
+  html[data-gfx-tier="high"] a:hover .ui-ico--shield .ico-accent,
+  html[data-gfx-tier="high"] button:hover .ui-ico--shield .ico-accent,
+  html[data-gfx-tier="high"] .info-box:hover .ui-ico--shield .ico-accent {
+    animation: shieldPulse 720ms var(--ease-out-expo);
+  }
+
+  html[data-gfx-tier="high"] a:hover .ui-ico--shield .ico-part-moving,
+  html[data-gfx-tier="high"] button:hover .ui-ico--shield .ico-part-moving,
+  html[data-gfx-tier="high"] .info-box:hover .ui-ico--shield .ico-part-moving {
+    transform: scale(1.14);
+  }
+
+  html[data-gfx-tier="high"] .diary-lesson-row:hover .ui-ico .ico-part-moving {
+    transform: rotate(10deg) scale(1.1);
+  }
+}
+
+/* Эшелон BALANCED: чёткие GPU-переходы, без 3D-tilt и бесконечных фоновых циклов */
+html[data-gfx-tier="balanced"] .radar-ping {
+  display: none;
+}
+
+html[data-gfx-tier="balanced"] .lesson-live-pill {
+  animation: none;
+}
+
+/* Эшелон LITE: защита слабых телефонов, Save-Data и экономия батареи */
+html[data-gfx-tier="lite"] {
+  scroll-behavior: auto;
+}
+
+html[data-gfx-tier="lite"] .reveal,
+html[data-gfx-tier="lite"] .reveal.reveal-pending,
+html[data-gfx-tier="lite"] .diary-lesson-row {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+html[data-gfx-tier="lite"] .radar-ping,
+html[data-gfx-tier="lite"] .elevate-card::after,
+html[data-gfx-tier="lite"] .tilt-card::before,
+html[data-gfx-tier="lite"] .btn::after,
+html[data-gfx-tier="lite"] .pill-glide-indicator,
+html[data-gfx-tier="lite"] .grade-glide-indicator,
+html[data-gfx-tier="lite"] .skeleton-row::after,
+html[data-gfx-tier="lite"] .skeleton-line::after,
+html[data-gfx-tier="lite"] .pub-card-media.is-loading::after,
+html[data-gfx-tier="lite"] .pub-modal-photo-item.is-loading::before,
+html[data-gfx-tier="lite"] .lightbox-img-container.is-loading::before,
+html[data-gfx-tier="lite"] .teacher-photo-wrap.is-loading::after {
+  display: none;
+  animation: none;
+}
+
+html[data-gfx-tier="lite"] .pub-modal-dialog,
+html[data-gfx-tier="lite"] .qr-modal-dialog,
+html[data-gfx-tier="lite"] .lightbox-dialog,
+html[data-gfx-tier="lite"] .max-modal-dialog,
+html[data-gfx-tier="lite"] .receipt-box:not(.hidden),
+html[data-gfx-tier="lite"] .digital-panel.active,
+html[data-gfx-tier="lite"] #form-step:not(.hidden),
+html[data-gfx-tier="lite"] .widget-value.flash-updated,
+html[data-gfx-tier="lite"] .chalk-cursor,
+html[data-gfx-tier="lite"] .chalkboard-wet-wipe.wiping,
+html[data-gfx-tier="lite"] .lesson-live-pill {
+  animation: none;
+}
+
+html[data-gfx-tier="lite"] .ui-ico--ticket .ico-check-draw {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  animation: none;
+}
+
+html[data-gfx-tier="lite"] .pub-expand-wrap {
+  transition: opacity 100ms ease;
+}
+
+html[data-gfx-tier="lite"] .dynamic-island,
+html[data-gfx-tier="lite"] .scroll-top-btn,
+html[data-gfx-tier="lite"] .steps-progress-bar,
+html[data-gfx-tier="lite"] .lightbox-main-img {
+  transition: opacity 100ms ease;
+}
+
+html[data-gfx-tier="lite"] .elevate-card,
+html[data-gfx-tier="lite"] .btn,
+html[data-gfx-tier="lite"] .pub-card-img,
+html[data-gfx-tier="lite"] .gallery-img,
+html[data-gfx-tier="lite"] .logo-img {
+  transition: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-gfx-tier="lite"] .elevate-card:hover,
+  html[data-gfx-tier="lite"] .btn:hover:not(:disabled),
+  html[data-gfx-tier="lite"] .cta-reason-card:hover,
+  html[data-gfx-tier="lite"] .brand:hover .logo-img,
+  html[data-gfx-tier="lite"] .pub-card-media:hover .pub-card-img,
+  html[data-gfx-tier="lite"] .gallery-item:hover .gallery-img {
+    transform: none;
+  }
+}
+
+@keyframes readingProgressScale {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes bellClapper {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(18deg); }
+  55% { transform: rotate(-14deg); }
+  80% { transform: rotate(6deg); }
+}
+
+@keyframes shieldPulse {
+  0% { opacity: 1; }
+  40% { opacity: 0.45; }
+  100% { opacity: 1; }
+}
+
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes chalkBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes chalkThinkWobble {
+  from { transform: translateY(-3px) rotate(-8deg); }
+  to { transform: translateY(3px) rotate(8deg); }
+}
+
+@keyframes wetWipeSweep {
+  0% { transform: translate3d(-120%, 0, 0); }
+  100% { transform: translate3d(120%, 0, 0); }
+}
+
+@keyframes radarPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  75%, 100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes skeletonSweep {
+  to { transform: translate3d(100%, 0, 0); }
+}
+
+@keyframes contentPop {
+  0% { opacity: 0.3; transform: translate3d(0, 4px, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes springCascadeIn {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
+}
+
+@keyframes weatherSunSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes weatherPrecipFall {
+  0%, 100% { transform: translate3d(0, -1px, 0); opacity: 0.95; }
+  50% { transform: translate3d(-0.8px, 1.8px, 0); opacity: 0.55; }
+}
+
+@keyframes weatherSnowFloat {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(24deg) scale(1.06); }
+}
+
+@keyframes weatherCloudDrift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(1.5px, -0.6px, 0); }
+}
+
+@keyframes modalSpringIn {
+  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.97); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes panelRevealIn {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body::after {
+    display: none !important;
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .hero-backdrop-img,
+  .tilt-card,
+  .pill-glide-indicator,
+  .grade-glide-indicator,
+  .digital-panel.active,
+  #form-step:not(.hidden),
+  .widget-weather-card #weather-now-icon .ico-part-moving,
+  .skeleton-row::after,
+  .skeleton-line::after,
+  .pub-card-media.is-loading::after,
+  .pub-modal-photo-item.is-loading::before,
+  .pub-modal-photo-item.is-loading::after,
+  .lightbox-img-container.is-loading::before,
+  .lightbox-img-container.is-loading::after,
+  .teacher-photo-wrap.is-loading::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .reveal,
+  .reveal.reveal-pending,
+  .diary-lesson-row {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+body.visually-impaired::after {
+  display: none !important;
+  animation: none !important;
+}
+
+body.visually-impaired *,
+body.visually-impaired *::before,
+body.visually-impaired *::after {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+body.visually-impaired .reveal,
+body.visually-impaired .reveal.reveal-pending,
+body.visually-impaired .diary-lesson-row {
+  opacity: 1 !important;
+}
