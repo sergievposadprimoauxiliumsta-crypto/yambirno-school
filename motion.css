@@ -9,8 +9,12 @@ a {
   transition: color var(--dur-micro) ease;
 }
 
+.site-header {
+  transition: background-color var(--dur-ui) ease, border-color var(--dur-ui) ease;
+}
+
 .dynamic-island {
-  transition: transform 420ms var(--spring-snappy), opacity 240ms ease;
+  transition: transform 440ms var(--spring-snappy), opacity 240ms ease;
 }
 
 .btn-a11y,
@@ -22,7 +26,7 @@ a {
 .btn-refresh,
 .gfx-choice-btn {
   transition:
-    transform var(--dur-micro) var(--ease-out-expo),
+    transform var(--dur-micro) var(--spring-bouncy),
     background-color var(--dur-micro) ease,
     border-color var(--dur-micro) ease,
     color var(--dur-micro) ease,
@@ -58,7 +62,7 @@ a {
 
 .btn {
   transition:
-    transform var(--dur-micro) var(--ease-out-expo),
+    transform var(--dur-ui) var(--spring-bouncy),
     background-color var(--dur-micro) ease,
     border-color var(--dur-micro) ease,
     color var(--dur-micro) ease;
@@ -72,26 +76,14 @@ a {
   transition: transform var(--dur-ui) var(--ease-out-expo), border-color var(--dur-micro) ease;
 }
 
-.elevate-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: var(--specular-strong), var(--shadow-md);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--dur-ui) var(--ease-out-expo);
-  z-index: -1;
-}
-
 .pub-card-img,
 .gallery-img,
 .pub-modal-photo-item img {
-  transition: transform 420ms var(--ease-out-expo), opacity 220ms ease;
+  transition: transform 460ms var(--ease-out-expo), opacity 220ms ease;
 }
 
 .teacher-photo {
-  transition: opacity 220ms ease;
+  transition: opacity 220ms ease, transform 420ms var(--ease-out-expo);
 }
 
 .gallery-zoom-badge {
@@ -99,11 +91,11 @@ a {
 }
 
 .lightbox-main-img {
-  transition: transform 240ms var(--ease-out-expo), opacity 220ms ease;
+  transition: transform 260ms var(--ease-out-expo), opacity 220ms ease;
 }
 
 .scroll-top-btn {
-  transition: opacity 260ms ease, transform 300ms var(--ease-out-expo);
+  transition: opacity 260ms ease, transform 340ms var(--spring-snappy);
 }
 
 .progress-ring-fill {
@@ -111,11 +103,11 @@ a {
 }
 
 .steps-progress-bar {
-  transition: transform 400ms var(--ease-out-expo);
+  transition: transform 440ms var(--ease-out-expo);
 }
 
 .feedback-card {
-  transition: border-color 280ms ease, transform 320ms var(--ease-out-expo), opacity 240ms ease;
+  transition: border-color 280ms ease, transform 340ms var(--ease-out-expo), opacity 240ms ease;
 }
 
 .chalkboard-content {
@@ -124,40 +116,59 @@ a {
 
 .pill-glide-indicator {
   transition:
-    clip-path 340ms var(--spring-snappy),
-    -webkit-clip-path 340ms var(--spring-snappy),
+    clip-path 360ms var(--spring-snappy),
+    -webkit-clip-path 360ms var(--spring-snappy),
     opacity 180ms ease;
 }
 
-.grade-glide-indicator {
-  transition: transform 320ms var(--spring-snappy), opacity 180ms ease;
+.grade-glide-indicator,
+.nav-glide-indicator,
+.dtab-glide-indicator,
+.gfx-glide-indicator {
+  transition: transform 360ms var(--spring-snappy), opacity 200ms ease;
 }
 
 .pub-expand-wrap {
-  transition: grid-template-rows 360ms var(--ease-out-expo), opacity 260ms ease;
+  transition: grid-template-rows 380ms var(--ease-out-expo), opacity 260ms ease;
+}
+
+.ui-ripple-wave {
+  animation: rippleExpand 560ms var(--ease-out-expo) forwards;
+  will-change: transform, opacity;
 }
 
 .reveal {
   opacity: 1;
   transform: none;
-  transition: opacity var(--dur-enter) var(--ease-out-expo), transform var(--dur-enter) var(--ease-out-expo);
+  transition:
+    opacity var(--dur-enter) var(--ease-out-expo) var(--reveal-delay, 0ms),
+    transform var(--dur-enter) var(--ease-out-expo) var(--reveal-delay, 0ms);
 }
 
 .reveal.reveal-pending {
   opacity: 0;
-  transform: translate3d(0, 18px, 0);
+  transform: translate3d(0, 24px, 0) scale(0.985);
 }
 
 .reveal.visible {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 .elevate-card.reveal.visible {
   transition:
-    transform var(--dur-ui) var(--ease-out-expo),
-    border-color var(--dur-micro) ease,
-    opacity var(--dur-enter) var(--ease-out-expo);
+    transform var(--dur-ui) var(--ease-out-expo) 0ms,
+    border-color var(--dur-micro) ease 0ms,
+    opacity var(--dur-enter) var(--ease-out-expo) var(--reveal-delay, 0ms);
+}
+
+.stats-banner.stats-pending .stat-progress-fill {
+  transform: scaleX(0);
+}
+
+.stats-banner.stats-animated .stat-progress-fill {
+  transform: scaleX(1);
+  transition: transform 920ms var(--ease-out-expo) 120ms;
 }
 
 .spinner {
@@ -170,21 +181,21 @@ a {
 
 .pub-modal-dialog,
 .qr-modal-dialog {
-  animation: modalSpringIn 360ms var(--ease-out-expo);
+  animation: modalSpringIn 380ms var(--ease-out-expo);
 }
 
 .lightbox-dialog,
 .max-modal-dialog {
-  animation: modalSpringIn 340ms var(--ease-out-expo);
+  animation: modalSpringIn 360ms var(--ease-out-expo);
 }
 
 .receipt-box:not(.hidden) {
-  animation: modalSpringIn 380ms var(--ease-out-expo);
+  animation: modalSpringIn 420ms var(--spring-bouncy);
 }
 
 .digital-panel.active,
 #form-step:not(.hidden) {
-  animation: panelRevealIn 320ms var(--ease-out-expo);
+  animation: panelRevealIn 340ms var(--ease-out-expo);
 }
 
 .widget-value.flash-updated {
@@ -193,9 +204,9 @@ a {
 
 .diary-lesson-row {
   opacity: 0;
-  transform: translate3d(0, 8px, 0);
-  animation: springCascadeIn 380ms var(--ease-out-expo) forwards;
-  animation-delay: min(calc(var(--step, 0) * var(--stagger-step, 45ms)), var(--stagger-cap, 320ms));
+  transform: translate3d(0, 10px, 0);
+  animation: springCascadeIn 400ms var(--ease-out-expo) forwards;
+  animation-delay: min(calc(var(--step, 0) * var(--stagger-step, 48ms)), var(--stagger-cap, 320ms));
 }
 
 .diary-lesson-row.no-cascade {
@@ -273,17 +284,13 @@ a {
 }
 
 .receipt-box:not(.hidden) .ui-ico--ticket .ico-check-draw {
-  animation: drawCheck 520ms var(--ease-out-expo) 120ms forwards;
+  animation: drawCheck 540ms var(--ease-out-expo) 120ms forwards;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .elevate-card:hover {
-    transform: translate3d(0, -4px, 0);
-    border-color: var(--border-strong);
-  }
-
-  .elevate-card:hover::after {
-    opacity: 1;
+    transform: translate3d(0, -5px, 0);
+    border-color: var(--border-glow);
   }
 
   .btn:hover:not(:disabled) {
@@ -298,10 +305,10 @@ a {
   }
 
   .btn-max-mini:hover {
-    opacity: 0.92;
+    opacity: 0.94;
   }
 
-  .digital-tab-btn:hover,
+  .digital-tab-btn:hover:not(.active),
   .qr-code-frame:hover {
     transform: translate3d(0, -2px, 0);
   }
@@ -311,10 +318,13 @@ a {
   }
 
   .brand:hover .logo-img {
+    transform: scale(1.07);
+  }
+
+  .teacher-card:hover .teacher-photo {
     transform: scale(1.06);
   }
 
-  .digital-tab-btn:hover .ui-ico,
   .btn-pub-action:hover .ui-ico,
   .btn-share-chat:hover .ui-ico,
   .btn-copy-mini:hover .ui-ico {
@@ -327,11 +337,11 @@ a {
 
   .pub-card-media:hover .pub-card-img,
   .pub-modal-photo-item:hover img {
-    transform: scale(1.03);
+    transform: scale(1.035);
   }
 
   .gallery-item:hover .gallery-img {
-    transform: scale(1.06);
+    transform: scale(1.065);
   }
 
   .gallery-item:hover .gallery-zoom-badge {
@@ -347,13 +357,13 @@ a {
   .topic-chip:active,
   .day-pill:active,
   .grade-pill:active,
-  .gfx-choice-btn:active {
-    transform: scale(0.985);
-    transition-duration: 120ms;
+  .gfx-choice-btn:active,
+  .digital-tab-btn:active {
+    transform: scale(0.975);
+    transition-duration: 110ms;
   }
 }
 
-/* Эшелон HIGH: расширенная кинематография, живые SVG, 3D-tilt, параллакс и ambient */
 @supports (animation-timeline: scroll()) {
   html[data-gfx-tier="high"] body::after {
     content: "";
@@ -362,7 +372,7 @@ a {
     left: 0;
     width: 100%;
     height: 3px;
-    background: linear-gradient(90deg, var(--primary) 0%, #2563eb 55%, var(--accent) 100%);
+    background: linear-gradient(90deg, var(--primary-bright) 0%, #6366f1 52%, var(--accent-gold) 100%);
     transform-origin: left center;
     transform: scaleX(0);
     z-index: var(--z-reading-bar);
@@ -370,6 +380,47 @@ a {
     animation: readingProgressScale linear both;
     animation-timeline: scroll(root block);
   }
+}
+
+html[data-gfx-tier="high"] .hero-content > .badge {
+  animation: keynoteRise 520ms var(--ease-out-expo) 40ms backwards;
+}
+
+html[data-gfx-tier="high"] .hero-content > .hero-title {
+  animation: keynoteRise 560ms var(--ease-out-expo) 95ms backwards;
+}
+
+html[data-gfx-tier="high"] .hero-content > .hero-lead {
+  animation: keynoteRise 540ms var(--ease-out-expo) 150ms backwards;
+}
+
+html[data-gfx-tier="high"] .hero-content > .hero-actions {
+  animation: keynoteRise 540ms var(--ease-out-expo) 205ms backwards;
+}
+
+html[data-gfx-tier="high"] .hero-content > .director-note {
+  animation: keynoteRise 520ms var(--ease-out-expo) 255ms backwards;
+}
+
+html[data-gfx-tier="high"] .hero-content > .chalkboard-card {
+  animation: keynoteCardIn 580ms var(--ease-out-expo) 300ms backwards;
+}
+
+html[data-gfx-tier="high"] .live-widget {
+  animation: keynoteCardIn 600ms var(--ease-out-expo) 160ms backwards;
+}
+
+html[data-gfx-tier="high"] .stats-banner::before,
+html[data-gfx-tier="high"] .cta-card::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 30% 35%, rgba(96, 165, 250, 0.24) 0%, transparent 45%),
+    radial-gradient(circle at 72% 68%, rgba(251, 191, 36, 0.18) 0%, transparent 42%);
+  pointer-events: none;
+  z-index: -1;
+  animation: auroraDrift 16s var(--ease-in-out) infinite alternate;
 }
 
 html[data-gfx-tier="high"] .radar-ping {
@@ -407,32 +458,54 @@ html[data-gfx-tier="high"] .btn::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
-  transform: translate3d(-130%, 0, 0);
+  background: linear-gradient(115deg, transparent 28%, rgba(255, 255, 255, 0.34) 50%, transparent 72%);
+  transform: translate3d(-135%, 0, 0);
   pointer-events: none;
-  transition: transform 520ms var(--ease-out-expo);
+  transition: transform 540ms var(--ease-out-expo);
 }
 
-html[data-gfx-tier="high"] .tilt-card::before {
+html[data-gfx-tier="high"] .spotlight-card::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   background: radial-gradient(
-    280px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(255, 255, 255, 0.44),
-    rgba(30, 64, 175, 0.05) 45%,
-    transparent 70%
+    320px circle at var(--mx, -400px) var(--my, -400px),
+    var(--spotlight-color),
+    transparent 65%
   );
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--dur-ui) ease;
+  transition: opacity 280ms ease;
   z-index: 1;
+}
+
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  html[data-gfx-tier="high"] .spotlight-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: radial-gradient(
+      240px circle at var(--mx, -400px) var(--my, -400px),
+      var(--spotlight-border),
+      transparent 70%
+    );
+    -webkit-mask: linear-gradient(#ffffff 0 0) content-box, linear-gradient(#ffffff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#ffffff 0 0) content-box, linear-gradient(#ffffff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 280ms ease;
+    z-index: 2;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {
   html[data-gfx-tier="high"] .hero-backdrop-img {
-    transform: scale(1.05) translate3d(0, var(--hero-parallax, 0px), 0);
+    transform: scale(1.06) translate3d(0, var(--hero-parallax, 0px), 0);
     will-change: transform;
   }
 
@@ -441,15 +514,40 @@ html[data-gfx-tier="high"] .tilt-card::before {
   }
 
   html[data-gfx-tier="high"] .btn:hover:not(:disabled)::after {
-    transform: translate3d(130%, 0, 0);
+    transform: translate3d(135%, 0, 0);
+  }
+
+  html[data-gfx-tier="high"] .magnetic-target {
+    transform: translate3d(var(--mag-x, 0px), var(--mag-y, 0px), 0);
+  }
+
+  html[data-gfx-tier="high"] .btn.magnetic-target:hover:not(:disabled) {
+    transform: translate3d(var(--mag-x, 0px), calc(var(--mag-y, 0px) - 2px), 0);
+  }
+
+  html[data-gfx-tier="high"] .nav-cta-btn.magnetic-target:hover {
+    transform: translate3d(var(--mag-x, 0px), calc(var(--mag-y, 0px) - 1px), 0);
+  }
+
+  html[data-gfx-tier="high"] .scroll-top-btn.visible.magnetic-target {
+    transform: translate3d(var(--mag-x, 0px), var(--mag-y, 0px), 0);
+  }
+
+  html[data-gfx-tier="high"] .spotlight-grid.is-spotlight-active .spotlight-card::after,
+  html[data-gfx-tier="high"] .spotlight-card:hover::after {
+    opacity: 1;
+  }
+
+  html[data-gfx-tier="high"] .spotlight-card:hover::before {
+    opacity: 1;
   }
 
   html[data-gfx-tier="high"] .tilt-card:hover {
-    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, -4px, 0);
+    transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, -5px, 0);
   }
 
-  html[data-gfx-tier="high"] .tilt-card:hover::before {
-    opacity: 1;
+  html[data-gfx-tier="high"] .section-emblem:hover .ui-ico .ico-part-moving {
+    transform: rotate(16deg) scale(1.12);
   }
 
   html[data-gfx-tier="high"] a:hover .ui-ico--bell .ico-part-moving,
@@ -460,12 +558,12 @@ html[data-gfx-tier="high"] .tilt-card::before {
 
   html[data-gfx-tier="high"] a:hover .ui-ico--send .ico-part-moving,
   html[data-gfx-tier="high"] button:hover .ui-ico--send .ico-part-moving {
-    transform: translate3d(2px, -2px, 0) scale(1.08);
+    transform: translate3d(2.5px, -2.5px, 0) scale(1.1);
   }
 
   html[data-gfx-tier="high"] a:hover .ui-ico--book .ico-part-moving,
   html[data-gfx-tier="high"] button:hover .ui-ico--book .ico-part-moving {
-    transform: scaleX(0.86) translateX(1px);
+    transform: scaleX(0.84) translateX(1.5px);
   }
 
   html[data-gfx-tier="high"] a:hover .ui-ico--shield .ico-accent,
@@ -477,15 +575,14 @@ html[data-gfx-tier="high"] .tilt-card::before {
   html[data-gfx-tier="high"] a:hover .ui-ico--shield .ico-part-moving,
   html[data-gfx-tier="high"] button:hover .ui-ico--shield .ico-part-moving,
   html[data-gfx-tier="high"] .info-box:hover .ui-ico--shield .ico-part-moving {
-    transform: scale(1.14);
+    transform: scale(1.15);
   }
 
   html[data-gfx-tier="high"] .diary-lesson-row:hover .ui-ico .ico-part-moving {
-    transform: rotate(10deg) scale(1.1);
+    transform: rotate(12deg) scale(1.12);
   }
 }
 
-/* Эшелон BALANCED: чёткие GPU-переходы, без 3D-tilt и бесконечных фоновых циклов */
 html[data-gfx-tier="balanced"] .radar-ping {
   display: none;
 }
@@ -494,25 +591,31 @@ html[data-gfx-tier="balanced"] .lesson-live-pill {
   animation: none;
 }
 
-/* Эшелон LITE: защита слабых телефонов, Save-Data и экономия батареи */
 html[data-gfx-tier="lite"] {
   scroll-behavior: auto;
 }
 
 html[data-gfx-tier="lite"] .reveal,
 html[data-gfx-tier="lite"] .reveal.reveal-pending,
-html[data-gfx-tier="lite"] .diary-lesson-row {
+html[data-gfx-tier="lite"] .diary-lesson-row,
+html[data-gfx-tier="lite"] .stats-banner.stats-pending .stat-progress-fill {
   opacity: 1;
   transform: none;
   animation: none;
 }
 
 html[data-gfx-tier="lite"] .radar-ping,
-html[data-gfx-tier="lite"] .elevate-card::after,
-html[data-gfx-tier="lite"] .tilt-card::before,
+html[data-gfx-tier="lite"] .spotlight-card::before,
+html[data-gfx-tier="lite"] .spotlight-card::after,
+html[data-gfx-tier="lite"] .stats-banner::before,
+html[data-gfx-tier="lite"] .cta-card::before,
 html[data-gfx-tier="lite"] .btn::after,
+html[data-gfx-tier="lite"] .ui-ripple-wave,
 html[data-gfx-tier="lite"] .pill-glide-indicator,
 html[data-gfx-tier="lite"] .grade-glide-indicator,
+html[data-gfx-tier="lite"] .nav-glide-indicator,
+html[data-gfx-tier="lite"] .dtab-glide-indicator,
+html[data-gfx-tier="lite"] .gfx-glide-indicator,
 html[data-gfx-tier="lite"] .skeleton-row::after,
 html[data-gfx-tier="lite"] .skeleton-line::after,
 html[data-gfx-tier="lite"] .pub-card-media.is-loading::after,
@@ -543,10 +646,7 @@ html[data-gfx-tier="lite"] .ui-ico--ticket .ico-check-draw {
   animation: none;
 }
 
-html[data-gfx-tier="lite"] .pub-expand-wrap {
-  transition: opacity 100ms ease;
-}
-
+html[data-gfx-tier="lite"] .pub-expand-wrap,
 html[data-gfx-tier="lite"] .dynamic-island,
 html[data-gfx-tier="lite"] .scroll-top-btn,
 html[data-gfx-tier="lite"] .steps-progress-bar,
@@ -558,6 +658,7 @@ html[data-gfx-tier="lite"] .elevate-card,
 html[data-gfx-tier="lite"] .btn,
 html[data-gfx-tier="lite"] .pub-card-img,
 html[data-gfx-tier="lite"] .gallery-img,
+html[data-gfx-tier="lite"] .teacher-photo,
 html[data-gfx-tier="lite"] .logo-img {
   transition: none;
 }
@@ -568,8 +669,53 @@ html[data-gfx-tier="lite"] .logo-img {
   html[data-gfx-tier="lite"] .cta-reason-card:hover,
   html[data-gfx-tier="lite"] .brand:hover .logo-img,
   html[data-gfx-tier="lite"] .pub-card-media:hover .pub-card-img,
-  html[data-gfx-tier="lite"] .gallery-item:hover .gallery-img {
+  html[data-gfx-tier="lite"] .gallery-item:hover .gallery-img,
+  html[data-gfx-tier="lite"] .teacher-card:hover .teacher-photo {
     transform: none;
+  }
+}
+
+@keyframes keynoteRise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes keynoteCardIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(-4%, -3%, 0) scale(1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(4%, 3%, 0) scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
   }
 }
 
@@ -661,18 +807,18 @@ html[data-gfx-tier="lite"] .logo-img {
 }
 
 @keyframes modalSpringIn {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.97); }
+  from { opacity: 0; transform: translate3d(0, 16px, 0) scale(0.965); }
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
 @keyframes panelRevealIn {
-  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 240ms;
+  animation-duration: 260ms;
   animation-timing-function: var(--ease-out-expo);
 }
 
@@ -696,11 +842,18 @@ html[data-gfx-tier="lite"] .logo-img {
 
   .hero-backdrop-img,
   .tilt-card,
+  .magnetic-target,
   .pill-glide-indicator,
   .grade-glide-indicator,
+  .nav-glide-indicator,
+  .dtab-glide-indicator,
+  .gfx-glide-indicator,
   .digital-panel.active,
   #form-step:not(.hidden),
   .widget-weather-card #weather-now-icon .ico-part-moving,
+  .stats-banner::before,
+  .cta-card::before,
+  .ui-ripple-wave,
   .skeleton-row::after,
   .skeleton-line::after,
   .pub-card-media.is-loading::after,
@@ -716,7 +869,8 @@ html[data-gfx-tier="lite"] .logo-img {
 
   .reveal,
   .reveal.reveal-pending,
-  .diary-lesson-row {
+  .diary-lesson-row,
+  .stats-banner.stats-pending .stat-progress-fill {
     opacity: 1 !important;
     transform: none !important;
   }
@@ -737,6 +891,7 @@ body.visually-impaired *::after {
 
 body.visually-impaired .reveal,
 body.visually-impaired .reveal.reveal-pending,
-body.visually-impaired .diary-lesson-row {
+body.visually-impaired .diary-lesson-row,
+body.visually-impaired .stats-banner.stats-pending .stat-progress-fill {
   opacity: 1 !important;
 }
